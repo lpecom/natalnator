@@ -4,6 +4,7 @@ import ProductImages from "@/components/admin/ProductImages";
 import ProductVariants from "@/components/admin/ProductVariants";
 import ReviewsManager from "@/components/admin/ReviewsManager";
 import AdminHeader from "@/components/admin/AdminHeader";
+import Benefits from "@/components/Benefits";
 import { useAdminProduct } from "@/hooks/useAdminProduct";
 
 const AdminProduct = () => {
@@ -22,6 +23,7 @@ const AdminProduct = () => {
             <BasicProductInfo product={product} onUpdate={loadProduct} />
             <ProductImages product={product} onUpdate={loadProduct} />
             <ProductVariants product={product} onUpdate={loadProduct} />
+            <Benefits productId={product.id} editable={true} />
             <ReviewsManager landingPageId={product.landing_page_id} />
           </>
         )}

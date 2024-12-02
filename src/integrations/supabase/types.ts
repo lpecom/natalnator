@@ -182,6 +182,7 @@ export type Database = {
       }
       landing_page_products: {
         Row: {
+          benefits_html: string | null
           created_at: string | null
           description: string | null
           description_html: string | null
@@ -198,6 +199,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          benefits_html?: string | null
           created_at?: string | null
           description?: string | null
           description_html?: string | null
@@ -214,6 +216,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          benefits_html?: string | null
           created_at?: string | null
           description?: string | null
           description_html?: string | null

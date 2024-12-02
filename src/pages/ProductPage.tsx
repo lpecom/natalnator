@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import ProductGallery from "@/components/ProductGallery";
 import ProductInfo from "@/components/ProductInfo";
 import ProductDetails from "@/components/ProductDetails";
+import Benefits from "@/components/Benefits";
 import Reviews from "@/components/Reviews";
 
 const ProductPage = () => {
@@ -39,6 +40,7 @@ const ProductPage = () => {
             <ProductInfo landingPageId={id} />
           </div>
           <ProductDetails landingPageId={id} />
+          <Benefits landingPageId={id} />
           <Reviews />
         </div>
       </main>
