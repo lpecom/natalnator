@@ -18,8 +18,8 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
         .from("product_variants")
         .insert({
           product_id: product.id,
-          name: formData.get("name"),
-          value: formData.get("value"),
+          name: formData.get("name")?.toString() || "",
+          value: formData.get("value")?.toString() || "",
         });
 
       if (error) throw error;

@@ -17,7 +17,7 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
       const { error } = await supabase
         .from("landing_page_products")
         .update({
-          name: formData.get("name"),
+          name: formData.get("name")?.toString() || "",
           price: Number(formData.get("price")),
           original_price: Number(formData.get("original_price")),
           stock: Number(formData.get("stock")),

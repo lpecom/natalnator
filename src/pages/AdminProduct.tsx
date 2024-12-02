@@ -26,8 +26,7 @@ const AdminProduct = () => {
           .select(`
             *,
             product_images(*),
-            product_variants(*),
-            shipping_options:shipping_options(*)
+            product_variants(*)
           `)
           .eq("landing_page_id", landingPage.id)
           .single();
@@ -71,15 +70,6 @@ const AdminProduct = () => {
               value: "1.80 m"
             }
           ]);
-
-          // Add shipping option
-          await supabase.from("shipping_options").insert({
-            landing_page_id: newLandingPage.id,
-            name: "Frete Grátis",
-            description: "Entrega em 2-5 dias úteis",
-            price: 0,
-            estimated_days: 5
-          });
 
           await loadProduct();
         }
