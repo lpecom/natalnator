@@ -3,9 +3,29 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
 const fetchProductImages = async () => {
+  // First get the landing page
+  const { data: landingPage } = await supabase
+    .from("landing_pages")
+    .select("*")
+    .limit(1)
+    .single();
+
+  if (!landingPage) return [];
+
+  // Then get the product for this landing page
+  const { data: product } = await supabase
+    .from("landing_page_products")
+    .select("*")
+    .eq("landing_page_id", landingPage.id)
+    .single();
+
+  if (!product) return [];
+
+  // Finally get the images for this product
   const { data, error } = await supabase
     .from("product_images")
     .select("*")
+    .eq("product_id", product.id)
     .order("display_order", { ascending: true });
   
   if (error) throw error;
