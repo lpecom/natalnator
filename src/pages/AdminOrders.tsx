@@ -41,8 +41,7 @@ const AdminOrders = () => {
         .from("orders")
         .select(`
           *,
-          product:landing_page_products(name),
-          driver:drivers(name)
+          product:landing_page_products(name)
         `)
         .order("created_at", { ascending: false });
 
