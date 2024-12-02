@@ -11,6 +11,9 @@ import EditLandingPage from "./pages/EditLandingPage";
 import AdminProduct from "./pages/AdminProduct";
 import SiteAdmin from "./pages/SiteAdmin";
 import ProductPage from "./pages/ProductPage";
+import CommonPages from "./pages/CommonPages";
+import EditCommonPage from "./pages/EditCommonPage";
+import ViewCommonPage from "./pages/ViewCommonPage";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +41,7 @@ const App = () => (
           {/* Public routes */}
           <Route path="/" element={<Index />} />
           <Route path="/p/:id" element={<ProductPage />} />
+          <Route path="/pages/:slug" element={<ViewCommonPage />} />
           
           {/* Protected Admin routes */}
           <Route path="/admin" element={
@@ -51,6 +55,20 @@ const App = () => (
             <ProtectedRoute>
               <AdminLayout>
                 <SiteAdmin />
+              </AdminLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/common-pages" element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <CommonPages />
+              </AdminLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/common-pages/:id/edit" element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <EditCommonPage />
               </AdminLayout>
             </ProtectedRoute>
           } />

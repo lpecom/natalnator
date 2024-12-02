@@ -127,6 +127,39 @@ export type Database = {
           },
         ]
       }
+      common_pages: {
+        Row: {
+          content: string | null
+          content_html: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          slug: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          content?: string | null
+          content_html?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          slug: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string | null
+          content_html?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          slug?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       creative_metrics: {
         Row: {
           actual_cpc: number | null

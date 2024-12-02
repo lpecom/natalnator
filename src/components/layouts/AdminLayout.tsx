@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Image, Settings } from "lucide-react";
+import { LayoutDashboard, Image, Settings, FileText } from "lucide-react";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -20,6 +20,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       name: "Landing Pages",
       href: "/landing-pages",
       icon: Image,
+    },
+    {
+      name: "Common Pages",
+      href: "/admin/common-pages",
+      icon: FileText,
     },
     {
       name: "Site Settings",
