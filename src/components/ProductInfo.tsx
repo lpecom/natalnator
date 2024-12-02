@@ -1,6 +1,6 @@
 import React from "react";
 import { toast } from "sonner";
-import { Truck, CreditCard, ShieldCheck, BarcodeLine } from "lucide-react";
+import { Truck, CreditCard, ShieldCheck, Barcode } from "lucide-react";
 
 const ProductInfo = () => {
   const handleBuy = () => {
