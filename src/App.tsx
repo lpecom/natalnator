@@ -14,6 +14,7 @@ import ProductPage from "./pages/ProductPage";
 import CommonPages from "./pages/CommonPages";
 import EditCommonPage from "./pages/EditCommonPage";
 import ViewCommonPage from "./pages/ViewCommonPage";
+import Catalog from "./pages/Catalog";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Index />} />
+          <Route path="/catalog" element={<Catalog />} />
           <Route path="/p/:id" element={<ProductPage />} />
           <Route path="/pages/:slug" element={<ViewCommonPage />} />
           
