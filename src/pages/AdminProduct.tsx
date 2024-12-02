@@ -9,12 +9,16 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 const AdminProduct = () => {
-  const { data: product, isLoading, error } = useQuery({
+  const { data: product, isLoading, error, refetch } = useQuery({
     queryKey: ["admin-product"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("landing_page_products")
-        .select("*")
+        .select(`
+          *,
+          product_images(*),
+          product_variants(*)
+        `)
         .single();
 
       if (error) throw error;
@@ -53,13 +57,17 @@ const AdminProduct = () => {
     );
   }
 
+  const handleUpdate = () => {
+    refetch();
+  };
+
   return (
     <div className="p-8 space-y-6">
       <AdminHeader title="Product Management" />
       <div className="space-y-6">
-        <BasicProductInfo product={product} />
-        <ProductImages productId={product?.id} />
-        <ProductVariants productId={product?.id} />
+        <BasicProductInfo product={product} onUpdate={handleUpdate} />
+        <ProductImages product={product} onUpdate={handleUpdate} />
+        <ProductVariants product={product} onUpdate={handleUpdate} />
         <ReviewsManager landingPageId={product?.landing_page_id} />
       </div>
     </div>
