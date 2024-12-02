@@ -48,58 +48,89 @@ serve(async (req) => {
     if (!doc) {
       throw new Error('Failed to parse HTML')
     }
-    
-    // Extract product information
-    const name = doc.querySelector('h1')?.textContent?.trim()
+
+    // Extract product name with fallbacks
+    const name = doc.querySelector('h1')?.textContent?.trim() ||
+                doc.querySelector('[data-product-title]')?.textContent?.trim() ||
+                doc.querySelector('.product-title')?.textContent?.trim()
     if (!name) {
       throw new Error('Could not find product name')
     }
     console.log('Found product name:', name)
 
-    // Get description - try multiple possible selectors
-    const description = doc.querySelector('[data-product-description]')?.innerHTML || 
-                       doc.querySelector('.product-description')?.innerHTML ||
-                       doc.querySelector('.product__description')?.innerHTML ||
-                       doc.querySelector('[property="og:description"]')?.getAttribute('content') ||
-                       ''
-    console.log('Found description:', description ? 'Yes' : 'No')
-    
-    // Get all product images with better selectors
-    const images = Array.from(doc.querySelectorAll('img[src*="/products/"]'))
-      .map(img => {
-        const src = img.getAttribute('src')
-        // Convert protocol-relative URLs to HTTPS
-        const imageUrl = src?.startsWith('//') ? `https:${src}` : src
-        // Remove any query parameters from image URLs
-        const cleanUrl = imageUrl?.split('?')[0]
-        return {
-          url: cleanUrl || '',
-          alt: img.getAttribute('alt') || ''
+    // Get description with multiple selectors and preserve HTML
+    const descriptionSelectors = [
+      '[data-product-description]',
+      '.product-description',
+      '.product__description',
+      '#product-description',
+      '[itemprop="description"]'
+    ];
+
+    let description = '';
+    for (const selector of descriptionSelectors) {
+      const element = doc.querySelector(selector);
+      if (element) {
+        description = element.innerHTML;
+        break;
+      }
+    }
+
+    if (!description) {
+      // Fallback to meta description
+      description = doc.querySelector('[property="og:description"]')?.getAttribute('content') || '';
+    }
+
+    console.log('Description length:', description.length)
+
+    // Enhanced image scraping
+    const imageSelectors = [
+      'img[src*="/products/"][src*=".jpg"]',
+      'img[src*="/products/"][src*=".jpeg"]',
+      'img[src*="/products/"][src*=".png"]',
+      'img[data-zoom-image]',
+      '.product__image img'
+    ];
+
+    const images = new Set();
+    for (const selector of imageSelectors) {
+      doc.querySelectorAll(selector).forEach(img => {
+        let imageUrl = img.getAttribute('src') || 
+                      img.getAttribute('data-src') || 
+                      img.getAttribute('data-zoom-image');
+        
+        if (imageUrl) {
+          // Convert protocol-relative URLs to HTTPS
+          if (imageUrl.startsWith('//')) {
+            imageUrl = `https:${imageUrl}`;
+          }
+          
+          // Remove query parameters and ensure high quality
+          imageUrl = imageUrl.split('?')[0];
+          
+          // Skip thumbnails
+          if (!imageUrl.includes('_thumb') && !imageUrl.includes('_small')) {
+            images.add(imageUrl);
+          }
         }
-      })
-      .filter(img => img.url && !img.url.includes('thumbnail'))
-      .filter((img, index, self) => 
-        // Remove duplicates
-        index === self.findIndex((t) => t.url === img.url)
-      )
-    console.log('Found images count:', images.length)
+      });
+    }
+
+    const uniqueImages = Array.from(images);
+    console.log('Found images:', uniqueImages.length)
 
     // Get price information
     const priceElement = doc.querySelector('[data-product-price]') || 
                         doc.querySelector('.price__regular') ||
-                        doc.querySelector('.product__price') ||
-                        doc.querySelector('[property="og:price:amount"]')
-    const priceText = priceElement?.textContent?.trim() || 
-                     priceElement?.getAttribute('content') || ''
+                        doc.querySelector('.product__price')
+    const priceText = priceElement?.textContent?.trim() || '0'
     const price = parseFloat(priceText.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
     console.log('Found price:', price)
 
     const originalPriceElement = doc.querySelector('[data-compare-price]') ||
-                                doc.querySelector('.price__compare') ||
-                                doc.querySelector('.product__price--compare')
+                                doc.querySelector('.price__compare')
     const originalPriceText = originalPriceElement?.textContent?.trim() || ''
     const originalPrice = parseFloat(originalPriceText.replace(/[^\d.,]/g, '').replace(',', '.')) || price
-    console.log('Found original price:', originalPrice)
 
     // Create Supabase client
     const supabase = createClient(
@@ -130,11 +161,7 @@ serve(async (req) => {
       throw new Error(`Failed to create landing page: ${landingPageError.message}`)
     }
 
-    if (!landingPage) {
-      throw new Error('Landing page was not created')
-    }
-
-    // Create product with description
+    // Create product with full description
     const { data: product, error: productError } = await supabase
       .from('landing_page_products')
       .insert({
@@ -154,17 +181,12 @@ serve(async (req) => {
       throw new Error(`Failed to create product: ${productError.message}`)
     }
 
-    if (!product) {
-      await supabase.from('landing_pages').delete().eq('id', landingPage.id)
-      throw new Error('Product was not created')
-    }
-
     // Add product images
-    if (images.length > 0) {
-      const productImages = images.map((image, index) => ({
+    if (uniqueImages.length > 0) {
+      const productImages = uniqueImages.map((imageUrl, index) => ({
         product_id: product.id,
-        url: image.url,
-        alt_text: image.alt,
+        url: imageUrl,
+        alt_text: `${name} - Image ${index + 1}`,
         display_order: index,
         is_primary: index === 0
       }))
@@ -183,7 +205,9 @@ serve(async (req) => {
         success: true, 
         landingPageId: landingPage.id,
         productId: product.id,
-        slug: uniqueSlug
+        slug: uniqueSlug,
+        imageCount: uniqueImages.length,
+        descriptionLength: description.length
       }),
       { 
         headers: { 
