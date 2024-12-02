@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ProductGalleryProps {
   landingPageId?: string;
@@ -18,7 +19,6 @@ const fetchProductImages = async (landingPageId?: string, productId?: string) =>
   if (productId) {
     query = query.eq("product_id", productId);
   } else if (landingPageId) {
-    // Get the product for this landing page
     const { data: product } = await supabase
       .from("landing_page_products")
       .select("*")
@@ -50,7 +50,16 @@ const ProductGallery = ({ landingPageId, productId }: ProductGalleryProps) => {
   }, [images]);
 
   if (isLoading) {
-    return <div className="text-center p-4">Loading images...</div>;
+    return (
+      <div className="flex flex-col-reverse md:flex-row gap-2 md:gap-4">
+        <div className="flex md:flex-col gap-2">
+          <Skeleton className="w-14 h-14 md:w-16 md:h-16" />
+          <Skeleton className="w-14 h-14 md:w-16 md:h-16" />
+          <Skeleton className="w-14 h-14 md:w-16 md:h-16" />
+        </div>
+        <Skeleton className="flex-1 h-[400px] md:h-[600px]" />
+      </div>
+    );
   }
 
   if (images.length === 0) {
