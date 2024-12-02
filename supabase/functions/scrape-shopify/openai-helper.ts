@@ -11,7 +11,7 @@ export async function extractProductInfo(html: string): Promise<ScrapingResult> 
     }
 
     const prompt = `Extract product information from this Shopify product page HTML.
-    Return a JSON object with these exact keys:
+    Return ONLY a JSON object with these exact keys (no markdown, no code blocks, just the JSON):
     - name: The product name (string)
     - description: The product description (string)
     - price: The current price (number)
@@ -29,19 +29,20 @@ export async function extractProductInfo(html: string): Promise<ScrapingResult> 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo', // Using GPT-3.5 Turbo for better reliability
+        model: 'gpt-3.5-turbo',
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that extracts product information from HTML and returns it in JSON format.'
+            content: 'You are a JSON generator that extracts product information from HTML and returns it as a pure JSON object without any markdown formatting or code blocks.'
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.1, // Lower temperature for more consistent output
-        max_tokens: 1000
+        temperature: 0.1,
+        max_tokens: 1000,
+        response_format: { type: "json_object" } // Force JSON response format
       }),
     });
 
@@ -52,13 +53,23 @@ export async function extractProductInfo(html: string): Promise<ScrapingResult> 
     }
 
     const data = await response.json();
-    console.log('OpenAI API response received');
+    console.log('OpenAI API response received:', data);
 
     if (!data.choices?.[0]?.message?.content) {
       throw new Error('Invalid response format from OpenAI');
     }
 
-    const extractedInfo = JSON.parse(data.choices[0].message.content);
+    let extractedInfo;
+    try {
+      const content = data.choices[0].message.content;
+      // Remove any markdown code block syntax if present
+      const jsonString = content.replace(/```json\n|\n```|```/g, '').trim();
+      extractedInfo = JSON.parse(jsonString);
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError);
+      throw new Error('Failed to parse product information from OpenAI response');
+    }
+
     console.log('Extracted product info:', extractedInfo);
 
     // Validate and format the data
