@@ -108,12 +108,19 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
         )}
       </div>
       <div className="bg-white rounded-lg">
-        <RichTextEditor
-          content={displayContent}
-          onChange={editable ? handleBenefitsChange : undefined}
-          editable={editable}
-          showSource={editable}
-        />
+        {editable ? (
+          <RichTextEditor
+            content={displayContent}
+            onChange={handleBenefitsChange}
+            editable={true}
+            showSource={true}
+          />
+        ) : (
+          <div 
+            className="prose max-w-none p-4"
+            dangerouslySetInnerHTML={{ __html: displayContent }}
+          />
+        )}
       </div>
     </div>
   );
