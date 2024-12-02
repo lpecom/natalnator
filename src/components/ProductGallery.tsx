@@ -2,26 +2,23 @@ import React, { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
-const fetchProductImages = async () => {
-  // First get the landing page
-  const { data: landingPage } = await supabase
-    .from("landing_pages")
-    .select("*")
-    .limit(1)
-    .single();
+interface ProductGalleryProps {
+  landingPageId?: string;
+}
 
-  if (!landingPage) return [];
+const fetchProductImages = async (landingPageId?: string) => {
+  if (!landingPageId) return [];
 
-  // Then get the product for this landing page
+  // Get the product for this landing page
   const { data: product } = await supabase
     .from("landing_page_products")
     .select("*")
-    .eq("landing_page_id", landingPage.id)
+    .eq("landing_page_id", landingPageId)
     .single();
 
   if (!product) return [];
 
-  // Finally get the images for this product
+  // Get the images for this product
   const { data, error } = await supabase
     .from("product_images")
     .select("*")
@@ -32,10 +29,11 @@ const fetchProductImages = async () => {
   return data;
 };
 
-const ProductGallery = () => {
-  const { data: images = [] } = useQuery({
-    queryKey: ["product-images"],
-    queryFn: fetchProductImages,
+const ProductGallery = ({ landingPageId }: ProductGalleryProps) => {
+  const { data: images = [], isLoading } = useQuery({
+    queryKey: ["product-images", landingPageId],
+    queryFn: () => fetchProductImages(landingPageId),
+    enabled: !!landingPageId,
   });
 
   const [selectedImage, setSelectedImage] = useState(images[0]?.url || "");
@@ -45,6 +43,10 @@ const ProductGallery = () => {
       setSelectedImage(images[0].url);
     }
   }, [images]);
+
+  if (isLoading) {
+    return <div className="text-center p-4">Loading images...</div>;
+  }
 
   if (images.length === 0) {
     return <div className="text-center p-4">No images available</div>;

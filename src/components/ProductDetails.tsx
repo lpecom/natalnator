@@ -2,19 +2,23 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import RichTextEditor from "./RichTextEditor";
 
-const ProductDetails = () => {
+interface ProductDetailsProps {
+  landingPageId?: string;
+}
+
+const ProductDetails = ({ landingPageId }: ProductDetailsProps) => {
   const { data: product, isLoading } = useQuery({
-    queryKey: ["product-details"],
+    queryKey: ["product-details", landingPageId],
     queryFn: async () => {
+      if (!landingPageId) return null;
       const { data } = await supabase
         .from("landing_page_products")
         .select("description_html")
-        .limit(1)
+        .eq("landing_page_id", landingPageId)
         .single();
       return data;
     },
-    refetchOnWindowFocus: true,
-    refetchInterval: 1000, // Refetch every second to keep content in sync
+    enabled: !!landingPageId,
   });
 
   if (isLoading) {

@@ -35,10 +35,10 @@ const ProductPage = () => {
             <span className="line-clamp-1">{landingPage?.title}</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-            <ProductGallery />
-            <ProductInfo />
+            <ProductGallery landingPageId={id} />
+            <ProductInfo landingPageId={id} />
           </div>
-          <ProductDetails />
+          <ProductDetails landingPageId={id} />
           <Reviews />
         </div>
       </main>
