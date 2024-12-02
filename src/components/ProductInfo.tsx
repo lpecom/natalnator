@@ -9,7 +9,7 @@ const ProductInfo = () => {
 
   const price = 99.90;
   const originalPrice = 187.00;
-  const pixDiscount = 0.10; // 10% discount
+  const pixDiscount = 0.05; // 5% discount
   const pixPrice = price * (1 - pixDiscount);
   const pixSavings = price - pixPrice;
 
@@ -34,14 +34,20 @@ const ProductInfo = () => {
         </span>
       </div>
 
-      <div className="p-3 bg-[#F2FCE2] rounded-lg space-y-1">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Pague com PIX e ganhe 10% OFF</span>
+      <div className="inline-flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-1 text-success">
+          <span className="flex items-center gap-1">
+            <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" stroke="currentColor">
+              <path d="M20.3873 7.1575L11.9999 12L3.61255 7.1575" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M12 12V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M11.9999 3L20.3873 7.1575L11.9999 12L3.61255 7.1575L11.9999 3Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            5% OFF no pix
+          </span>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-success">R$ {pixPrice.toFixed(2)}</span>
-          <span className="text-sm text-success">Economize R$ {pixSavings.toFixed(2)}</span>
-        </div>
+        <span className="px-2 py-0.5 bg-[#F2FCE2] text-success rounded-full text-xs font-medium">
+          + Envio Prioritário
+        </span>
       </div>
 
       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg text-sm">
