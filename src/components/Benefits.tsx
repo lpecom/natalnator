@@ -1,7 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import RichTextEditor from "./RichTextEditor";
+import { Button } from "./ui/button";
+import { Save } from "lucide-react";
+import { useState } from "react";
 
 interface BenefitsProps {
   landingPageId?: string;
@@ -15,6 +18,10 @@ interface ProductData {
 }
 
 const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps) => {
+  const queryClient = useQueryClient();
+  const [content, setContent] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
+
   const { data: product, isLoading } = useQuery({
     queryKey: ["product-benefits", landingPageId, productId],
     queryFn: async () => {
@@ -36,20 +43,28 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
     enabled: !!(landingPageId || productId),
   });
 
-  const handleBenefitsChange = async (html: string) => {
+  const handleBenefitsChange = (html: string) => {
+    setContent(html);
+  };
+
+  const handleSave = async () => {
     if (!product) return;
+    setIsSaving(true);
 
     try {
       const { error } = await supabase
         .from("landing_page_products")
-        .update({ benefits_html: html })
+        .update({ benefits_html: content })
         .eq("id", product.id);
 
       if (error) throw error;
       
-      toast.success("Benefits updated successfully");
+      await queryClient.invalidateQueries({ queryKey: ["product-benefits"] });
+      toast.success("Benefits saved successfully");
     } catch (error) {
-      toast.error("Failed to update benefits");
+      toast.error("Failed to save benefits");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -70,10 +85,22 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
 
   return (
     <div className="py-8 border-t border-b">
-      <h2 className="text-2xl font-semibold mb-6">Benefícios do Produto</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold">Benefícios do Produto</h2>
+        {editable && (
+          <Button 
+            onClick={handleSave} 
+            disabled={isSaving}
+            className="gap-2"
+          >
+            <Save className="w-4 h-4" />
+            {isSaving ? "Salvando..." : "Salvar Alterações"}
+          </Button>
+        )}
+      </div>
       <div className="bg-white rounded-lg">
         <RichTextEditor
-          content={product?.benefits_html || "<p>Carregando benefícios do produto...</p>"}
+          content={content || product?.benefits_html || "<p>Carregando benefícios do produto...</p>"}
           onChange={editable ? handleBenefitsChange : undefined}
           editable={editable}
           showSource={editable}
