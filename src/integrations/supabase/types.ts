@@ -536,6 +536,39 @@ export type Database = {
           },
         ]
       }
+      reviews: {
+        Row: {
+          author: string
+          content: string
+          created_at: string | null
+          id: string
+          product_name: string | null
+          rating: number
+          updated_at: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          author: string
+          content: string
+          created_at?: string | null
+          id?: string
+          product_name?: string | null
+          rating: number
+          updated_at?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          author?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          product_name?: string | null
+          rating?: number
+          updated_at?: string | null
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
       shipping_options: {
         Row: {
           created_at: string | null
