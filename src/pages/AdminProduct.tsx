@@ -22,17 +22,50 @@ const AdminProduct = () => {
         .single();
 
       if (landingPage) {
-        const { data: product } = await supabase
+        const { data: products } = await supabase
           .from("landing_page_products")
           .select(`
             *,
             product_images(*),
             product_variants(*)
           `)
-          .eq("landing_page_id", landingPage.id)
-          .single();
+          .eq("landing_page_id", landingPage.id);
 
-        setProduct({ ...product, landing_page_id: landingPage.id });
+        // Check if we have any products
+        if (products && products.length > 0) {
+          setProduct({ ...products[0], landing_page_id: landingPage.id });
+        } else {
+          // Create a new product if none exists
+          const { data: newProduct } = await supabase
+            .from("landing_page_products")
+            .insert({
+              landing_page_id: landingPage.id,
+              name: "Árvore de Natal + BRINDE EXCLUSIVO DE BLACK FRIDAY",
+              description: "Árvore de Natal premium com brinde exclusivo",
+              price: 99.90,
+              original_price: 187.00,
+              stock: 8
+            })
+            .select()
+            .single();
+
+          if (newProduct) {
+            await supabase.from("product_variants").insert([
+              {
+                product_id: newProduct.id,
+                name: "Cor",
+                value: "Vermelha Noel"
+              },
+              {
+                product_id: newProduct.id,
+                name: "Altura",
+                value: "1.80 m"
+              }
+            ]);
+
+            await loadProduct(); // Reload to get the complete product data
+          }
+        }
       } else {
         const { data: newLandingPage } = await supabase
           .from("landing_pages")
@@ -58,20 +91,22 @@ const AdminProduct = () => {
             .select()
             .single();
 
-          await supabase.from("product_variants").insert([
-            {
-              product_id: newProduct.id,
-              name: "Cor",
-              value: "Vermelha Noel"
-            },
-            {
-              product_id: newProduct.id,
-              name: "Altura",
-              value: "1.80 m"
-            }
-          ]);
+          if (newProduct) {
+            await supabase.from("product_variants").insert([
+              {
+                product_id: newProduct.id,
+                name: "Cor",
+                value: "Vermelha Noel"
+              },
+              {
+                product_id: newProduct.id,
+                name: "Altura",
+                value: "1.80 m"
+              }
+            ]);
 
-          await loadProduct();
+            await loadProduct(); // Reload to get the complete product data
+          }
         }
       }
     } catch (error) {
