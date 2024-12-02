@@ -2,12 +2,16 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Benefits from "@/components/Benefits";
+import BasicProductInfo from "@/components/admin/BasicProductInfo";
+import ProductImages from "@/components/admin/ProductImages";
+import ProductVariants from "@/components/admin/ProductVariants";
+import ReviewsManager from "@/components/admin/ReviewsManager";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const EditLandingPage = () => {
   const { id } = useParams();
 
-  const { data: landingPage, isLoading } = useQuery({
+  const { data: landingPage, isLoading, refetch } = useQuery({
     queryKey: ["landing-page", id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -57,10 +61,13 @@ const EditLandingPage = () => {
       </div>
 
       {product && (
-        <Benefits 
-          productId={product.id}
-          editable={true}
-        />
+        <div className="space-y-8">
+          <BasicProductInfo product={product} onUpdate={refetch} />
+          <ProductImages product={product} onUpdate={refetch} />
+          <ProductVariants product={product} onUpdate={refetch} />
+          <Benefits productId={product.id} editable={true} />
+          <ReviewsManager landingPageId={landingPage.id} />
+        </div>
       )}
     </div>
   );
