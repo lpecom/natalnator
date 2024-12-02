@@ -6,21 +6,27 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface ProductInfoProps {
   landingPageId?: string;
+  productId?: string;
 }
 
-const ProductInfo = ({ landingPageId }: ProductInfoProps) => {
+const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
   const { data: product } = useQuery({
-    queryKey: ["product-info", landingPageId],
+    queryKey: ["product-info", landingPageId, productId],
     queryFn: async () => {
-      if (!landingPageId) return null;
-      const { data } = await supabase
-        .from("landing_page_products")
-        .select("*")
-        .eq("landing_page_id", landingPageId)
-        .single();
+      if (!landingPageId && !productId) return null;
+
+      let query = supabase.from("landing_page_products").select("*");
+
+      if (productId) {
+        query = query.eq("id", productId);
+      } else if (landingPageId) {
+        query = query.eq("landing_page_id", landingPageId);
+      }
+
+      const { data } = await query.single();
       return data;
     },
-    enabled: !!landingPageId,
+    enabled: !!(landingPageId || productId),
   });
 
   const handleBuy = () => {

@@ -4,36 +4,41 @@ import { useQuery } from "@tanstack/react-query";
 
 interface ProductGalleryProps {
   landingPageId?: string;
+  productId?: string;
 }
 
-const fetchProductImages = async (landingPageId?: string) => {
-  if (!landingPageId) return [];
+const fetchProductImages = async (landingPageId?: string, productId?: string) => {
+  if (!landingPageId && !productId) return [];
 
-  // Get the product for this landing page
-  const { data: product } = await supabase
-    .from("landing_page_products")
-    .select("*")
-    .eq("landing_page_id", landingPageId)
-    .single();
-
-  if (!product) return [];
-
-  // Get the images for this product
-  const { data, error } = await supabase
+  let query = supabase
     .from("product_images")
     .select("*")
-    .eq("product_id", product.id)
     .order("display_order", { ascending: true });
-  
+
+  if (productId) {
+    query = query.eq("product_id", productId);
+  } else if (landingPageId) {
+    // Get the product for this landing page
+    const { data: product } = await supabase
+      .from("landing_page_products")
+      .select("*")
+      .eq("landing_page_id", landingPageId)
+      .single();
+
+    if (!product) return [];
+    query = query.eq("product_id", product.id);
+  }
+
+  const { data, error } = await query;
   if (error) throw error;
   return data;
 };
 
-const ProductGallery = ({ landingPageId }: ProductGalleryProps) => {
+const ProductGallery = ({ landingPageId, productId }: ProductGalleryProps) => {
   const { data: images = [], isLoading } = useQuery({
-    queryKey: ["product-images", landingPageId],
-    queryFn: () => fetchProductImages(landingPageId),
-    enabled: !!landingPageId,
+    queryKey: ["product-images", landingPageId, productId],
+    queryFn: () => fetchProductImages(landingPageId, productId),
+    enabled: !!(landingPageId || productId),
   });
 
   const [selectedImage, setSelectedImage] = useState(images[0]?.url || "");

@@ -4,21 +4,29 @@ import RichTextEditor from "./RichTextEditor";
 
 interface ProductDetailsProps {
   landingPageId?: string;
+  productId?: string;
 }
 
-const ProductDetails = ({ landingPageId }: ProductDetailsProps) => {
+const ProductDetails = ({ landingPageId, productId }: ProductDetailsProps) => {
   const { data: product, isLoading } = useQuery({
-    queryKey: ["product-details", landingPageId],
+    queryKey: ["product-details", landingPageId, productId],
     queryFn: async () => {
-      if (!landingPageId) return null;
-      const { data } = await supabase
+      if (!landingPageId && !productId) return null;
+
+      let query = supabase
         .from("landing_page_products")
-        .select("description_html")
-        .eq("landing_page_id", landingPageId)
-        .single();
+        .select("description_html");
+
+      if (productId) {
+        query = query.eq("id", productId);
+      } else if (landingPageId) {
+        query = query.eq("landing_page_id", landingPageId);
+      }
+
+      const { data } = await query.single();
       return data;
     },
-    enabled: !!landingPageId,
+    enabled: !!(landingPageId || productId),
   });
 
   if (isLoading) {
