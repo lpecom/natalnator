@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import BasicProductInfo from "@/components/admin/BasicProductInfo";
 import ProductImages from "@/components/admin/ProductImages";
 import ProductVariants from "@/components/admin/ProductVariants";
+import ReviewsManager from "@/components/admin/ReviewsManager";
 
 const AdminProduct = () => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ const AdminProduct = () => {
           .eq("landing_page_id", landingPage.id)
           .single();
 
-        setProduct(product);
+        setProduct({ ...product, landing_page_id: landingPage.id });
       } else {
         const { data: newLandingPage } = await supabase
           .from("landing_pages")
@@ -108,6 +109,7 @@ const AdminProduct = () => {
             <BasicProductInfo product={product} onUpdate={loadProduct} />
             <ProductImages product={product} onUpdate={loadProduct} />
             <ProductVariants product={product} onUpdate={loadProduct} />
+            <ReviewsManager landingPageId={product.landing_page_id} />
           </>
         )}
       </div>

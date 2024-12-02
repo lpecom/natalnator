@@ -538,36 +538,50 @@ export type Database = {
       }
       reviews: {
         Row: {
+          admin_editable: boolean | null
           author: string
           content: string
           created_at: string | null
           id: string
+          landing_page_id: string | null
           product_name: string | null
           rating: number
           updated_at: string | null
           verified: boolean | null
         }
         Insert: {
+          admin_editable?: boolean | null
           author: string
           content: string
           created_at?: string | null
           id?: string
+          landing_page_id?: string | null
           product_name?: string | null
           rating: number
           updated_at?: string | null
           verified?: boolean | null
         }
         Update: {
+          admin_editable?: boolean | null
           author?: string
           content?: string
           created_at?: string | null
           id?: string
+          landing_page_id?: string | null
           product_name?: string | null
           rating?: number
           updated_at?: string | null
           verified?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reviews_landing_page_id_fkey"
+            columns: ["landing_page_id"]
+            isOneToOne: false
+            referencedRelation: "landing_pages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shipping_options: {
         Row: {

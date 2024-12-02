@@ -22,7 +22,6 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
           price: Number(formData.get("price")),
           original_price: Number(formData.get("original_price")),
           stock: Number(formData.get("stock")),
-          description_html: formData.get("description_html")?.toString() || "",
         })
         .eq("id", product.id);
 
@@ -104,11 +103,6 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
             content={product.description_html || ""}
             onChange={handleDescriptionChange}
             showSource={true}
-          />
-          <input
-            type="hidden"
-            name="description_html"
-            value={product.description_html || ""}
           />
         </div>
         <button
