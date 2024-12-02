@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import ProductGallery from "@/components/ProductGallery";
@@ -7,11 +7,15 @@ import ProductInfo from "@/components/ProductInfo";
 
 const ViewLandingPage = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
 
   const { data: landingPage, isLoading } = useQuery({
     queryKey: ["landingPage", slug],
     queryFn: async () => {
-      console.log("Fetching landing page with slug:", slug);
+      if (!slug) {
+        throw new Error("No slug provided");
+      }
+
       const { data, error } = await supabase
         .from("landing_pages")
         .select(`
@@ -23,16 +27,29 @@ const ViewLandingPage = () => {
           )
         `)
         .eq("slug", slug)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error("Error fetching landing page:", error);
         throw error;
       }
-      console.log("Fetched landing page data:", data);
+
+      if (!data) {
+        throw new Error("Landing page not found");
+      }
+
       return data;
     },
+    enabled: !!slug, // Only run query if slug exists
   });
+
+  if (!slug) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Invalid URL</div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -43,7 +60,6 @@ const ViewLandingPage = () => {
   }
 
   if (!landingPage) {
-    console.log("No landing page found for slug:", slug);
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-lg">Landing page not found</div>
@@ -54,7 +70,6 @@ const ViewLandingPage = () => {
   const product = landingPage.landing_page_products[0];
 
   if (!product) {
-    console.log("No product found for landing page:", landingPage.id);
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-lg">No product found</div>
@@ -63,7 +78,6 @@ const ViewLandingPage = () => {
   }
 
   const productImages = product.product_images?.map((image: any) => image.url) || [];
-  console.log("Product images:", productImages);
 
   return (
     <div className="min-h-screen bg-white">
