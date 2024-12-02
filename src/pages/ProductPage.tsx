@@ -1,20 +1,24 @@
 import React from "react";
+import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import ProductGallery from "@/components/ProductGallery";
 import ProductInfo from "@/components/ProductInfo";
+import ProductDetails from "@/components/ProductDetails";
 import Reviews from "@/components/Reviews";
-import Footer from "@/components/Footer";
 
-const Index = () => {
+const ProductPage = () => {
+  const { id } = useParams();
+
   const { data: landingPage } = useQuery({
-    queryKey: ["homepage"],
+    queryKey: ["landing-page", id],
     queryFn: async () => {
       const { data } = await supabase
         .from("landing_pages")
         .select("*")
-        .eq("is_homepage", true)
+        .eq("id", id)
         .single();
       return data;
     },
@@ -34,6 +38,7 @@ const Index = () => {
             <ProductGallery />
             <ProductInfo />
           </div>
+          <ProductDetails />
           <Reviews />
         </div>
       </main>
@@ -42,4 +47,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default ProductPage;

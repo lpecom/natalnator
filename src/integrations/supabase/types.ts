@@ -243,6 +243,8 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          is_homepage: boolean
+          route_type: string
           settings: Json | null
           slug: string
           status: string
@@ -252,6 +254,8 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          is_homepage?: boolean
+          route_type?: string
           settings?: Json | null
           slug: string
           status?: string
@@ -261,6 +265,8 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          is_homepage?: boolean
+          route_type?: string
           settings?: Json | null
           slug?: string
           status?: string
