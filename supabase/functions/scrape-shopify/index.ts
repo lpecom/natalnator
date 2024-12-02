@@ -49,7 +49,7 @@ serve(async (req) => {
       throw new Error('Failed to parse HTML')
     }
 
-    // Extract product name with fallbacks
+    // Extract product name
     const name = doc.querySelector('h1')?.textContent?.trim() ||
                 doc.querySelector('[data-product-title]')?.textContent?.trim() ||
                 doc.querySelector('.product-title')?.textContent?.trim()
@@ -58,7 +58,7 @@ serve(async (req) => {
     }
     console.log('Found product name:', name)
 
-    // Get description with multiple selectors and preserve HTML
+    // Get description
     const descriptionSelectors = [
       '[data-product-description]',
       '.product-description',
@@ -77,47 +77,74 @@ serve(async (req) => {
     }
 
     if (!description) {
-      // Fallback to meta description
       description = doc.querySelector('[property="og:description"]')?.getAttribute('content') || '';
     }
 
     console.log('Description length:', description.length)
 
     // Enhanced image scraping
-    const imageSelectors = [
-      'img[src*="/products/"][src*=".jpg"]',
-      'img[src*="/products/"][src*=".jpeg"]',
-      'img[src*="/products/"][src*=".png"]',
-      'img[data-zoom-image]',
-      '.product__image img'
-    ];
+    const imageUrls = new Set();
+    
+    // Try to find JSON data first (more reliable)
+    const jsonScripts = doc.querySelectorAll('script[type="application/json"]');
+    jsonScripts.forEach(script => {
+      try {
+        const jsonData = JSON.parse(script.textContent || '');
+        const findImages = (obj: any) => {
+          if (typeof obj !== 'object' || !obj) return;
+          if (Array.isArray(obj)) {
+            obj.forEach(item => findImages(item));
+            return;
+          }
+          for (const [key, value] of Object.entries(obj)) {
+            if (typeof value === 'string' && 
+                (key.includes('image') || key.includes('img')) && 
+                value.match(/\.(jpg|jpeg|png|webp)/i) &&
+                !value.includes('_thumb') && 
+                !value.includes('_small')) {
+              imageUrls.add(value.startsWith('//') ? `https:${value}` : value);
+            } else if (typeof value === 'object') {
+              findImages(value);
+            }
+          }
+        };
+        findImages(jsonData);
+      } catch (e) {
+        console.log('Error parsing JSON script:', e);
+      }
+    });
 
-    const images = new Set();
-    for (const selector of imageSelectors) {
-      doc.querySelectorAll(selector).forEach(img => {
-        let imageUrl = img.getAttribute('src') || 
-                      img.getAttribute('data-src') || 
-                      img.getAttribute('data-zoom-image');
-        
-        if (imageUrl) {
-          // Convert protocol-relative URLs to HTTPS
-          if (imageUrl.startsWith('//')) {
-            imageUrl = `https:${imageUrl}`;
-          }
+    // Fallback to DOM scraping if no images found
+    if (imageUrls.size === 0) {
+      const imageSelectors = [
+        'img[src*="/products/"][src*=".jpg"]',
+        'img[src*="/products/"][src*=".jpeg"]',
+        'img[src*="/products/"][src*=".png"]',
+        'img[src*="/products/"][src*=".webp"]',
+        'img[data-zoom-image]',
+        '.product__image img'
+      ];
+
+      for (const selector of imageSelectors) {
+        doc.querySelectorAll(selector).forEach(img => {
+          let imageUrl = img.getAttribute('src') || 
+                        img.getAttribute('data-src') || 
+                        img.getAttribute('data-zoom-image');
           
-          // Remove query parameters and ensure high quality
-          imageUrl = imageUrl.split('?')[0];
-          
-          // Skip thumbnails
-          if (!imageUrl.includes('_thumb') && !imageUrl.includes('_small')) {
-            images.add(imageUrl);
+          if (imageUrl) {
+            if (imageUrl.startsWith('//')) {
+              imageUrl = `https:${imageUrl}`;
+            }
+            if (!imageUrl.includes('_thumb') && !imageUrl.includes('_small')) {
+              imageUrls.add(imageUrl);
+            }
           }
-        }
-      });
+        });
+      }
     }
 
-    const uniqueImages = Array.from(images);
-    console.log('Found images:', uniqueImages.length)
+    const uniqueImages = Array.from(imageUrls);
+    console.log('Found images:', uniqueImages.length, uniqueImages)
 
     // Get price information
     const priceElement = doc.querySelector('[data-product-price]') || 
@@ -161,7 +188,7 @@ serve(async (req) => {
       throw new Error(`Failed to create landing page: ${landingPageError.message}`)
     }
 
-    // Create product with full description
+    // Create product
     const { data: product, error: productError } = await supabase
       .from('landing_page_products')
       .insert({
@@ -197,7 +224,10 @@ serve(async (req) => {
 
       if (imagesError) {
         console.error('Images creation error:', imagesError)
+        throw new Error(`Failed to save product images: ${imagesError.message}`)
       }
+      
+      console.log(`Successfully saved ${productImages.length} images`)
     }
 
     return new Response(
