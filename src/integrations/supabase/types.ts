@@ -251,6 +251,7 @@ export type Database = {
           settings: Json | null
           slug: string
           status: string
+          template_name: string
           title: string
           updated_at: string | null
         }
@@ -262,6 +263,7 @@ export type Database = {
           settings?: Json | null
           slug: string
           status?: string
+          template_name?: string
           title: string
           updated_at?: string | null
         }
@@ -273,6 +275,7 @@ export type Database = {
           settings?: Json | null
           slug?: string
           status?: string
+          template_name?: string
           title?: string
           updated_at?: string | null
         }
