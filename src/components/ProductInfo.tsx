@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { toast } from "sonner";
 import { Truck, ShieldCheck } from "lucide-react";
 import { useParams } from "react-router-dom";
@@ -8,9 +8,13 @@ import { supabase } from "@/integrations/supabase/client";
 const ProductInfo = () => {
   const { slug } = useParams();
   
-  const { data: landingPage } = useQuery({
+  const { data: landingPage, isError } = useQuery({
     queryKey: ["landingPage", slug],
     queryFn: async () => {
+      if (!slug) {
+        throw new Error("No slug provided");
+      }
+
       const { data, error } = await supabase
         .from("landing_pages")
         .select(`
@@ -23,6 +27,7 @@ const ProductInfo = () => {
       if (error) throw error;
       return data;
     },
+    enabled: !!slug, // Only run query if slug exists
   });
 
   const product = landingPage?.landing_page_products?.[0];
@@ -42,7 +47,21 @@ const ProductInfo = () => {
     { name: "Boleto", image: "/payment-methods/008.png" },
   ];
 
-  if (!product) return null;
+  if (isError) {
+    return (
+      <div className="p-4 text-red-500">
+        Error loading product information. Please try again later.
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="p-4 text-gray-500">
+        No product information available.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
