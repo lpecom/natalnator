@@ -1,14 +1,38 @@
 import React from "react";
 import { toast } from "sonner";
 import { Truck, CreditCard, ShieldCheck } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const ProductInfo = () => {
+interface ProductInfoProps {
+  landingPageId?: string;
+}
+
+const ProductInfo = ({ landingPageId }: ProductInfoProps) => {
+  const { data: product } = useQuery({
+    queryKey: ["product-info", landingPageId],
+    queryFn: async () => {
+      if (!landingPageId) return null;
+      const { data } = await supabase
+        .from("landing_page_products")
+        .select("*")
+        .eq("landing_page_id", landingPageId)
+        .single();
+      return data;
+    },
+    enabled: !!landingPageId,
+  });
+
   const handleBuy = () => {
     toast.success("Produto adicionado ao carrinho!");
   };
 
-  const price = 99.90;
-  const originalPrice = 187.00;
+  if (!product) {
+    return <div className="text-center p-4">Loading product information...</div>;
+  }
+
+  const price = product.price;
+  const originalPrice = product.original_price || price * 1.5;
   const pixDiscount = 0.05; // 5% discount
   const pixPrice = price * (1 - pixDiscount);
   const pixSavings = price - pixPrice;
@@ -22,7 +46,7 @@ const ProductInfo = () => {
           </span>
         </div>
         <h1 className="text-xl md:text-2xl font-bold">
-          Árvore de Natal + BRINDE EXCLUSIVO DE BLACK FRIDAY
+          {product.name}
         </h1>
       </div>
 
