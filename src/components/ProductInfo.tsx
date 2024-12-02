@@ -1,38 +1,34 @@
 import React, { useEffect } from "react";
 import { toast } from "sonner";
 import { Truck, ShieldCheck } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const ProductInfo = () => {
-  useEffect(() => {
-    const loadDescription = async () => {
-      const { data: landingPage } = await supabase
+  const { slug } = useParams();
+  
+  const { data: landingPage } = useQuery({
+    queryKey: ["landingPage", slug],
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from("landing_pages")
-        .select("*")
-        .limit(1)
+        .select(`
+          *,
+          landing_page_products (*)
+        `)
+        .eq("slug", slug)
         .single();
 
-      if (landingPage) {
-        const { data: product } = await supabase
-          .from("landing_page_products")
-          .select("description_html")
-          .eq("landing_page_id", landingPage.id)
-          .single();
+      if (error) throw error;
+      return data;
+    },
+  });
 
-        if (product?.description_html) {
-          const descriptionElement = document.getElementById("description");
-          if (descriptionElement) {
-            descriptionElement.innerHTML = product.description_html;
-          }
-        }
-      }
-    };
-
-    loadDescription();
-  }, []);
+  const product = landingPage?.landing_page_products?.[0];
 
   const handleBuy = () => {
-    toast.success("Produto adicionado ao carrinho!");
+    toast.success("Product added to cart!");
   };
 
   const paymentMethods = [
@@ -46,89 +42,37 @@ const ProductInfo = () => {
     { name: "Boleto", image: "/payment-methods/008.png" },
   ];
 
+  if (!product) return null;
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs bg-black text-white px-2 py-1 rounded">
-            ÚLTIMAS UNIDADES DA BLACK FRIDAY 🔥
-          </span>
-          <span className="text-xs text-gray-500">156 VENDIDOS</span>
-        </div>
         <h1 className="text-2xl font-bold">
-          Árvore de Natal + BRINDE EXCLUSIVO DE BLACK FRIDAY
+          {product.name}
         </h1>
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span>Código: 789123</span>
-          <span>•</span>
-          <span>12 avaliações</span>
-        </div>
       </div>
 
       <div className="flex items-baseline gap-4">
-        <span className="text-4xl font-bold">R$ 99,90</span>
-        <span className="text-xl text-gray-500 line-through">R$ 187,00</span>
-        <span className="text-white bg-primary px-2 py-1 text-sm font-bold rounded">
-          -47% OFF
+        <span className="text-4xl font-bold">
+          R$ {product.price.toFixed(2)}
         </span>
+        {product.original_price && (
+          <>
+            <span className="text-xl text-gray-500 line-through">
+              R$ {product.original_price.toFixed(2)}
+            </span>
+            <span className="text-white bg-primary px-2 py-1 text-sm font-bold rounded">
+              {Math.round(((product.original_price - product.price) / product.original_price) * 100)}% OFF
+            </span>
+          </>
+        )}
       </div>
 
       <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
         <Truck className="w-12 h-12 text-black flex-shrink-0" />
         <div>
-          <h3 className="font-bold text-lg">Frete Grátis</h3>
-          <p className="text-gray-600">Prazo de envio de 2 a 5 dias úteis</p>
-          <p className="text-success font-medium">para Cotia, São Paulo e Região</p>
-        </div>
-      </div>
-
-      <div className="bg-gray-100 p-4 rounded-lg">
-        <h3 className="text-center font-bold">
-          QUEIMA TOTAL: ÚLTIMAS <span className="text-primary">8</span> UNIDADES
-        </h3>
-        <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
-          <div className="w-1/4 h-full bg-primary rounded-full"></div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Cor: <span className="text-primary">Vermelha Noel</span>
-          </label>
-          <div className="flex gap-2">
-            {["gold", "red", "silver"].map((color) => (
-              <button
-                key={color}
-                className={`w-16 h-16 border-2 rounded ${
-                  color === "red" ? "border-primary" : "border-gray-200"
-                }`}
-                style={{
-                  backgroundColor: color === "gold" ? "#FFD700" : color === "red" ? "#C41E3A" : "#C0C0C0"
-                }}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Altura: <span className="text-primary">1.80 m</span>
-          </label>
-          <div className="flex gap-2">
-            {["1.80 m", "2.10 m"].map((size) => (
-              <button
-                key={size}
-                className={`px-6 py-3 border-2 rounded font-medium ${
-                  size === "1.80 m"
-                    ? "border-primary text-primary"
-                    : "border-gray-200 text-gray-500"
-                }`}
-              >
-                {size}
-              </button>
-            ))}
-          </div>
+          <h3 className="font-bold text-lg">Free Shipping</h3>
+          <p className="text-gray-600">Delivery time: 2-5 business days</p>
         </div>
       </div>
 
@@ -136,13 +80,13 @@ const ProductInfo = () => {
         onClick={handleBuy}
         className="w-full bg-success hover:bg-success/90 text-white py-4 rounded-lg font-bold text-lg transition-colors uppercase"
       >
-        Comprar Agora
+        Buy Now
       </button>
 
       <div className="space-y-6 pt-4">
         <div className="border-t pt-6">
           <h3 className="text-center font-medium text-gray-600 mb-4">
-            FORMAS DE PAGAMENTO
+            PAYMENT METHODS
           </h3>
           <div className="grid grid-cols-4 gap-2">
             {paymentMethods.map((method) => (
@@ -162,19 +106,16 @@ const ProductInfo = () => {
 
         <div className="flex items-center gap-2 text-gray-500 justify-center text-sm">
           <ShieldCheck className="w-5 h-5" />
-          <span>Pagamento 100% seguro</span>
+          <span>100% Secure Payment</span>
         </div>
 
         <div className="space-y-3">
           <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
             <Truck className="w-5 h-5 flex-shrink-0 mt-1" />
             <div>
-              <h4 className="font-bold">Frete Grátis</h4>
+              <h4 className="font-bold">Free Shipping</h4>
               <p className="text-gray-600 text-sm">
-                Frete grátis em pedidos acima de R$99
-              </p>
-              <p className="text-gray-600 text-sm">
-                Entrega realizada pelos Correios Brasileiro©
+                Free shipping on orders over R$99
               </p>
             </div>
           </div>
@@ -182,12 +123,12 @@ const ProductInfo = () => {
           <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
             <ShieldCheck className="w-5 h-5 flex-shrink-0 mt-1" />
             <div>
-              <h4 className="font-bold">Devoluções Gratuitas</h4>
+              <h4 className="font-bold">Free Returns</h4>
               <p className="text-gray-600 text-sm">
-                Estorno de 100% do seu dinheiro
+                100% money back guarantee
               </p>
               <p className="text-gray-600 text-sm">
-                7 dias após o recebimento da mercadoria
+                Within 7 days of receiving your order
               </p>
             </div>
           </div>
