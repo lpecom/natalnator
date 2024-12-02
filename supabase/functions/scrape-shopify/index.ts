@@ -8,18 +8,37 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const { url } = await req.json()
-    console.log('Scraping Shopify product:', url)
+    console.log('Received URL:', url)
 
-    if (!url || !url.includes('shopify.com')) {
-      throw new Error('Invalid Shopify URL')
+    // Improved URL validation
+    if (!url) {
+      throw new Error('URL is required')
     }
 
+    // Parse the URL to validate it's a proper URL
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(url);
+    } catch (e) {
+      throw new Error('Invalid URL format')
+    }
+
+    // Check if it's a Shopify URL (either .myshopify.com or a custom domain with /products/)
+    const isShopifyUrl = parsedUrl.hostname.includes('myshopify.com') || 
+                        parsedUrl.pathname.includes('/products/');
+    
+    if (!isShopifyUrl) {
+      throw new Error('Not a valid Shopify product URL. URL must contain "myshopify.com" or "/products/"')
+    }
+
+    console.log('Fetching product page from:', url)
     const response = await fetch(url)
     if (!response.ok) {
       throw new Error(`Failed to fetch product page: ${response.statusText}`)
@@ -43,7 +62,8 @@ serve(async (req) => {
 
     const description = doc.querySelector('[data-product-description]')?.innerHTML || 
                        doc.querySelector('.product-description')?.innerHTML ||
-                       doc.querySelector('.product__description')?.innerHTML
+                       doc.querySelector('.product__description')?.innerHTML ||
+                       ''
     console.log('Found description:', description ? 'Yes' : 'No')
     
     // Get all product images
@@ -142,12 +162,15 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error:', error.message)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.stack // Include stack trace for debugging
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
+        status: 400 // Changed to 400 for client errors
       }
     )
   }

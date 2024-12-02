@@ -94,8 +94,14 @@ const AdminProduct = () => {
         body: { url }
       });
 
-      if (error) throw error;
-      if (!data) throw new Error('No data received from scraper');
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw new Error(error.message || 'Failed to import product');
+      }
+
+      if (!data) {
+        throw new Error('No data received from scraper');
+      }
       
       console.log('Scraper response:', data);
       
@@ -107,7 +113,8 @@ const AdminProduct = () => {
       navigate(`/admin?id=${data.productId}`);
     } catch (error: any) {
       console.error("Error importing product:", error);
-      toast.error(error.message || "Failed to import product");
+      // Show a more user-friendly error message
+      toast.error(error.message || "Failed to import product. Please make sure you're using a valid Shopify product URL.");
     }
   };
 
