@@ -8,12 +8,19 @@ const supabase = createClient(
 
 export async function saveProductToDatabase(productData: ProductData) {
   try {
+    // Validate required data
+    if (!productData.name) {
+      throw new Error('Product name is required');
+    }
+
     // Generate unique slug
     const timestamp = new Date().getTime();
     const baseSlug = productData.name.toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
     const uniqueSlug = `${baseSlug}-${timestamp}`;
+
+    console.log('Creating landing page with slug:', uniqueSlug);
 
     // Create landing page
     const { data: landingPage, error: landingPageError } = await supabase
@@ -28,27 +35,32 @@ export async function saveProductToDatabase(productData: ProductData) {
 
     if (landingPageError) throw landingPageError;
 
+    console.log('Landing page created:', landingPage);
+
     // Create product
     const { data: product, error: productError } = await supabase
       .from('landing_page_products')
       .insert({
         landing_page_id: landingPage.id,
         name: productData.name,
-        description_html: productData.description,
-        price: productData.price,
-        original_price: productData.originalPrice,
+        description_html: productData.description || '',
+        price: productData.price || 0,
+        original_price: productData.originalPrice || null,
         stock: 100
       })
       .select()
       .single();
 
     if (productError) {
+      console.error('Error creating product:', productError);
       await supabase.from('landing_pages').delete().eq('id', landingPage.id);
       throw productError;
     }
 
+    console.log('Product created:', product);
+
     // Add product images
-    if (productData.images.length > 0) {
+    if (productData.images && productData.images.length > 0) {
       const productImages = productData.images.map((imageUrl, index) => ({
         product_id: product.id,
         url: imageUrl,
@@ -61,7 +73,12 @@ export async function saveProductToDatabase(productData: ProductData) {
         .from('product_images')
         .insert(productImages);
 
-      if (imagesError) throw imagesError;
+      if (imagesError) {
+        console.error('Error creating product images:', imagesError);
+        throw imagesError;
+      }
+
+      console.log('Product images created:', productImages.length);
     }
 
     return { landingPageId: landingPage.id, slug: uniqueSlug };

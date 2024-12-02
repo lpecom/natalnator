@@ -4,6 +4,8 @@ const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
 export async function extractProductInfo(html: string): Promise<ScrapingResult> {
   try {
+    console.log('Sending request to OpenAI...');
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -11,7 +13,7 @@ export async function extractProductInfo(html: string): Promise<ScrapingResult> 
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -33,18 +35,33 @@ export async function extractProductInfo(html: string): Promise<ScrapingResult> 
       }),
     });
 
-    const data = await response.json();
-    const extractedInfo = JSON.parse(data.choices[0].message.content);
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('OpenAI API error:', errorData);
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+    }
 
-    console.log('OpenAI extracted info:', extractedInfo);
+    const data = await response.json();
+    console.log('OpenAI response:', data);
+
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response from OpenAI');
+    }
+
+    const extractedInfo = JSON.parse(data.choices[0].message.content);
+    console.log('Parsed extracted info:', extractedInfo);
+
+    if (!extractedInfo.name) {
+      throw new Error('Failed to extract product name');
+    }
 
     return {
       success: true,
       data: {
         name: extractedInfo.name,
-        description: extractedInfo.description,
-        price: extractedInfo.price,
-        originalPrice: extractedInfo.original_price,
+        description: extractedInfo.description || '',
+        price: Number(extractedInfo.price) || 0,
+        originalPrice: extractedInfo.original_price ? Number(extractedInfo.original_price) : undefined,
         images: extractedInfo.image_urls || []
       }
     };

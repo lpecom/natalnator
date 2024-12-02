@@ -49,6 +49,8 @@ serve(async (req) => {
       throw new Error(extractionResult.error || 'Failed to extract product information');
     }
 
+    console.log('Extracted product data:', extractionResult.data);
+
     // Save to database
     const { landingPageId, slug } = await saveProductToDatabase(extractionResult.data);
 
