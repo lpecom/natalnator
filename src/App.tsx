@@ -25,12 +25,26 @@ const App = () => (
           <Route path="/p/:id" element={<ProductPage />} />
           
           {/* Admin routes */}
-          <Route element={<AdminLayout />}>
-            <Route path="/admin" element={<AdminProduct />} />
-            <Route path="/admin/site" element={<SiteAdmin />} />
-            <Route path="/landing-pages" element={<LandingPages />} />
-            <Route path="/landing-pages/create" element={<CreateLandingPage />} />
-          </Route>
+          <Route path="/admin" element={
+            <AdminLayout>
+              <AdminProduct />
+            </AdminLayout>
+          } />
+          <Route path="/admin/site" element={
+            <AdminLayout>
+              <SiteAdmin />
+            </AdminLayout>
+          } />
+          <Route path="/landing-pages" element={
+            <AdminLayout>
+              <LandingPages />
+            </AdminLayout>
+          } />
+          <Route path="/landing-pages/create" element={
+            <AdminLayout>
+              <CreateLandingPage />
+            </AdminLayout>
+          } />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
