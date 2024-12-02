@@ -18,7 +18,10 @@ const EditLandingPage = () => {
         .from("landing_pages")
         .select(`
           *,
-          landing_page_products (*)
+          landing_page_products (
+            *,
+            product_images (*)
+          )
         `)
         .eq("id", id)
         .single();
