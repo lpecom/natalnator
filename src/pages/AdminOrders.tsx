@@ -32,6 +32,11 @@ const statusOptions = [
   { value: "cancelled", label: "Cancelled", color: "bg-red-100 text-red-800" },
 ];
 
+interface StatusHistoryItem {
+  status: string;
+  timestamp: string;
+}
+
 const AdminOrders = () => {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [timeFilter, setTimeFilter] = useState<string>("all");
@@ -80,7 +85,7 @@ const AdminOrders = () => {
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
-      const statusHistory = {
+      const newStatusHistory: StatusHistoryItem = {
         status: newStatus,
         timestamp: new Date().toISOString(),
       };
@@ -94,8 +99,9 @@ const AdminOrders = () => {
 
       if (fetchError) throw fetchError;
 
-      // Append new status to history
-      const updatedHistory = [...(currentOrder?.status_history || []), statusHistory];
+      // Ensure status_history is an array and append new status
+      const currentHistory = (currentOrder?.status_history as StatusHistoryItem[]) || [];
+      const updatedHistory = [...currentHistory, newStatusHistory];
 
       // Update order with new status and history
       const { error } = await supabase
