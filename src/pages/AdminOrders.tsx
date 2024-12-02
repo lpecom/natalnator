@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const statusOptions = [
   { value: "pending", label: "Pending" },
@@ -32,9 +33,10 @@ const statusOptions = [
 const AdminOrders = () => {
   const [selectedDriver, setSelectedDriver] = useState<string>("");
 
-  const { data: orders, isLoading: ordersLoading } = useQuery({
+  const { data: orders, isLoading: ordersLoading, error } = useQuery({
     queryKey: ["admin-orders"],
     queryFn: async () => {
+      console.log("Fetching orders...");
       const { data, error } = await supabase
         .from("orders")
         .select(`
@@ -44,7 +46,12 @@ const AdminOrders = () => {
         `)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching orders:", error);
+        throw error;
+      }
+      
+      console.log("Fetched orders:", data);
       return data;
     },
   });
@@ -98,8 +105,15 @@ const AdminOrders = () => {
     }
   };
 
-  if (ordersLoading) {
-    return <div className="p-8">Loading orders...</div>;
+  if (error) {
+    return (
+      <div className="p-8">
+        <AdminHeader title="Orders Management" />
+        <div className="bg-destructive/10 text-destructive p-4 rounded-lg">
+          Error loading orders: {error.message}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -119,58 +133,83 @@ const AdminOrders = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders?.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-mono text-sm">
-                  {order.id.split("-")[0]}
-                </TableCell>
-                <TableCell>
-                  {format(new Date(order.created_at), "MMM d, yyyy")}
-                </TableCell>
-                <TableCell>
-                  <div>
-                    <div className="font-medium">{order.customer_name}</div>
-                    <div className="text-sm text-gray-500">{order.phone_number}</div>
-                  </div>
-                </TableCell>
-                <TableCell>{order.product?.name}</TableCell>
-                <TableCell>
-                  <Select
-                    defaultValue={order.order_status}
-                    onValueChange={(value) => handleStatusChange(order.id, value)}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statusOptions.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
-                <TableCell>
-                  <Select
-                    value={order.driver_id || ""}
-                    onValueChange={(value) => handleDriverAssignment(order.id, value)}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Assign driver" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">No driver</SelectItem>
-                      {drivers?.map((driver) => (
-                        <SelectItem key={driver.id} value={driver.id}>
-                          {driver.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+            {ordersLoading ? (
+              // Loading skeleton rows
+              [...Array(3)].map((_, index) => (
+                <TableRow key={index}>
+                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                  <TableCell>
+                    <div>
+                      <Skeleton className="h-4 w-32 mb-1" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  </TableCell>
+                  <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-[180px]" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-[180px]" /></TableCell>
+                </TableRow>
+              ))
+            ) : orders && orders.length > 0 ? (
+              orders.map((order) => (
+                <TableRow key={order.id}>
+                  <TableCell className="font-mono text-sm">
+                    {order.id.split("-")[0]}
+                  </TableCell>
+                  <TableCell>
+                    {format(new Date(order.created_at), "MMM d, yyyy")}
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">{order.customer_name}</div>
+                      <div className="text-sm text-gray-500">{order.phone_number}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{order.product?.name}</TableCell>
+                  <TableCell>
+                    <Select
+                      defaultValue={order.order_status}
+                      onValueChange={(value) => handleStatusChange(order.id, value)}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {statusOptions.map((status) => (
+                          <SelectItem key={status.value} value={status.value}>
+                            {status.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell>
+                    <Select
+                      value={order.driver_id || ""}
+                      onValueChange={(value) => handleDriverAssignment(order.id, value)}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Assign driver" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">No driver</SelectItem>
+                        {drivers?.map((driver) => (
+                          <SelectItem key={driver.id} value={driver.id}>
+                            {driver.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  No orders found
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>
