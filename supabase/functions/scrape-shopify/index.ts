@@ -94,12 +94,17 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    // Generate a unique slug by adding a timestamp
+    const timestamp = new Date().getTime()
+    const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    const uniqueSlug = `${baseSlug}-${timestamp}`
+
     // First create the landing page
     const { data: landingPage, error: landingPageError } = await supabase
       .from('landing_pages')
       .insert({
         title: name,
-        slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        slug: uniqueSlug,
         status: 'draft'
       })
       .select()
