@@ -184,6 +184,8 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          description_html: string | null
+          external_metadata: Json | null
           id: string
           landing_page_id: string | null
           name: string
@@ -191,12 +193,15 @@ export type Database = {
           price: number
           settings: Json | null
           sku: string | null
+          source: string
           stock: number | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           description?: string | null
+          description_html?: string | null
+          external_metadata?: Json | null
           id?: string
           landing_page_id?: string | null
           name: string
@@ -204,12 +209,15 @@ export type Database = {
           price: number
           settings?: Json | null
           sku?: string | null
+          source?: string
           stock?: number | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           description?: string | null
+          description_html?: string | null
+          external_metadata?: Json | null
           id?: string
           landing_page_id?: string | null
           name?: string
@@ -217,6 +225,7 @@ export type Database = {
           price?: number
           settings?: Json | null
           sku?: string | null
+          source?: string
           stock?: number | null
           updated_at?: string | null
         }
