@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import LandingPages from "./pages/LandingPages";
 import CreateLandingPage from "./pages/CreateLandingPage";
+import AdminProduct from "./pages/AdminProduct";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/landing-pages" element={<LandingPages />} />
           <Route path="/landing-pages/create" element={<CreateLandingPage />} />
+          <Route path="/admin" element={<AdminProduct />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
