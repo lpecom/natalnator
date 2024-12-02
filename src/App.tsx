@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import LandingPages from "./pages/LandingPages";
 import CreateLandingPage from "./pages/CreateLandingPage";
 import AdminProduct from "./pages/AdminProduct";
+import SiteAdmin from "./pages/SiteAdmin";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/landing-pages" element={<LandingPages />} />
           <Route path="/landing-pages/create" element={<CreateLandingPage />} />
           <Route path="/admin" element={<AdminProduct />} />
+          <Route path="/admin/site" element={<SiteAdmin />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
