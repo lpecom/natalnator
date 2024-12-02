@@ -2,7 +2,6 @@ import React from "react";
 import Header from "@/components/Header";
 import ProductGallery from "@/components/ProductGallery";
 import ProductInfo from "@/components/ProductInfo";
-import ProductDetails from "@/components/ProductDetails";
 import Reviews from "@/components/Reviews";
 import Footer from "@/components/Footer";
 
@@ -21,7 +20,6 @@ const Index = () => {
             <ProductGallery />
             <ProductInfo />
           </div>
-          <ProductDetails />
           <Reviews />
         </div>
       </main>
