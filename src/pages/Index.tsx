@@ -2,6 +2,7 @@ import React from "react";
 import Header from "@/components/Header";
 import ProductGallery from "@/components/ProductGallery";
 import ProductInfo from "@/components/ProductInfo";
+import Reviews from "@/components/Reviews";
 
 const Index = () => {
   return (
@@ -16,6 +17,7 @@ const Index = () => {
           <ProductGallery />
           <ProductInfo />
         </div>
+        <Reviews />
       </main>
     </div>
   );
