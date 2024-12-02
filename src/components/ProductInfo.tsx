@@ -1,6 +1,8 @@
 import React from "react";
 import { toast } from "sonner";
-import { Truck, CreditCard, ShieldCheck, Barcode } from "lucide-react";
+import { Truck, CreditCard, ShieldCheck } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const ProductInfo = () => {
   const handleBuy = () => {
@@ -52,44 +54,62 @@ const ProductInfo = () => {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <Label className="text-base">
             Cor: <span className="text-primary">Vermelha Noel</span>
-          </label>
-          <div className="flex gap-2">
-            {["gold", "red", "silver"].map((color) => (
-              <button
-                key={color}
-                className={`w-16 h-16 border-2 rounded ${
-                  color === "red" ? "border-primary" : "border-gray-200"
-                }`}
-                style={{
-                  backgroundColor: color === "gold" ? "#FFD700" : color === "red" ? "#C41E3A" : "#C0C0C0"
-                }}
-              />
+          </Label>
+          <RadioGroup defaultValue="red" className="grid grid-cols-3 gap-2">
+            {[
+              { value: "gold", label: "Dourada", color: "#FFD700" },
+              { value: "red", label: "Vermelha", color: "#C41E3A" },
+              { value: "silver", label: "Prata", color: "#C0C0C0" },
+            ].map((option) => (
+              <div key={option.value}>
+                <RadioGroupItem
+                  value={option.value}
+                  id={`color-${option.value}`}
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor={`color-${option.value}`}
+                  className="flex flex-col items-center gap-2 p-4 border-2 rounded-lg cursor-pointer transition-all peer-checked:border-primary hover:border-primary/50"
+                >
+                  <div
+                    className="w-8 h-8 rounded-full border"
+                    style={{ backgroundColor: option.color }}
+                  />
+                  <span className="text-sm font-medium">{option.label}</span>
+                </Label>
+              </div>
             ))}
-          </div>
+          </RadioGroup>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
+        <div className="space-y-3">
+          <Label className="text-base">
             Altura: <span className="text-primary">1.80 m</span>
-          </label>
-          <div className="flex gap-2">
-            {["1.80 m", "2.10 m"].map((size) => (
-              <button
-                key={size}
-                className={`px-6 py-3 border-2 rounded font-medium ${
-                  size === "1.80 m"
-                    ? "border-primary text-primary"
-                    : "border-gray-200 text-gray-500"
-                }`}
-              >
-                {size}
-              </button>
+          </Label>
+          <RadioGroup defaultValue="1.80" className="grid grid-cols-2 gap-2">
+            {[
+              { value: "1.80", label: "1.80 m" },
+              { value: "2.10", label: "2.10 m" },
+            ].map((option) => (
+              <div key={option.value}>
+                <RadioGroupItem
+                  value={option.value}
+                  id={`size-${option.value}`}
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor={`size-${option.value}`}
+                  className="flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all peer-checked:border-primary peer-checked:text-primary hover:border-primary/50"
+                >
+                  {option.label}
+                </Label>
+              </div>
             ))}
-          </div>
+          </RadioGroup>
         </div>
       </div>
 
