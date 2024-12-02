@@ -10,15 +10,41 @@ export async function extractProductInfo(html: string): Promise<ScrapingResult> 
       throw new Error('OpenAI API key is not configured');
     }
 
-    // Extract description separately using regex to avoid token limits
-    const descriptionMatch = html.match(/<meta\s+property="og:description"\s+content="([^"]+)"/i) || 
-                           html.match(/<meta\s+name="description"\s+content="([^"]+)"/i);
-    const fullDescription = descriptionMatch ? descriptionMatch[1] : '';
+    // Extract full description from multiple potential sources
+    const descriptionMatches = [
+      // Meta description
+      html.match(/<meta\s+property="og:description"\s+content="([^"]+)"/i),
+      html.match(/<meta\s+name="description"\s+content="([^"]+)"/i),
+      // Product description div
+      html.match(/<div[^>]*class="[^"]*product-description[^"]*"[^>]*>([\s\S]*?)<\/div>/i),
+      // Shopify product description
+      html.match(/<div[^>]*class="[^"]*shopify-product-description[^"]*"[^>]*>([\s\S]*?)<\/div>/i),
+      // Generic product description
+      html.match(/<div[^>]*id="[^"]*product-description[^"]*"[^>]*>([\s\S]*?)<\/div>/i)
+    ];
+
+    let fullDescription = '';
+    for (const match of descriptionMatches) {
+      if (match && match[1]) {
+        const description = match[1]
+          .replace(/<[^>]+>/g, '') // Remove HTML tags
+          .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+          .replace(/\s+/g, ' ') // Normalize whitespace
+          .trim();
+        
+        if (description.length > fullDescription.length) {
+          fullDescription = description;
+        }
+      }
+    }
+
+    console.log('Extracted full description:', fullDescription);
 
     // Truncate HTML for the main extraction, but keep essential parts
     const truncatedHtml = html
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') // Remove style tags
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // Remove script tags
+      .replace(/<!--[\s\S]*?-->/gi, '') // Remove comments
       .substring(0, 8000); // Limit size but keep more content
 
     const prompt = `Extract product information from this Shopify product page HTML.
