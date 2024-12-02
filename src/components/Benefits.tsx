@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import RichTextEditor from "./RichTextEditor";
 import { Button } from "./ui/button";
 import { Save } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface BenefitsProps {
   landingPageId?: string;
@@ -42,6 +42,13 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
     },
     enabled: !!(landingPageId || productId),
   });
+
+  // Update content when product data changes
+  useEffect(() => {
+    if (product?.benefits_html) {
+      setContent(product.benefits_html);
+    }
+  }, [product?.benefits_html]);
 
   const handleBenefitsChange = (html: string) => {
     setContent(html);
@@ -100,7 +107,7 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
       </div>
       <div className="bg-white rounded-lg">
         <RichTextEditor
-          content={content || product?.benefits_html || "<p>Carregando benefícios do produto...</p>"}
+          content={content || "<p>Carregando benefícios do produto...</p>"}
           onChange={editable ? handleBenefitsChange : undefined}
           editable={editable}
           showSource={editable}
