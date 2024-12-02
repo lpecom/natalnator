@@ -23,7 +23,7 @@ import {
   Heading2,
   Heading3,
 } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import debounce from 'lodash/debounce';
 
 interface RichTextEditorProps {
@@ -41,7 +41,6 @@ const RichTextEditor = ({
   showSource = false,
   debounceMs = 500,
 }: RichTextEditorProps) => {
-  // Create a debounced version of onChange
   const debouncedOnChange = useCallback(
     debounce((html: string) => {
       onChange?.(html);
@@ -78,9 +77,17 @@ const RichTextEditor = ({
     content,
     editable,
     onUpdate: ({ editor }) => {
-      debouncedOnChange(editor.getHTML());
+      const html = editor.getHTML();
+      debouncedOnChange(html);
     },
   });
+
+  // Update editor content when content prop changes
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content);
+    }
+  }, [content, editor]);
 
   if (!editor) {
     return null;
