@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import RichTextEditor from "./RichTextEditor";
 
 const ProductDetails = () => {
-  const { data: product } = useQuery({
+  const { data: product, isLoading } = useQuery({
     queryKey: ["product-details"],
     queryFn: async () => {
       const { data } = await supabase
@@ -14,7 +14,12 @@ const ProductDetails = () => {
       return data;
     },
     refetchOnWindowFocus: true,
+    refetchInterval: 5000, // Refetch every 5 seconds to keep content in sync
   });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="py-8 border-t border-b">
