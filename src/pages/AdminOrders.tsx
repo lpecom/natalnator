@@ -17,32 +17,48 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Filter } from "lucide-react";
 
 const statusOptions = [
-  { value: "pending", label: "Pending" },
-  { value: "confirmed", label: "Confirmed" },
-  { value: "ready_for_pickup", label: "Ready for Pickup" },
-  { value: "in_transit", label: "In Transit" },
-  { value: "delivered", label: "Delivered" },
-  { value: "cancelled", label: "Cancelled" },
+  { value: "pending", label: "Pending", color: "bg-yellow-100 text-yellow-800" },
+  { value: "confirmed", label: "Confirmed", color: "bg-blue-100 text-blue-800" },
+  { value: "ready_for_pickup", label: "Ready for Pickup", color: "bg-purple-100 text-purple-800" },
+  { value: "in_transit", label: "In Transit", color: "bg-indigo-100 text-indigo-800" },
+  { value: "delivered", label: "Delivered", color: "bg-green-100 text-green-800" },
+  { value: "cancelled", label: "Cancelled", color: "bg-red-100 text-red-800" },
 ];
 
 const AdminOrders = () => {
-  const [selectedDriver, setSelectedDriver] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [timeFilter, setTimeFilter] = useState<string>("all");
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
-    queryKey: ["admin-orders"],
+    queryKey: ["admin-orders", statusFilter, timeFilter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("orders")
         .select(`
           *,
-          product:landing_page_products(name),
+          product:landing_page_products(name, price),
           driver:drivers(name)
         `)
         .order("created_at", { ascending: false });
+
+      if (statusFilter) {
+        query = query.eq("order_status", statusFilter);
+      }
+
+      if (timeFilter === "today") {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        query = query.gte("created_at", today.toISOString());
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data;
@@ -64,11 +80,17 @@ const AdminOrders = () => {
 
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
+      const statusHistory = {
+        status: newStatus,
+        timestamp: new Date().toISOString(),
+      };
+
       const { error } = await supabase
         .from("orders")
         .update({ 
           order_status: newStatus,
           updated_at: new Date().toISOString(),
+          status_history: supabase.sql`status_history || ${JSON.stringify([statusHistory])}::jsonb`,
         })
         .eq("id", orderId);
 
@@ -98,6 +120,10 @@ const AdminOrders = () => {
     }
   };
 
+  const getStatusBadgeColor = (status: string) => {
+    return statusOptions.find(opt => opt.value === status)?.color || "bg-gray-100 text-gray-800";
+  };
+
   if (ordersLoading) {
     return <div className="p-8">Loading orders...</div>;
   }
@@ -106,7 +132,45 @@ const AdminOrders = () => {
     <div className="p-8">
       <AdminHeader title="Orders Management" />
       
-      <div className="bg-white rounded-lg shadow">
+      <div className="mb-6 flex items-center gap-4">
+        <Select value={timeFilter} onValueChange={setTimeFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Time filter" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Time</SelectItem>
+            <SelectItem value="today">Today</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Status filter" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All Statuses</SelectItem>
+            {statusOptions.map((status) => (
+              <SelectItem key={status.value} value={status.value}>
+                {status.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {(statusFilter || timeFilter !== "all") && (
+          <Button
+            variant="outline"
+            onClick={() => {
+              setStatusFilter("");
+              setTimeFilter("all");
+            }}
+          >
+            Clear Filters
+          </Button>
+        )}
+      </div>
+
+      <div className="bg-white rounded-lg shadow overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -116,6 +180,7 @@ const AdminOrders = () => {
               <TableHead>Product</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Driver</TableHead>
+              <TableHead>Total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -125,7 +190,7 @@ const AdminOrders = () => {
                   {order.id.split("-")[0]}
                 </TableCell>
                 <TableCell>
-                  {format(new Date(order.created_at), "MMM d, yyyy")}
+                  {format(new Date(order.created_at), "MMM d, yyyy p")}
                 </TableCell>
                 <TableCell>
                   <div>
@@ -135,21 +200,26 @@ const AdminOrders = () => {
                 </TableCell>
                 <TableCell>{order.product?.name}</TableCell>
                 <TableCell>
-                  <Select
-                    defaultValue={order.order_status}
-                    onValueChange={(value) => handleStatusChange(order.id, value)}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statusOptions.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center gap-2">
+                    <Badge className={getStatusBadgeColor(order.order_status)}>
+                      {statusOptions.find(s => s.value === order.order_status)?.label || order.order_status}
+                    </Badge>
+                    <Select
+                      value={order.order_status}
+                      onValueChange={(value) => handleStatusChange(order.id, value)}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {statusOptions.map((status) => (
+                          <SelectItem key={status.value} value={status.value}>
+                            {status.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <Select
@@ -168,6 +238,9 @@ const AdminOrders = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                </TableCell>
+                <TableCell className="font-medium">
+                  ${order.product?.price || 0}
                 </TableCell>
               </TableRow>
             ))}
