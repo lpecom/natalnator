@@ -90,16 +90,14 @@ const AdminProduct = () => {
     if (!url) return;
 
     try {
-      const response = await fetch("/functions/v1/scrape-shopify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ url }),
+      const { data, error } = await supabase.functions.invoke('scrape-shopify', {
+        body: { url }
       });
 
-      const data = await response.json();
+      if (error) throw error;
+      if (!data) throw new Error('No data received from scraper');
+      
+      console.log('Scraper response:', data);
       
       if (data.error) {
         throw new Error(data.error);
@@ -107,9 +105,9 @@ const AdminProduct = () => {
 
       toast.success("Product imported successfully!");
       navigate(`/admin?id=${data.productId}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error importing product:", error);
-      toast.error("Failed to import product");
+      toast.error(error.message || "Failed to import product");
     }
   };
 

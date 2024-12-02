@@ -16,41 +16,57 @@ serve(async (req) => {
     const { url } = await req.json()
     console.log('Scraping Shopify product:', url)
 
+    if (!url || !url.includes('shopify.com')) {
+      throw new Error('Invalid Shopify URL')
+    }
+
     const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch product page: ${response.statusText}`)
+    }
+
     const html = await response.text()
+    console.log('Received HTML content length:', html.length)
     
     const parser = new DOMParser()
     const doc = parser.parseFromString(html, 'text/html')
+    if (!doc) {
+      throw new Error('Failed to parse HTML')
+    }
     
-    // Extract product information
+    // Extract product information with better error handling
     const name = doc.querySelector('h1')?.textContent?.trim()
+    if (!name) {
+      throw new Error('Could not find product name')
+    }
+    console.log('Found product name:', name)
+
     const description = doc.querySelector('[data-product-description]')?.innerHTML || 
                        doc.querySelector('.product-description')?.innerHTML ||
                        doc.querySelector('.product__description')?.innerHTML
+    console.log('Found description:', description ? 'Yes' : 'No')
     
     // Get all product images
-    const images = Array.from(doc.querySelectorAll('.product__media img')).map(img => ({
+    const images = Array.from(doc.querySelectorAll('img[src*="/products/"]')).map(img => ({
       url: img.getAttribute('src')?.replace(/\?.*$/, '') || '',
       alt: img.getAttribute('alt') || ''
-    }))
+    })).filter(img => img.url)
+    console.log('Found images count:', images.length)
 
-    // Get price information
-    const priceElement = doc.querySelector('.price-item--regular') || 
+    // Get price information with better selectors
+    const priceElement = doc.querySelector('[data-product-price]') || 
+                        doc.querySelector('.price__regular') ||
                         doc.querySelector('.product__price')
-    const price = priceElement?.textContent?.trim()
-                  ?.replace(/[^\d.,]/g, '') || '0'
+    const priceText = priceElement?.textContent?.trim() || ''
+    const price = parseFloat(priceText.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
+    console.log('Found price:', price)
 
-    const originalPriceElement = doc.querySelector('.price-item--sale') || 
+    const originalPriceElement = doc.querySelector('[data-compare-price]') ||
+                                doc.querySelector('.price__compare') ||
                                 doc.querySelector('.product__price--compare')
-    const originalPrice = originalPriceElement?.textContent?.trim()
-                         ?.replace(/[^\d.,]/g, '') || price
-
-    // Get variant information if available
-    const variants = Array.from(doc.querySelectorAll('.single-option-selector option, .product-form__input input[type="radio"]'))
-      .map(option => ({
-        name: option.getAttribute('name') || '',
-        value: option.getAttribute('value') || ''
-      }))
+    const originalPriceText = originalPriceElement?.textContent?.trim() || ''
+    const originalPrice = parseFloat(originalPriceText.replace(/[^\d.,]/g, '').replace(',', '.')) || price
+    console.log('Found original price:', originalPrice)
 
     // Create product in database
     const supabase = createClient(
@@ -63,13 +79,16 @@ serve(async (req) => {
       .from('landing_pages')
       .insert({
         title: name,
-        slug: name?.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         status: 'draft'
       })
       .select()
       .single()
 
-    if (landingPageError) throw landingPageError
+    if (landingPageError) {
+      console.error('Landing page creation error:', landingPageError)
+      throw new Error('Failed to create landing page')
+    }
 
     // Then create the product
     const { data: product, error: productError } = await supabase
@@ -78,13 +97,16 @@ serve(async (req) => {
         landing_page_id: landingPage.id,
         name: name,
         description_html: description,
-        price: parseFloat(price),
-        original_price: parseFloat(originalPrice),
+        price: price,
+        original_price: originalPrice,
       })
       .select()
       .single()
 
-    if (productError) throw productError
+    if (productError) {
+      console.error('Product creation error:', productError)
+      throw new Error('Failed to create product')
+    }
 
     // Add product images
     if (images.length > 0) {
@@ -100,22 +122,10 @@ serve(async (req) => {
         .from('product_images')
         .insert(productImages)
 
-      if (imagesError) throw imagesError
-    }
-
-    // Add product variants
-    if (variants.length > 0) {
-      const productVariants = variants.map(variant => ({
-        product_id: product.id,
-        name: variant.name,
-        value: variant.value
-      }))
-
-      const { error: variantsError } = await supabase
-        .from('product_variants')
-        .insert(productVariants)
-
-      if (variantsError) throw variantsError
+      if (imagesError) {
+        console.error('Images creation error:', imagesError)
+        throw new Error('Failed to create product images')
+      }
     }
 
     return new Response(
