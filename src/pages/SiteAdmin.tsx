@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
-import { Tables } from "@/integrations/supabase/types";
+import { Tables, Json } from "@/integrations/supabase/types";
 
 interface ThemeSettings {
   colors: {
