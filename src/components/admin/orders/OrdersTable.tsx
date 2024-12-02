@@ -22,7 +22,7 @@ interface Order {
 }
 
 interface OrdersTableProps {
-  orders: Order[] | null;
+  orders: Order[] | undefined;
   isLoading: boolean;
 }
 

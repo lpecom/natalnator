@@ -7,7 +7,6 @@ const AdminOrders = () => {
   const { data: orders, isLoading, error } = useQuery({
     queryKey: ["admin-orders"],
     queryFn: async () => {
-      console.log("Fetching orders...");
       const { data, error } = await supabase
         .from("orders")
         .select(`
@@ -16,12 +15,7 @@ const AdminOrders = () => {
         `)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching orders:", error);
-        throw error;
-      }
-      
-      console.log("Fetched orders:", data);
+      if (error) throw error;
       return data;
     },
   });
