@@ -23,8 +23,7 @@ const queryClient = new QueryClient();
 // Simple authentication check - in a real app, you'd want to use a proper auth system
 const isAuthenticated = () => {
   // For development, we'll always return true
-  // In production, this should check for actual authentication
-  return process.env.NODE_ENV === 'development';
+  return true;
 };
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
