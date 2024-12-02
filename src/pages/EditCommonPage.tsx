@@ -23,12 +23,11 @@ const EditCommonPage = () => {
     },
   });
 
-  const handleSave = async (content: string, html: string) => {
+  const handleSave = async (content: string) => {
     const { error } = await supabase
       .from("common_pages")
       .update({
-        content,
-        content_html: html,
+        content_html: content,
         updated_at: new Date().toISOString(),
       })
       .eq("id", id);
@@ -59,8 +58,8 @@ const EditCommonPage = () => {
 
       <div className="bg-white rounded-lg shadow p-6">
         <RichTextEditor
-          initialContent={page.content}
-          onSave={handleSave}
+          content={page.content_html || ''}
+          onChange={handleSave}
         />
       </div>
     </div>
