@@ -12,27 +12,56 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting scraping process...');
     const response = await fetch('https://luca-atacadista.catalog.kyte.site');
     const html = await response.text();
+    
+    console.log('HTML content length:', html.length);
+    console.log('First 500 characters of HTML:', html.substring(0, 500));
     
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     
     const products = [];
-    // Updated selector to match the product cards
-    const productElements = doc.querySelectorAll('.product-card');
     
-    console.log('Found products:', productElements.length);
+    // Try different selectors that might match product elements
+    const productElements = doc.querySelectorAll('.product');
+    console.log('Found products with .product:', productElements.length);
     
-    productElements.forEach((product) => {
-      // Updated selectors to match the actual HTML structure
-      const name = product.querySelector('.product-card__name')?.textContent?.trim() || '';
-      const price = product.querySelector('.product-card__price')?.textContent?.trim() || '';
-      const imageUrl = product.querySelector('.product-card__image img')?.getAttribute('src') || '';
+    const cardElements = doc.querySelectorAll('[data-product-id]');
+    console.log('Found products with [data-product-id]:', cardElements.length);
+    
+    // Use the selector that found products
+    const elements = cardElements.length > 0 ? cardElements : productElements;
+    
+    elements.forEach((product, index) => {
+      console.log(`Processing product ${index + 1}:`);
+      console.log('Product HTML:', product.outerHTML);
       
-      console.log('Processing product:', { name, price, imageUrl });
-      products.push({ name, price, imageUrl });
+      // Try different selectors for product information
+      const name = 
+        product.querySelector('[data-product-name]')?.textContent?.trim() ||
+        product.querySelector('.name')?.textContent?.trim() ||
+        '';
+      
+      const price = 
+        product.querySelector('[data-product-price]')?.textContent?.trim() ||
+        product.querySelector('.price')?.textContent?.trim() ||
+        '';
+      
+      const imageUrl = 
+        product.querySelector('img')?.getAttribute('src') ||
+        product.querySelector('[data-product-image]')?.getAttribute('src') ||
+        '';
+      
+      console.log('Extracted data:', { name, price, imageUrl });
+      
+      if (name || price || imageUrl) {
+        products.push({ name, price, imageUrl });
+      }
     });
+
+    console.log(`Successfully processed ${products.length} products`);
 
     // Create CSV content
     const csvHeader = 'Name,Price,Image URL\n';
@@ -40,8 +69,6 @@ serve(async (req) => {
       `"${p.name}","${p.price}","${p.imageUrl}"`
     ).join('\n');
     const csv = csvHeader + csvContent;
-
-    console.log('Generated CSV with', products.length, 'products');
 
     return new Response(csv, { 
       headers: { 
