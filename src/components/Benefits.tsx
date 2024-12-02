@@ -43,12 +43,12 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
     enabled: !!(landingPageId || productId),
   });
 
-  // Update content when product data changes
+  // Initialize content when product data is first loaded
   useEffect(() => {
     if (product?.benefits_html) {
       setContent(product.benefits_html);
     }
-  }, [product?.benefits_html]);
+  }, [product]);
 
   const handleBenefitsChange = (html: string) => {
     setContent(html);
@@ -90,6 +90,8 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
     );
   }
 
+  const displayContent = content || product?.benefits_html || "<p></p>";
+
   return (
     <div className="py-8 border-t border-b">
       <div className="flex justify-between items-center mb-6">
@@ -107,7 +109,7 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
       </div>
       <div className="bg-white rounded-lg">
         <RichTextEditor
-          content={content || "<p>Carregando benefícios do produto...</p>"}
+          content={displayContent}
           onChange={editable ? handleBenefitsChange : undefined}
           editable={editable}
           showSource={editable}
