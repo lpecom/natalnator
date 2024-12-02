@@ -6,6 +6,8 @@ import BasicProductInfo from "@/components/admin/BasicProductInfo";
 import ProductImages from "@/components/admin/ProductImages";
 import ProductVariants from "@/components/admin/ProductVariants";
 import ProductDescription from "@/components/admin/ProductDescription";
+import { Button } from "@/components/ui/button";
+import { Import } from "lucide-react";
 
 const AdminProduct = () => {
   const navigate = useNavigate();
@@ -83,6 +85,34 @@ const AdminProduct = () => {
     }
   };
 
+  const handleImportFromShopify = async () => {
+    const url = prompt("Enter Shopify product URL:");
+    if (!url) return;
+
+    try {
+      const response = await fetch("/functions/v1/scrape-shopify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      toast.success("Product imported successfully!");
+      navigate(`/admin?id=${data.productId}`);
+    } catch (error) {
+      console.error("Error importing product:", error);
+      toast.error("Failed to import product");
+    }
+  };
+
   useEffect(() => {
     loadProduct();
   }, []);
@@ -95,12 +125,22 @@ const AdminProduct = () => {
     <div className="container mx-auto p-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold">Product Administration</h1>
-        <button
-          onClick={() => navigate("/")}
-          className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
-        >
-          View Page
-        </button>
+        <div className="flex gap-4">
+          <Button
+            onClick={handleImportFromShopify}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Import className="w-4 h-4" />
+            Import from Shopify
+          </Button>
+          <Button
+            onClick={() => navigate("/")}
+            variant="default"
+          >
+            View Page
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6">
