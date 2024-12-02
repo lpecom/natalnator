@@ -373,6 +373,62 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          address: string
+          city: string
+          created_at: string
+          customer_name: string
+          email: string | null
+          id: string
+          order_status: string
+          phone_number: string
+          postal_code: string
+          product_id: string | null
+          state: string
+          updated_at: string
+          variant_selections: Json | null
+        }
+        Insert: {
+          address: string
+          city: string
+          created_at?: string
+          customer_name: string
+          email?: string | null
+          id?: string
+          order_status?: string
+          phone_number: string
+          postal_code: string
+          product_id?: string | null
+          state: string
+          updated_at?: string
+          variant_selections?: Json | null
+        }
+        Update: {
+          address?: string
+          city?: string
+          created_at?: string
+          customer_name?: string
+          email?: string | null
+          id?: string
+          order_status?: string
+          phone_number?: string
+          postal_code?: string
+          product_id?: string | null
+          state?: string
+          updated_at?: string
+          variant_selections?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "landing_page_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_methods: {
         Row: {
           created_at: string | null

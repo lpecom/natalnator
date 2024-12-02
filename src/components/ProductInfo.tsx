@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Truck, CreditCard, ShieldCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { CheckoutForm } from "./CheckoutForm";
 
 interface ProductInfoProps {
   landingPageId?: string;
@@ -12,6 +13,7 @@ interface ProductInfoProps {
 const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
   const [selectedColor, setSelectedColor] = React.useState<string>("");
   const [selectedHeight, setSelectedHeight] = React.useState<string>("");
+  const [showCheckoutForm, setShowCheckoutForm] = React.useState(false);
 
   const { data: product } = useQuery({
     queryKey: ["product-info", landingPageId, productId],
@@ -40,26 +42,44 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
   const colorVariants = product?.product_variants?.filter(v => v.name === "Cor") || [];
   const heightVariants = product?.product_variants?.filter(v => v.name === "Altura") || [];
 
-  // Find the matching variant combination for checkout
-  const selectedVariant = product?.product_variants?.find(
-    v => v.value === selectedColor || v.value === selectedHeight
-  );
-
   const handleBuy = () => {
     if (!selectedColor || !selectedHeight) {
       toast.error("Por favor selecione a cor e altura antes de continuar");
       return;
     }
     
-    if (selectedVariant?.checkout_url) {
-      window.location.href = selectedVariant.checkout_url;
-    } else {
-      toast.success("Produto adicionado ao carrinho!");
-    }
+    setShowCheckoutForm(true);
+  };
+
+  const handleCheckoutSuccess = () => {
+    setShowCheckoutForm(false);
+    setSelectedColor("");
+    setSelectedHeight("");
   };
 
   if (!product) {
     return <div className="text-center p-4">Loading product information...</div>;
+  }
+
+  if (showCheckoutForm) {
+    return (
+      <div className="space-y-6">
+        <button 
+          onClick={() => setShowCheckoutForm(false)}
+          className="text-sm text-gray-500 hover:text-gray-700"
+        >
+          ← Voltar para o produto
+        </button>
+        <CheckoutForm 
+          productId={product.id}
+          variantSelections={{
+            cor: selectedColor,
+            altura: selectedHeight
+          }}
+          onSuccess={handleCheckoutSuccess}
+        />
+      </div>
+    );
   }
 
   const price = product.price;
@@ -86,22 +106,6 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
         <span className="text-lg md:text-xl text-gray-500 line-through">R$ {originalPrice.toFixed(2)}</span>
         <span className="text-white bg-primary px-2 py-1 text-sm font-bold rounded">
           -47%
-        </span>
-      </div>
-
-      <div className="inline-flex items-center gap-2 text-sm">
-        <div className="flex items-center gap-1 text-success">
-          <span className="flex items-center gap-1">
-            <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4" stroke="currentColor">
-              <path d="M20.3873 7.1575L11.9999 12L3.61255 7.1575" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 12V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M11.9999 3L20.3873 7.1575L11.9999 12L3.61255 7.1575L11.9999 3Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            5% OFF no pix
-          </span>
-        </div>
-        <span className="px-2 py-0.5 bg-[#F2FCE2] text-success rounded-full text-xs font-medium">
-          + Envio Prioritário
         </span>
       </div>
 
@@ -168,27 +172,17 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
           <h3 className="text-center font-medium text-gray-600 mb-3 text-sm">
             FORMAS DE PAGAMENTO
           </h3>
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              "Visa",
-              "Mastercard",
-              "Pix",
-              "Boleto",
-            ].map((method) => (
-              <div
-                key={method}
-                className="h-10 bg-gray-50 rounded-lg border flex items-center justify-center text-xs text-gray-600"
-              >
-                <CreditCard className="w-4 h-4 mr-1" />
-                {method}
-              </div>
-            ))}
+          <div className="grid grid-cols-1 gap-2">
+            <div className="h-10 bg-gray-50 rounded-lg border flex items-center justify-center text-sm text-gray-600">
+              <CreditCard className="w-4 h-4 mr-2" />
+              Pagamento na Entrega
+            </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2 text-gray-500 justify-center text-xs">
           <ShieldCheck className="w-4 h-4" />
-          <span>Pagamento 100% seguro</span>
+          <span>Compra 100% segura</span>
         </div>
       </div>
     </div>
