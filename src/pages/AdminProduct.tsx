@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import BasicProductInfo from "@/components/admin/BasicProductInfo";
@@ -11,31 +11,39 @@ import { Import } from "lucide-react";
 
 const AdminProduct = () => {
   const navigate = useNavigate();
+  const { id } = useParams(); // Get landing page ID from URL
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState<any>(null);
+  const [landingPage, setLandingPage] = useState<any>(null);
 
   const loadProduct = async () => {
+    if (!id) return;
+    
     setLoading(true);
     try {
-      const { data: landingPage } = await supabase
+      // First get the landing page
+      const { data: landingPageData, error: landingPageError } = await supabase
         .from("landing_pages")
         .select("*")
-        .limit(1)
+        .eq("id", id)
         .single();
 
-      if (landingPage) {
-        const { data: product } = await supabase
-          .from("landing_page_products")
-          .select(`
-            *,
-            product_images(*),
-            product_variants(*)
-          `)
-          .eq("landing_page_id", landingPage.id)
-          .single();
+      if (landingPageError) throw landingPageError;
+      setLandingPage(landingPageData);
 
-        setProduct(product);
-      }
+      // Then get the associated product with all its relations
+      const { data: productData, error: productError } = await supabase
+        .from("landing_page_products")
+        .select(`
+          *,
+          product_images(*),
+          product_variants(*)
+        `)
+        .eq("landing_page_id", id)
+        .single();
+
+      if (productError) throw productError;
+      setProduct(productData);
     } catch (error) {
       console.error("Error loading product:", error);
       toast.error("Error loading product");
@@ -45,12 +53,14 @@ const AdminProduct = () => {
   };
 
   const handleImportFromShopify = async () => {
+    if (!id) return;
+    
     const url = prompt("Enter Shopify product URL:");
     if (!url) return;
 
     try {
       const { data, error } = await supabase.functions.invoke('scrape-shopify', {
-        body: { url }
+        body: { url, landingPageId: id }
       });
 
       if (error) {
@@ -70,7 +80,6 @@ const AdminProduct = () => {
 
       toast.success("Product imported successfully!");
       await loadProduct(); // Reload the product after import
-      navigate(`/landing-pages/${data.slug}`);
     } catch (error: any) {
       console.error("Error importing product:", error);
       toast.error(error.message || "Failed to import product");
@@ -79,16 +88,23 @@ const AdminProduct = () => {
 
   useEffect(() => {
     loadProduct();
-  }, []);
+  }, [id]);
 
   if (loading) {
     return <div className="p-8">Loading...</div>;
   }
 
+  if (!landingPage) {
+    return <div className="p-8">Landing page not found</div>;
+  }
+
   return (
     <div className="container mx-auto p-8">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Product Administration</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Product Editor</h1>
+          <p className="text-gray-500">Landing Page: {landingPage.title}</p>
+        </div>
         <div className="flex gap-4">
           <Button
             onClick={handleImportFromShopify}
@@ -99,7 +115,7 @@ const AdminProduct = () => {
             Import from Shopify
           </Button>
           <Button
-            onClick={() => navigate("/")}
+            onClick={() => navigate(`/landing-pages/${id}`)}
             variant="default"
           >
             View Page

@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 const EditLandingPage = () => {
   const { id } = useParams();
@@ -59,7 +58,7 @@ const EditLandingPage = () => {
             <Button variant="outline" onClick={() => navigate("/landing-pages")}>
               Cancel
             </Button>
-            <Button onClick={() => navigate(`/admin?id=${landingPage.id}`)}>
+            <Button onClick={() => navigate(`/landing-pages/${landingPage.id}/admin`)}>
               Edit Product
             </Button>
           </div>
