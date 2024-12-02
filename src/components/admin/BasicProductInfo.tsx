@@ -2,6 +2,7 @@ import React from "react";
 import { Settings } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import RichTextEditor from "@/components/RichTextEditor";
 
 interface BasicProductInfoProps {
   product: any;
@@ -21,6 +22,7 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
           price: Number(formData.get("price")),
           original_price: Number(formData.get("original_price")),
           stock: Number(formData.get("stock")),
+          description_html: formData.get("description_html")?.toString() || "",
         })
         .eq("id", product.id);
 
@@ -30,6 +32,24 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
       onUpdate();
     } catch (error) {
       toast.error("Failed to update product information");
+    }
+  };
+
+  const handleDescriptionChange = async (html: string) => {
+    try {
+      const { error } = await supabase
+        .from("landing_page_products")
+        .update({
+          description_html: html,
+        })
+        .eq("id", product.id);
+
+      if (error) throw error;
+      
+      toast.success("Description updated successfully");
+      onUpdate();
+    } catch (error) {
+      toast.error("Failed to update description");
     }
   };
 
@@ -76,6 +96,19 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
             type="number"
             defaultValue={product.stock}
             className="w-full p-2 border rounded"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Description</label>
+          <RichTextEditor
+            content={product.description_html || ""}
+            onChange={handleDescriptionChange}
+            showSource={true}
+          />
+          <input
+            type="hidden"
+            name="description_html"
+            value={product.description_html || ""}
           />
         </div>
         <button
