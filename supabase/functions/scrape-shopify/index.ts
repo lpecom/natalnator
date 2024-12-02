@@ -88,7 +88,7 @@ serve(async (req) => {
     const originalPrice = parseFloat(originalPriceText.replace(/[^\d.,]/g, '').replace(',', '.')) || price
     console.log('Found original price:', originalPrice)
 
-    // Create product in database
+    // Create Supabase client
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -107,7 +107,11 @@ serve(async (req) => {
 
     if (landingPageError) {
       console.error('Landing page creation error:', landingPageError)
-      throw new Error('Failed to create landing page')
+      throw new Error(`Failed to create landing page: ${landingPageError.message}`)
+    }
+
+    if (!landingPage) {
+      throw new Error('Landing page was not created')
     }
 
     // Then create the product
@@ -119,16 +123,25 @@ serve(async (req) => {
         description_html: description,
         price: price,
         original_price: originalPrice,
+        stock: 100 // Default stock value
       })
       .select()
       .single()
 
     if (productError) {
       console.error('Product creation error:', productError)
-      throw new Error('Failed to create product')
+      // Clean up the landing page since product creation failed
+      await supabase.from('landing_pages').delete().eq('id', landingPage.id)
+      throw new Error(`Failed to create product: ${productError.message}`)
     }
 
-    // Add product images
+    if (!product) {
+      // Clean up the landing page since product wasn't created
+      await supabase.from('landing_pages').delete().eq('id', landingPage.id)
+      throw new Error('Product was not created')
+    }
+
+    // Add product images if any exist
     if (images.length > 0) {
       const productImages = images.map((image, index) => ({
         product_id: product.id,
@@ -144,7 +157,7 @@ serve(async (req) => {
 
       if (imagesError) {
         console.error('Images creation error:', imagesError)
-        throw new Error('Failed to create product images')
+        // Don't throw here, just log the error since images are optional
       }
     }
 
@@ -170,7 +183,7 @@ serve(async (req) => {
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 // Changed to 400 for client errors
+        status: 400
       }
     )
   }
