@@ -8,23 +8,33 @@ import LandingPages from "./pages/LandingPages";
 import CreateLandingPage from "./pages/CreateLandingPage";
 import AdminProduct from "./pages/AdminProduct";
 
-const queryClient = new QueryClient();
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/landing-pages" element={<LandingPages />} />
-          <Route path="/landing-pages/create" element={<CreateLandingPage />} />
-          <Route path="/admin" element={<AdminProduct />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/landing-pages" element={<LandingPages />} />
+            <Route path="/landing-pages/create" element={<CreateLandingPage />} />
+            <Route path="/admin" element={<AdminProduct />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
