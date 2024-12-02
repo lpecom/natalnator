@@ -1,16 +1,13 @@
 import React, { useState } from "react";
 
-const images = [
-  "/tree1.jpg",
-  "/tree2.jpg",
-  "/tree3.jpg",
-  "/tree4.jpg",
-  "/tree5.jpg",
-  "/tree6.jpg",
-];
+interface ProductGalleryProps {
+  images: string[];
+}
 
-const ProductGallery = () => {
+const ProductGallery: React.FC<ProductGalleryProps> = ({ images }) => {
   const [selectedImage, setSelectedImage] = useState(images[0]);
+
+  if (!images.length) return null;
 
   return (
     <div className="flex gap-4">
