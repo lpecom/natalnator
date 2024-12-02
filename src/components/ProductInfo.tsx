@@ -1,8 +1,36 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { toast } from "sonner";
-import { Truck, CreditCard, ShieldCheck, Barcode } from "lucide-react";
+import { Truck, CreditCard, ShieldCheck } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const ProductInfo = () => {
+  useEffect(() => {
+    const loadDescription = async () => {
+      const { data: landingPage } = await supabase
+        .from("landing_pages")
+        .select("*")
+        .limit(1)
+        .single();
+
+      if (landingPage) {
+        const { data: product } = await supabase
+          .from("landing_page_products")
+          .select("description_html")
+          .eq("landing_page_id", landingPage.id)
+          .single();
+
+        if (product?.description_html) {
+          const descriptionElement = document.getElementById("description");
+          if (descriptionElement) {
+            descriptionElement.innerHTML = product.description_html;
+          }
+        }
+      }
+    };
+
+    loadDescription();
+  }, []);
+
   const handleBuy = () => {
     toast.success("Produto adicionado ao carrinho!");
   };

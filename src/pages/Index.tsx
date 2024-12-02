@@ -17,6 +17,9 @@ const Index = () => {
           <ProductGallery />
           <ProductInfo />
         </div>
+        <div className="py-12">
+          <div className="prose max-w-none" id="description" />
+        </div>
         <Reviews />
       </main>
     </div>

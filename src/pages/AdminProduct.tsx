@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import BasicProductInfo from "@/components/admin/BasicProductInfo";
 import ProductImages from "@/components/admin/ProductImages";
 import ProductVariants from "@/components/admin/ProductVariants";
+import ProductDescription from "@/components/admin/ProductDescription";
 
 const AdminProduct = () => {
   const navigate = useNavigate();
@@ -106,6 +107,7 @@ const AdminProduct = () => {
         {product && (
           <>
             <BasicProductInfo product={product} onUpdate={loadProduct} />
+            <ProductDescription product={product} onUpdate={loadProduct} />
             <ProductImages product={product} onUpdate={loadProduct} />
             <ProductVariants product={product} onUpdate={loadProduct} />
           </>
