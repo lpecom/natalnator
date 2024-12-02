@@ -11,7 +11,7 @@ const ProductInfo = () => {
     <div className="space-y-6">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs bg-black text-white px-2 py-1">
+          <span className="text-xs bg-black text-white px-2 py-1 rounded">
             ÚLTIMAS UNIDADES DA BLACK FRIDAY 🔥
           </span>
           <span className="text-xs text-gray-500">156 VENDIDOS</span>
@@ -19,27 +19,30 @@ const ProductInfo = () => {
         <h1 className="text-2xl font-bold">
           Árvore de Natal + BRINDE EXCLUSIVO DE BLACK FRIDAY
         </h1>
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <span>Código: 789123</span>
+          <span>•</span>
+          <span>12 avaliações</span>
+        </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <span className="text-3xl font-bold">R$ 99,90</span>
-        <span className="text-gray-500 line-through">R$ 187,00</span>
-        <span className="text-white bg-primary px-2 py-1 text-sm rounded">
-          -47%
+      <div className="flex items-baseline gap-4">
+        <span className="text-4xl font-bold">R$ 99,90</span>
+        <span className="text-xl text-gray-500 line-through">R$ 187,00</span>
+        <span className="text-white bg-primary px-2 py-1 text-sm font-bold rounded">
+          -47% OFF
         </span>
       </div>
 
-      {/* Free Shipping Banner */}
       <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
         <Truck className="w-12 h-12 text-black flex-shrink-0" />
         <div>
           <h3 className="font-bold text-lg">Frete Grátis</h3>
-          <p className="text-gray-500">Prazo de envio de 2 a 5 dias</p>
-          <p className="text-green-500">para Cotia, São Paulo e Região</p>
+          <p className="text-gray-600">Prazo de envio de 2 a 5 dias úteis</p>
+          <p className="text-success font-medium">para Cotia, São Paulo e Região</p>
         </div>
       </div>
 
-      {/* Stock Alert */}
       <div className="bg-gray-100 p-4 rounded-lg">
         <h3 className="text-center font-bold">
           QUEIMA TOTAL: ÚLTIMAS <span className="text-primary">8</span> UNIDADES
@@ -49,19 +52,21 @@ const ProductInfo = () => {
         </div>
       </div>
 
-      {/* Product Options */}
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">
-            Cor: Vermelha Noel
+            Cor: <span className="text-primary">Vermelha Noel</span>
           </label>
           <div className="flex gap-2">
             {["gold", "red", "silver"].map((color) => (
               <button
                 key={color}
-                className={`w-16 h-16 border rounded ${
+                className={`w-16 h-16 border-2 rounded ${
                   color === "red" ? "border-primary" : "border-gray-200"
                 }`}
+                style={{
+                  backgroundColor: color === "gold" ? "#FFD700" : color === "red" ? "#C41E3A" : "#C0C0C0"
+                }}
               />
             ))}
           </div>
@@ -69,14 +74,16 @@ const ProductInfo = () => {
 
         <div>
           <label className="block text-sm font-medium mb-2">
-            Altura: ALTURA ESCOLHIDA
+            Altura: <span className="text-primary">1.80 m</span>
           </label>
           <div className="flex gap-2">
             {["1.80 m", "2.10 m"].map((size) => (
               <button
                 key={size}
-                className={`px-4 py-2 border rounded ${
-                  size === "1.80 m" ? "border-primary" : "border-gray-200"
+                className={`px-6 py-3 border-2 rounded font-medium ${
+                  size === "1.80 m"
+                    ? "border-primary text-primary"
+                    : "border-gray-200 text-gray-500"
                 }`}
               >
                 {size}
@@ -86,7 +93,6 @@ const ProductInfo = () => {
         </div>
       </div>
 
-      {/* Buy Button */}
       <button
         onClick={handleBuy}
         className="w-full bg-success hover:bg-success/90 text-white py-4 rounded-lg font-bold text-lg transition-colors uppercase"
@@ -94,13 +100,12 @@ const ProductInfo = () => {
         Comprar Agora
       </button>
 
-      {/* Payment Methods */}
       <div className="space-y-6 pt-4">
-        <div className="border-t pt-4">
+        <div className="border-t pt-6">
           <h3 className="text-center font-medium text-gray-600 mb-4">
             FORMAS DE PAGAMENTO
           </h3>
-          <div className="flex gap-2 flex-wrap justify-center">
+          <div className="grid grid-cols-4 gap-2">
             {[
               "Visa",
               "Mastercard",
@@ -113,32 +118,30 @@ const ProductInfo = () => {
             ].map((method) => (
               <div
                 key={method}
-                className="w-24 h-12 bg-gray-50 rounded-lg border flex items-center justify-center text-xs"
+                className="h-12 bg-gray-50 rounded-lg border flex items-center justify-center text-xs text-gray-600"
               >
-                <CreditCard className="w-5 h-5 mr-1" />
+                <CreditCard className="w-4 h-4 mr-1" />
                 {method}
               </div>
             ))}
           </div>
         </div>
 
-        {/* Security Info */}
-        <div className="flex items-center gap-2 text-gray-500 justify-center">
+        <div className="flex items-center gap-2 text-gray-500 justify-center text-sm">
           <ShieldCheck className="w-5 h-5" />
-          <span>Pagamentos e informações estão seguros</span>
+          <span>Pagamento 100% seguro</span>
         </div>
 
-        {/* Additional Info */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
             <Truck className="w-5 h-5 flex-shrink-0 mt-1" />
             <div>
               <h4 className="font-bold">Frete Grátis</h4>
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-600 text-sm">
                 Frete grátis em pedidos acima de R$99
               </p>
-              <p className="text-gray-500 text-sm">
-                Entrega realizado pelos Correios Brasileiro©.
+              <p className="text-gray-600 text-sm">
+                Entrega realizada pelos Correios Brasileiro©
               </p>
             </div>
           </div>
@@ -147,11 +150,11 @@ const ProductInfo = () => {
             <ShieldCheck className="w-5 h-5 flex-shrink-0 mt-1" />
             <div>
               <h4 className="font-bold">Devoluções Gratuitas</h4>
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-600 text-sm">
                 Estorno de 100% do seu dinheiro
               </p>
-              <p className="text-gray-500 text-sm">
-                7 dias após o recebimento da mercadoria.
+              <p className="text-gray-600 text-sm">
+                7 dias após o recebimento da mercadoria
               </p>
             </div>
           </div>
