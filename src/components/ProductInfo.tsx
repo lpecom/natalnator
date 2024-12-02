@@ -7,6 +7,12 @@ const ProductInfo = () => {
     toast.success("Produto adicionado ao carrinho!");
   };
 
+  const price = 99.90;
+  const originalPrice = 187.00;
+  const pixDiscount = 0.10; // 10% discount
+  const pixPrice = price * (1 - pixDiscount);
+  const pixSavings = price - pixPrice;
+
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="space-y-2">
@@ -21,11 +27,21 @@ const ProductInfo = () => {
       </div>
 
       <div className="flex items-center gap-2">
-        <span className="text-2xl md:text-4xl font-bold">R$ 99,90</span>
-        <span className="text-lg md:text-xl text-gray-500 line-through">R$ 187,00</span>
+        <span className="text-2xl md:text-4xl font-bold">R$ {price.toFixed(2)}</span>
+        <span className="text-lg md:text-xl text-gray-500 line-through">R$ {originalPrice.toFixed(2)}</span>
         <span className="text-white bg-primary px-2 py-1 text-sm font-bold rounded">
           -47%
         </span>
+      </div>
+
+      <div className="p-3 bg-[#F2FCE2] rounded-lg space-y-1">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">Pague com PIX e ganhe 10% OFF</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-bold text-success">R$ {pixPrice.toFixed(2)}</span>
+          <span className="text-sm text-success">Economize R$ {pixSavings.toFixed(2)}</span>
+        </div>
       </div>
 
       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg text-sm">
