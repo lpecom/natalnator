@@ -9,6 +9,7 @@ import CreateLandingPage from "./pages/CreateLandingPage";
 import EditLandingPage from "./pages/EditLandingPage";
 import AdminProduct from "./pages/AdminProduct";
 import CatalogScraper from "./pages/CatalogScraper";
+import ViewLandingPage from "./pages/ViewLandingPage";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/landing-pages" element={<LandingPages />} />
           <Route path="/landing-pages/create" element={<CreateLandingPage />} />
           <Route path="/landing-pages/:id/edit" element={<EditLandingPage />} />
+          <Route path="/landing-pages/:slug" element={<ViewLandingPage />} />
           <Route path="/admin" element={<AdminProduct />} />
           <Route path="/catalog-scraper" element={<CatalogScraper />} />
         </Routes>
