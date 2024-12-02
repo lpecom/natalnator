@@ -418,6 +418,7 @@ export type Database = {
       }
       product_variants: {
         Row: {
+          checkout_url: string | null
           created_at: string | null
           id: string
           name: string
@@ -428,6 +429,7 @@ export type Database = {
           value: string
         }
         Insert: {
+          checkout_url?: string | null
           created_at?: string | null
           id?: string
           name: string
@@ -438,6 +440,7 @@ export type Database = {
           value: string
         }
         Update: {
+          checkout_url?: string | null
           created_at?: string | null
           id?: string
           name?: string
