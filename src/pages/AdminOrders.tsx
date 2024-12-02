@@ -85,12 +85,25 @@ const AdminOrders = () => {
         timestamp: new Date().toISOString(),
       };
 
+      // Get current status history
+      const { data: currentOrder, error: fetchError } = await supabase
+        .from("orders")
+        .select("status_history")
+        .eq("id", orderId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Append new status to history
+      const updatedHistory = [...(currentOrder?.status_history || []), statusHistory];
+
+      // Update order with new status and history
       const { error } = await supabase
         .from("orders")
         .update({ 
           order_status: newStatus,
           updated_at: new Date().toISOString(),
-          status_history: supabase.sql`status_history || ${JSON.stringify([statusHistory])}::jsonb`,
+          status_history: updatedHistory
         })
         .eq("id", orderId);
 
