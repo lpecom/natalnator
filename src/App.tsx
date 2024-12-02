@@ -7,6 +7,7 @@ import AdminLayout from "./components/layouts/AdminLayout";
 import Index from "./pages/Index";
 import LandingPages from "./pages/LandingPages";
 import CreateLandingPage from "./pages/CreateLandingPage";
+import EditLandingPage from "./pages/EditLandingPage";
 import AdminProduct from "./pages/AdminProduct";
 import SiteAdmin from "./pages/SiteAdmin";
 import ProductPage from "./pages/ProductPage";
@@ -43,6 +44,11 @@ const App = () => (
           <Route path="/landing-pages/create" element={
             <AdminLayout>
               <CreateLandingPage />
+            </AdminLayout>
+          } />
+          <Route path="/landing-pages/:id/edit" element={
+            <AdminLayout>
+              <EditLandingPage />
             </AdminLayout>
           } />
         </Routes>
