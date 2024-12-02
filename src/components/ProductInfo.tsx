@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { toast } from "sonner";
-import { Truck, CreditCard, ShieldCheck } from "lucide-react";
+import { Truck, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const ProductInfo = () => {
@@ -34,6 +34,17 @@ const ProductInfo = () => {
   const handleBuy = () => {
     toast.success("Produto adicionado ao carrinho!");
   };
+
+  const paymentMethods = [
+    { name: "Visa", image: "/payment-methods/001.svg" },
+    { name: "Mastercard", image: "/payment-methods/002.png" },
+    { name: "Hipercard", image: "/payment-methods/003.png" },
+    { name: "Elo", image: "/payment-methods/004.png" },
+    { name: "Amex", image: "/payment-methods/005.png" },
+    { name: "Discover", image: "/payment-methods/006.png" },
+    { name: "Pix", image: "/payment-methods/007.png" },
+    { name: "Boleto", image: "/payment-methods/008.png" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -134,22 +145,16 @@ const ProductInfo = () => {
             FORMAS DE PAGAMENTO
           </h3>
           <div className="grid grid-cols-4 gap-2">
-            {[
-              "Visa",
-              "Mastercard",
-              "Hipercard",
-              "Elo",
-              "Amex",
-              "Discover",
-              "Pix",
-              "Boleto",
-            ].map((method) => (
+            {paymentMethods.map((method) => (
               <div
-                key={method}
-                className="h-12 bg-gray-50 rounded-lg border flex items-center justify-center text-xs text-gray-600"
+                key={method.name}
+                className="h-12 bg-gray-50 rounded-lg border flex items-center justify-center"
               >
-                <CreditCard className="w-4 h-4 mr-1" />
-                {method}
+                <img
+                  src={method.image}
+                  alt={method.name}
+                  className="h-6 object-contain"
+                />
               </div>
             ))}
           </div>
