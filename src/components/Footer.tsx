@@ -1,6 +1,23 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Footer = () => {
+  const { data: commonPages } = useQuery({
+    queryKey: ["common-pages-footer"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("common_pages")
+        .select("title, slug")
+        .eq("is_active", true)
+        .order("title");
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <footer className="bg-gray-100 mt-16">
       <div className="container mx-auto px-6 py-8">
@@ -20,11 +37,18 @@ const Footer = () => {
             </ul>
           </div>
           <div>
-            <h3 className="font-bold text-gray-900 mb-4">Redes Sociais</h3>
+            <h3 className="font-bold text-gray-900 mb-4">Links Úteis</h3>
             <ul className="space-y-2 text-gray-600">
-              <li>Instagram: @empresa</li>
-              <li>Facebook: /empresa</li>
-              <li>Twitter: @empresa</li>
+              {commonPages?.map((page) => (
+                <li key={page.slug}>
+                  <Link 
+                    to={`/pages/${page.slug}`}
+                    className="hover:text-gray-900 transition-colors"
+                  >
+                    {page.title}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
