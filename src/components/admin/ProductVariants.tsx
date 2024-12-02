@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Package2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 interface ProductVariantsProps {
   product: any;
@@ -13,6 +14,9 @@ interface ProductVariantsProps {
 }
 
 const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
+  const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedHeight, setSelectedHeight] = useState<string>("");
+
   const handleAddVariant = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -26,6 +30,7 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
           value: formData.get("value")?.toString() || "",
           price_adjustment: Number(formData.get("price_adjustment")) || 0,
           stock: Number(formData.get("stock")) || 0,
+          checkout_url: formData.get("checkout_url")?.toString() || "",
         });
 
       if (error) throw error;
@@ -54,14 +59,9 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
     }
   };
 
-  // Group variants by their name (e.g., "Color", "Size")
-  const groupedVariants = product?.product_variants?.reduce((acc: any, variant: any) => {
-    if (!acc[variant.name]) {
-      acc[variant.name] = [];
-    }
-    acc[variant.name].push(variant);
-    return acc;
-  }, {});
+  // Group variants by their type (Color or Height)
+  const colorVariants = product?.product_variants?.filter((v: any) => v.name === "Cor") || [];
+  const heightVariants = product?.product_variants?.filter((v: any) => v.name === "Altura") || [];
 
   return (
     <Card className="p-6">
@@ -70,49 +70,82 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
         <h2 className="text-xl font-semibold">Product Variants</h2>
       </div>
 
-      <div className="space-y-6">
-        {Object.entries(groupedVariants || {}).map(([name, variants]: [string, any]) => (
-          <div key={name} className="space-y-4">
-            <h3 className="text-lg font-medium">{name}</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {variants.map((variant: any) => (
-                <div 
-                  key={variant.id}
-                  className="relative group"
+      <div className="space-y-8">
+        {/* Color Selection */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Option 1: Color</h3>
+          <ToggleGroup 
+            type="single" 
+            value={selectedColor}
+            onValueChange={setSelectedColor}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+          >
+            {colorVariants.map((variant: any) => (
+              <div key={variant.id} className="relative group">
+                <ToggleGroupItem
+                  value={variant.value}
+                  className="w-full p-4 border-2 rounded-lg text-center transition-all data-[state=on]:border-primary data-[state=on]:text-primary"
                 >
-                  <button
-                    className={`w-full p-4 border-2 rounded-lg text-center transition-all ${
-                      variant.value === "Dourada Noel" || variant.value === "1.80 m"
-                        ? "border-primary text-primary"
-                        : "border-gray-200 text-gray-500 hover:border-gray-300"
-                    }`}
-                  >
-                    <span className="block font-medium">{variant.value}</span>
-                    {variant.price_adjustment > 0 && (
-                      <span className="text-sm text-gray-500">
-                        +R$ {variant.price_adjustment.toFixed(2)}
-                      </span>
-                    )}
-                  </button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute -top-2 -right-2 bg-white border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => handleDeleteVariant(variant.id)}
-                  >
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+                  <span className="block font-medium">{variant.value}</span>
+                  {variant.price_adjustment > 0 && (
+                    <span className="text-sm text-gray-500">
+                      +R$ {variant.price_adjustment.toFixed(2)}
+                    </span>
+                  )}
+                </ToggleGroupItem>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -top-2 -right-2 bg-white border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => handleDeleteVariant(variant.id)}
+                >
+                  <Trash2 className="w-4 h-4 text-destructive" />
+                </Button>
+              </div>
+            ))}
+          </ToggleGroup>
+        </div>
 
-        <form onSubmit={handleAddVariant} className="space-y-4 border-t pt-6 mt-6">
+        {/* Height Selection */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Option 2: Height</h3>
+          <ToggleGroup 
+            type="single"
+            value={selectedHeight}
+            onValueChange={setSelectedHeight}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+          >
+            {heightVariants.map((variant: any) => (
+              <div key={variant.id} className="relative group">
+                <ToggleGroupItem
+                  value={variant.value}
+                  className="w-full p-4 border-2 rounded-lg text-center transition-all data-[state=on]:border-primary data-[state=on]:text-primary"
+                >
+                  <span className="block font-medium">{variant.value}</span>
+                  {variant.price_adjustment > 0 && (
+                    <span className="text-sm text-gray-500">
+                      +R$ {variant.price_adjustment.toFixed(2)}
+                    </span>
+                  )}
+                </ToggleGroupItem>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -top-2 -right-2 bg-white border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => handleDeleteVariant(variant.id)}
+                >
+                  <Trash2 className="w-4 h-4 text-destructive" />
+                </Button>
+              </div>
+            ))}
+          </ToggleGroup>
+        </div>
+
+        <form onSubmit={handleAddVariant} className="space-y-4 border-t pt-6">
           <h3 className="font-medium">Add New Variant</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="name">Type</Label>
+              <Label htmlFor="name">Option Type</Label>
               <select
                 id="name"
                 name="name"
@@ -153,6 +186,17 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
                 type="number"
                 placeholder="0"
                 className="mt-1"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Label htmlFor="checkout_url">Checkout URL</Label>
+              <Input
+                id="checkout_url"
+                name="checkout_url"
+                type="url"
+                placeholder="https://..."
+                className="mt-1"
+                required
               />
             </div>
           </div>
