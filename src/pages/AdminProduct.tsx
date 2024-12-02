@@ -58,7 +58,6 @@ const AdminProduct = () => {
             .select()
             .single();
 
-          // Add variants
           await supabase.from("product_variants").insert([
             {
               product_id: newProduct.id,
@@ -92,7 +91,7 @@ const AdminProduct = () => {
   }
 
   return (
-    <div className="container mx-auto p-8">
+    <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-bold">Product Administration</h1>
         <button
