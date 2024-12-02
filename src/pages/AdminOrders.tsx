@@ -32,10 +32,10 @@ const statusOptions = [
   { value: "cancelled", label: "Cancelled", color: "bg-red-100 text-red-800" },
 ];
 
-interface StatusHistoryItem {
+type StatusHistoryItem = {
   status: string;
   timestamp: string;
-}
+};
 
 const AdminOrders = () => {
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -99,8 +99,8 @@ const AdminOrders = () => {
 
       if (fetchError) throw fetchError;
 
-      // Ensure status_history is an array and append new status
-      const currentHistory = (currentOrder?.status_history as StatusHistoryItem[]) || [];
+      // Parse existing status history and append new status
+      const currentHistory = (currentOrder?.status_history as StatusHistoryItem[] | null) ?? [];
       const updatedHistory = [...currentHistory, newStatusHistory];
 
       // Update order with new status and history
@@ -109,7 +109,7 @@ const AdminOrders = () => {
         .update({ 
           order_status: newStatus,
           updated_at: new Date().toISOString(),
-          status_history: updatedHistory
+          status_history: updatedHistory as unknown as Json[]
         })
         .eq("id", orderId);
 
