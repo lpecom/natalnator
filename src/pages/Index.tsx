@@ -7,6 +7,7 @@ import ProductInfo from "@/components/ProductInfo";
 import Reviews from "@/components/Reviews";
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
+import Benefits from "@/components/Benefits";
 
 const Index = () => {
   const { data: landingPage, isLoading } = useQuery({
@@ -60,7 +61,8 @@ const Index = () => {
             <ProductGallery landingPageId={landingPage?.id} />
             <ProductInfo landingPageId={landingPage?.id} />
           </div>
-          <Reviews landingPageId={landingPage?.id} />
+          <Benefits landingPageId={landingPage?.id} />
+          <Reviews />
         </div>
       </main>
       <Footer />

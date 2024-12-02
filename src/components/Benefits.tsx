@@ -9,6 +9,11 @@ interface BenefitsProps {
   editable?: boolean;
 }
 
+interface ProductData {
+  id: string;
+  benefits_html: string;
+}
+
 const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps) => {
   const { data: product, isLoading } = useQuery({
     queryKey: ["product-benefits", landingPageId, productId],
@@ -17,7 +22,7 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
 
       let query = supabase
         .from("landing_page_products")
-        .select("benefits_html");
+        .select("id, benefits_html");
 
       if (productId) {
         query = query.eq("id", productId);
@@ -26,7 +31,7 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
       }
 
       const { data } = await query.single();
-      return data;
+      return data as ProductData;
     },
     enabled: !!(landingPageId || productId),
   });
@@ -38,7 +43,7 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
       const { error } = await supabase
         .from("landing_page_products")
         .update({ benefits_html: html })
-        .eq("id", productId || product.id);
+        .eq("id", product.id);
 
       if (error) throw error;
       
