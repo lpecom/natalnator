@@ -213,6 +213,39 @@ export type Database = {
           },
         ]
       }
+      drivers: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          phone_number: string
+          region: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone_number: string
+          region?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone_number?: string
+          region?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       landing_page_products: {
         Row: {
           benefits_html: string | null
@@ -377,45 +410,63 @@ export type Database = {
         Row: {
           address: string
           city: string
+          confirmation_date: string | null
           created_at: string
           customer_name: string
+          delivery_date: string | null
+          driver_id: string | null
+          driver_notes: string | null
           email: string | null
           id: string
           order_status: string
           phone_number: string
+          pickup_date: string | null
           postal_code: string
           product_id: string | null
           state: string
+          status_history: Json | null
           updated_at: string
           variant_selections: Json | null
         }
         Insert: {
           address: string
           city: string
+          confirmation_date?: string | null
           created_at?: string
           customer_name: string
+          delivery_date?: string | null
+          driver_id?: string | null
+          driver_notes?: string | null
           email?: string | null
           id?: string
           order_status?: string
           phone_number: string
+          pickup_date?: string | null
           postal_code: string
           product_id?: string | null
           state: string
+          status_history?: Json | null
           updated_at?: string
           variant_selections?: Json | null
         }
         Update: {
           address?: string
           city?: string
+          confirmation_date?: string | null
           created_at?: string
           customer_name?: string
+          delivery_date?: string | null
+          driver_id?: string | null
+          driver_notes?: string | null
           email?: string | null
           id?: string
           order_status?: string
           phone_number?: string
+          pickup_date?: string | null
           postal_code?: string
           product_id?: string | null
           state?: string
+          status_history?: Json | null
           updated_at?: string
           variant_selections?: Json | null
         }

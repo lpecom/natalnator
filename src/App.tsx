@@ -9,6 +9,7 @@ import LandingPages from "./pages/LandingPages";
 import CreateLandingPage from "./pages/CreateLandingPage";
 import EditLandingPage from "./pages/EditLandingPage";
 import AdminProduct from "./pages/AdminProduct";
+import AdminOrders from "./pages/AdminOrders";
 import SiteAdmin from "./pages/SiteAdmin";
 import ProductPage from "./pages/ProductPage";
 import CommonPages from "./pages/CommonPages";
@@ -52,6 +53,13 @@ const App = () => (
             <ProtectedRoute>
               <AdminLayout>
                 <AdminProduct />
+              </AdminLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/orders" element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <AdminOrders />
               </AdminLayout>
             </ProtectedRoute>
           } />
