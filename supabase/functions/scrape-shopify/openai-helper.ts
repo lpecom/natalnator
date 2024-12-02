@@ -10,6 +10,17 @@ export async function extractProductInfo(html: string): Promise<ScrapingResult> 
       throw new Error('OpenAI API key is not configured');
     }
 
+    // Extract description separately using regex to avoid token limits
+    const descriptionMatch = html.match(/<meta\s+property="og:description"\s+content="([^"]+)"/i) || 
+                           html.match(/<meta\s+name="description"\s+content="([^"]+)"/i);
+    const fullDescription = descriptionMatch ? descriptionMatch[1] : '';
+
+    // Truncate HTML for the main extraction, but keep essential parts
+    const truncatedHtml = html
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') // Remove style tags
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // Remove script tags
+      .substring(0, 8000); // Limit size but keep more content
+
     const prompt = `Extract product information from this Shopify product page HTML.
     Return ONLY a JSON object with these exact keys (no markdown, no code blocks, just the JSON):
     - name: The product name (string)
@@ -18,7 +29,7 @@ export async function extractProductInfo(html: string): Promise<ScrapingResult> 
     - original_price: The original price if available (number, optional)
     - image_urls: Array of product image URLs (array of strings)
     
-    HTML content: ${html.substring(0, 4000)}`; // Reduced length to avoid token limits
+    HTML content: ${truncatedHtml}`;
 
     console.log('Sending request to OpenAI API...');
 
@@ -42,7 +53,7 @@ export async function extractProductInfo(html: string): Promise<ScrapingResult> 
         ],
         temperature: 0.1,
         max_tokens: 1000,
-        response_format: { type: "json_object" } // Force JSON response format
+        response_format: { type: "json_object" }
       }),
     });
 
@@ -62,9 +73,7 @@ export async function extractProductInfo(html: string): Promise<ScrapingResult> 
     let extractedInfo;
     try {
       const content = data.choices[0].message.content;
-      // Remove any markdown code block syntax if present
-      const jsonString = content.replace(/```json\n|\n```|```/g, '').trim();
-      extractedInfo = JSON.parse(jsonString);
+      extractedInfo = JSON.parse(content);
     } catch (parseError) {
       console.error('Error parsing OpenAI response:', parseError);
       throw new Error('Failed to parse product information from OpenAI response');
@@ -72,10 +81,10 @@ export async function extractProductInfo(html: string): Promise<ScrapingResult> 
 
     console.log('Extracted product info:', extractedInfo);
 
-    // Validate and format the data
+    // Validate and format the data, using the full description we extracted earlier
     const productData: ProductData = {
       name: String(extractedInfo.name || ''),
-      description: String(extractedInfo.description || ''),
+      description: fullDescription || String(extractedInfo.description || ''),
       price: Number(extractedInfo.price) || 0,
       originalPrice: extractedInfo.original_price ? Number(extractedInfo.original_price) : undefined,
       images: Array.isArray(extractedInfo.image_urls) ? extractedInfo.image_urls : []
