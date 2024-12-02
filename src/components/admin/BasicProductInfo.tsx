@@ -6,14 +6,7 @@ import RichTextEditor from "@/components/RichTextEditor";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface BasicProductInfoProps {
-  product: {
-    id: string;
-    name: string;
-    price: number;
-    original_price: number;
-    stock: number;
-    description_html: string | null;
-  };
+  product: any;
   onUpdate: () => void;
 }
 

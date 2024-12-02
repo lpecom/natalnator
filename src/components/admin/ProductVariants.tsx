@@ -7,14 +7,7 @@ import VariantOption from "./variants/VariantOption";
 import AddVariantForm from "./variants/AddVariantForm";
 
 interface ProductVariantsProps {
-  product: {
-    id: string;
-    product_variants?: Array<{
-      id: string;
-      name: string;
-      value: string;
-    }>;
-  };
+  product: any;
   onUpdate: () => void;
 }
 
@@ -65,8 +58,8 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
   };
 
   // Group variants by their type (Color or Height)
-  const colorVariants = product?.product_variants?.filter((v) => v.name === "Cor") || [];
-  const heightVariants = product?.product_variants?.filter((v) => v.name === "Altura") || [];
+  const colorVariants = product?.product_variants?.filter((v: any) => v.name === "Cor") || [];
+  const heightVariants = product?.product_variants?.filter((v: any) => v.name === "Altura") || [];
 
   return (
     <Card className="p-6">

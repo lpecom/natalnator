@@ -1,74 +1,32 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import AdminHeader from "@/components/admin/AdminHeader";
+import React from "react";
 import BasicProductInfo from "@/components/admin/BasicProductInfo";
 import ProductImages from "@/components/admin/ProductImages";
 import ProductVariants from "@/components/admin/ProductVariants";
 import ReviewsManager from "@/components/admin/ReviewsManager";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import AdminHeader from "@/components/admin/AdminHeader";
+import Benefits from "@/components/Benefits";
+import { useAdminProduct } from "@/hooks/useAdminProduct";
 
 const AdminProduct = () => {
-  const { data: product, isLoading, error, refetch } = useQuery({
-    queryKey: ["admin-product"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("landing_page_products")
-        .select(`
-          *,
-          product_images(*),
-          product_variants(*)
-        `)
-        .single();
+  const { product, loading, loadProduct } = useAdminProduct();
 
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  if (isLoading) {
-    return (
-      <div className="p-8 space-y-6">
-        <AdminHeader title="Product Management" />
-        <div className="space-y-6">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-            <div className="space-y-3">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  if (loading) {
+    return <div className="p-8">Loading...</div>;
   }
-
-  if (error) {
-    return (
-      <div className="p-8">
-        <AdminHeader title="Product Management" />
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Error loading product: {(error as Error).message}
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
-  const handleUpdate = () => {
-    refetch();
-  };
 
   return (
-    <div className="p-8 space-y-6">
-      <AdminHeader title="Product Management" />
-      <div className="space-y-6">
-        <BasicProductInfo product={product} onUpdate={handleUpdate} />
-        <ProductImages product={product} onUpdate={handleUpdate} />
-        <ProductVariants product={product} onUpdate={handleUpdate} />
-        <ReviewsManager landingPageId={product?.landing_page_id} />
+    <div className="p-8">
+      <AdminHeader title="Product Administration" />
+      <div className="grid gap-6">
+        {product && (
+          <>
+            <BasicProductInfo product={product} onUpdate={loadProduct} />
+            <ProductImages product={product} onUpdate={loadProduct} />
+            <ProductVariants product={product} onUpdate={loadProduct} />
+            <Benefits productId={product.id} editable={true} />
+            <ReviewsManager landingPageId={product.landing_page_id} />
+          </>
+        )}
       </div>
     </div>
   );
