@@ -30,7 +30,6 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
 
       if (error) throw error;
       
-      // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["product-details"] });
       queryClient.invalidateQueries({ queryKey: ["admin-product"] });
       
@@ -52,7 +51,6 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
 
       if (error) throw error;
       
-      // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["product-details"] });
       queryClient.invalidateQueries({ queryKey: ["admin-product"] });
       

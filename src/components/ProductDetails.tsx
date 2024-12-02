@@ -14,11 +14,22 @@ const ProductDetails = () => {
       return data;
     },
     refetchOnWindowFocus: true,
-    refetchInterval: 5000, // Refetch every 5 seconds to keep content in sync
+    refetchInterval: 1000, // Refetch every second to keep content in sync
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="py-8 border-t border-b">
+        <div className="animate-pulse">
+          <div className="h-6 w-48 bg-gray-200 rounded mb-6"></div>
+          <div className="space-y-3">
+            <div className="h-4 bg-gray-200 rounded w-full"></div>
+            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+            <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
