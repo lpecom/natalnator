@@ -184,7 +184,6 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
-          description_html: string | null
           id: string
           landing_page_id: string | null
           name: string
@@ -198,7 +197,6 @@ export type Database = {
         Insert: {
           created_at?: string | null
           description?: string | null
-          description_html?: string | null
           id?: string
           landing_page_id?: string | null
           name: string
@@ -212,7 +210,6 @@ export type Database = {
         Update: {
           created_at?: string | null
           description?: string | null
-          description_html?: string | null
           id?: string
           landing_page_id?: string | null
           name?: string

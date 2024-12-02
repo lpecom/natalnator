@@ -18,10 +18,7 @@ import { toast } from "sonner";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  slug: z
-    .string()
-    .min(1, "Slug is required")
-    .regex(/^[a-z0-9-]+$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
+  slug: z.string().min(1, "Slug is required"),
 });
 
 const CreateLandingPage = () => {
@@ -35,53 +32,20 @@ const CreateLandingPage = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      // First check if slug exists
-      const { data: existingPages } = await supabase
-        .from("landing_pages")
-        .select("slug")
-        .eq("slug", values.slug);
+    const { error } = await supabase.from("landing_pages").insert([
+      {
+        title: values.title,
+        slug: values.slug,
+      },
+    ]);
 
-      if (existingPages && existingPages.length > 0) {
-        form.setError("slug", {
-          type: "manual",
-          message: "This slug is already taken. Please choose another one.",
-        });
-        return;
-      }
-
-      // If slug is available, create the landing page
-      const { error } = await supabase
-        .from("landing_pages")
-        .insert([
-          {
-            title: values.title,
-            slug: values.slug,
-          },
-        ]);
-
-      if (error) throw error;
-
-      toast.success("Landing page created successfully");
-      navigate("/landing-pages");
-    } catch (error: any) {
-      console.error("Error creating landing page:", error);
-      toast.error(error.message || "Error creating landing page");
+    if (error) {
+      toast.error("Error creating landing page");
+      return;
     }
-  };
 
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const title = e.target.value;
-    form.setValue("title", title);
-    
-    // Auto-generate slug from title if slug is empty
-    if (!form.getValues("slug")) {
-      const slug = title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      form.setValue("slug", slug);
-    }
+    toast.success("Landing page created successfully");
+    navigate("/landing-pages");
   };
 
   return (
@@ -97,11 +61,7 @@ const CreateLandingPage = () => {
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Enter page title" 
-                      {...field} 
-                      onChange={handleTitleChange}
-                    />
+                    <Input placeholder="Enter page title" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

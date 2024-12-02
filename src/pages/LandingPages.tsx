@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -62,13 +62,6 @@ const LandingPages = () => {
                   {page.status}
                 </span>
                 <div className="space-x-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => navigate(`/landing-pages/${page.slug}`)}
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
                   <Button
                     variant="outline"
                     size="icon"

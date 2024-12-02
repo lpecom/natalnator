@@ -1,49 +1,79 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import BasicProductInfo from "@/components/admin/BasicProductInfo";
 import ProductImages from "@/components/admin/ProductImages";
 import ProductVariants from "@/components/admin/ProductVariants";
-import ProductDescription from "@/components/admin/ProductDescription";
-import { Button } from "@/components/ui/button";
-import { Import } from "lucide-react";
 
 const AdminProduct = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Get landing page ID from URL
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState<any>(null);
-  const [landingPage, setLandingPage] = useState<any>(null);
 
   const loadProduct = async () => {
-    if (!id) return;
-    
     setLoading(true);
     try {
-      // First get the landing page
-      const { data: landingPageData, error: landingPageError } = await supabase
+      const { data: landingPage } = await supabase
         .from("landing_pages")
         .select("*")
-        .eq("id", id)
+        .limit(1)
         .single();
 
-      if (landingPageError) throw landingPageError;
-      setLandingPage(landingPageData);
+      if (landingPage) {
+        const { data: product } = await supabase
+          .from("landing_page_products")
+          .select(`
+            *,
+            product_images(*),
+            product_variants(*)
+          `)
+          .eq("landing_page_id", landingPage.id)
+          .single();
 
-      // Then get the associated product with all its relations
-      const { data: productData, error: productError } = await supabase
-        .from("landing_page_products")
-        .select(`
-          *,
-          product_images(*),
-          product_variants(*)
-        `)
-        .eq("landing_page_id", id)
-        .single();
+        setProduct(product);
+      } else {
+        const { data: newLandingPage } = await supabase
+          .from("landing_pages")
+          .insert({
+            title: "Árvore de Natal + BRINDE EXCLUSIVO DE BLACK FRIDAY",
+            slug: "arvore-natal-black-friday",
+            status: "published"
+          })
+          .select()
+          .single();
 
-      if (productError) throw productError;
-      setProduct(productData);
+        if (newLandingPage) {
+          const { data: newProduct } = await supabase
+            .from("landing_page_products")
+            .insert({
+              landing_page_id: newLandingPage.id,
+              name: "Árvore de Natal + BRINDE EXCLUSIVO DE BLACK FRIDAY",
+              description: "Árvore de Natal premium com brinde exclusivo",
+              price: 99.90,
+              original_price: 187.00,
+              stock: 8
+            })
+            .select()
+            .single();
+
+          // Add variants
+          await supabase.from("product_variants").insert([
+            {
+              product_id: newProduct.id,
+              name: "Cor",
+              value: "Vermelha Noel"
+            },
+            {
+              product_id: newProduct.id,
+              name: "Altura",
+              value: "1.80 m"
+            }
+          ]);
+
+          await loadProduct();
+        }
+      }
     } catch (error) {
       console.error("Error loading product:", error);
       toast.error("Error loading product");
@@ -52,82 +82,30 @@ const AdminProduct = () => {
     }
   };
 
-  const handleImportFromShopify = async () => {
-    if (!id) return;
-    
-    const url = prompt("Enter Shopify product URL:");
-    if (!url) return;
-
-    try {
-      const { data, error } = await supabase.functions.invoke('scrape-shopify', {
-        body: { url, landingPageId: id }
-      });
-
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw new Error(error.message || 'Failed to import product');
-      }
-
-      if (!data) {
-        throw new Error('No data received from scraper');
-      }
-      
-      console.log('Scraper response:', data);
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      toast.success("Product imported successfully!");
-      await loadProduct(); // Reload the product after import
-    } catch (error: any) {
-      console.error("Error importing product:", error);
-      toast.error(error.message || "Failed to import product");
-    }
-  };
-
   useEffect(() => {
     loadProduct();
-  }, [id]);
+  }, []);
 
   if (loading) {
     return <div className="p-8">Loading...</div>;
   }
 
-  if (!landingPage) {
-    return <div className="p-8">Landing page not found</div>;
-  }
-
   return (
     <div className="container mx-auto p-8">
       <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold">Product Editor</h1>
-          <p className="text-gray-500">Landing Page: {landingPage.title}</p>
-        </div>
-        <div className="flex gap-4">
-          <Button
-            onClick={handleImportFromShopify}
-            variant="outline"
-            className="flex items-center gap-2"
-          >
-            <Import className="w-4 h-4" />
-            Import from Shopify
-          </Button>
-          <Button
-            onClick={() => navigate(`/landing-pages/${id}`)}
-            variant="default"
-          >
-            View Page
-          </Button>
-        </div>
+        <h1 className="text-2xl font-bold">Product Administration</h1>
+        <button
+          onClick={() => navigate("/")}
+          className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+        >
+          View Page
+        </button>
       </div>
 
       <div className="grid gap-6">
         {product && (
           <>
             <BasicProductInfo product={product} onUpdate={loadProduct} />
-            <ProductDescription product={product} onUpdate={loadProduct} />
             <ProductImages product={product} onUpdate={loadProduct} />
             <ProductVariants product={product} onUpdate={loadProduct} />
           </>
