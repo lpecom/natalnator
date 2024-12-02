@@ -54,6 +54,15 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
     }
   };
 
+  // Group variants by their name (e.g., "Color", "Size")
+  const groupedVariants = product?.product_variants?.reduce((acc: any, variant: any) => {
+    if (!acc[variant.name]) {
+      acc[variant.name] = [];
+    }
+    acc[variant.name].push(variant);
+    return acc;
+  }, {});
+
   return (
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-6">
@@ -62,72 +71,57 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
       </div>
 
       <div className="space-y-6">
-        {product?.product_variants?.map((variant: any) => (
-          <div 
-            key={variant.id} 
-            className="flex gap-4 items-start p-4 border rounded-lg bg-muted/5"
-          >
-            <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <Label>Name</Label>
-                <Input
-                  type="text"
-                  value={variant.name}
-                  className="mt-1"
-                  readOnly
-                />
-              </div>
-              <div>
-                <Label>Value</Label>
-                <Input
-                  type="text"
-                  value={variant.value}
-                  className="mt-1"
-                  readOnly
-                />
-              </div>
-              <div>
-                <Label>Price Adjustment</Label>
-                <Input
-                  type="number"
-                  value={variant.price_adjustment || 0}
-                  className="mt-1"
-                  readOnly
-                />
-              </div>
-              <div>
-                <Label>Stock</Label>
-                <Input
-                  type="number"
-                  value={variant.stock || 0}
-                  className="mt-1"
-                  readOnly
-                />
-              </div>
+        {Object.entries(groupedVariants || {}).map(([name, variants]: [string, any]) => (
+          <div key={name} className="space-y-4">
+            <h3 className="text-lg font-medium">{name}</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {variants.map((variant: any) => (
+                <div 
+                  key={variant.id}
+                  className="relative group"
+                >
+                  <button
+                    className={`w-full p-4 border-2 rounded-lg text-center transition-all ${
+                      variant.value === "Dourada Noel" || variant.value === "1.80 m"
+                        ? "border-primary text-primary"
+                        : "border-gray-200 text-gray-500 hover:border-gray-300"
+                    }`}
+                  >
+                    <span className="block font-medium">{variant.value}</span>
+                    {variant.price_adjustment > 0 && (
+                      <span className="text-sm text-gray-500">
+                        +R$ {variant.price_adjustment.toFixed(2)}
+                      </span>
+                    )}
+                  </button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute -top-2 -right-2 bg-white border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => handleDeleteVariant(variant.id)}
+                  >
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-              onClick={() => handleDeleteVariant(variant.id)}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
           </div>
         ))}
 
-        <form onSubmit={handleAddVariant} className="space-y-4">
+        <form onSubmit={handleAddVariant} className="space-y-4 border-t pt-6 mt-6">
+          <h3 className="font-medium">Add New Variant</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <Label htmlFor="name">Name</Label>
-              <Input
+              <Label htmlFor="name">Type</Label>
+              <select
                 id="name"
                 name="name"
-                type="text"
-                placeholder="e.g., Color"
-                className="mt-1"
+                className="w-full mt-1 border rounded-md p-2"
                 required
-              />
+              >
+                <option value="Cor">Color</option>
+                <option value="Altura">Height</option>
+              </select>
             </div>
             <div>
               <Label htmlFor="value">Value</Label>
@@ -135,7 +129,7 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
                 id="value"
                 name="value"
                 type="text"
-                placeholder="e.g., Red"
+                placeholder="e.g., Dourada Noel"
                 className="mt-1"
                 required
               />
