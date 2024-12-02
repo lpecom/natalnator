@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import LandingPages from "./pages/LandingPages";
 import CreateLandingPage from "./pages/CreateLandingPage";
+import EditLandingPage from "./pages/EditLandingPage";
 import AdminProduct from "./pages/AdminProduct";
 import CatalogScraper from "./pages/CatalogScraper";
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/landing-pages" element={<LandingPages />} />
           <Route path="/landing-pages/create" element={<CreateLandingPage />} />
+          <Route path="/landing-pages/:id/edit" element={<EditLandingPage />} />
           <Route path="/admin" element={<AdminProduct />} />
           <Route path="/catalog-scraper" element={<CatalogScraper />} />
         </Routes>
