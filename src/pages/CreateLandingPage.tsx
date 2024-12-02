@@ -37,13 +37,12 @@ const CreateLandingPage = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       // First check if slug exists
-      const { data: existingPage } = await supabase
+      const { data: existingPages } = await supabase
         .from("landing_pages")
         .select("slug")
-        .eq("slug", values.slug)
-        .single();
+        .eq("slug", values.slug);
 
-      if (existingPage) {
+      if (existingPages && existingPages.length > 0) {
         form.setError("slug", {
           type: "manual",
           message: "This slug is already taken. Please choose another one.",
