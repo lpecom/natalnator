@@ -35,47 +35,6 @@ const AdminProduct = () => {
           .single();
 
         setProduct(product);
-      } else {
-        const { data: newLandingPage } = await supabase
-          .from("landing_pages")
-          .insert({
-            title: "Árvore de Natal + BRINDE EXCLUSIVO DE BLACK FRIDAY",
-            slug: "arvore-natal-black-friday",
-            status: "published"
-          })
-          .select()
-          .single();
-
-        if (newLandingPage) {
-          const { data: newProduct } = await supabase
-            .from("landing_page_products")
-            .insert({
-              landing_page_id: newLandingPage.id,
-              name: "Árvore de Natal + BRINDE EXCLUSIVO DE BLACK FRIDAY",
-              description: "Árvore de Natal premium com brinde exclusivo",
-              price: 99.90,
-              original_price: 187.00,
-              stock: 8
-            })
-            .select()
-            .single();
-
-          // Add variants
-          await supabase.from("product_variants").insert([
-            {
-              product_id: newProduct.id,
-              name: "Cor",
-              value: "Vermelha Noel"
-            },
-            {
-              product_id: newProduct.id,
-              name: "Altura",
-              value: "1.80 m"
-            }
-          ]);
-
-          await loadProduct();
-        }
       }
     } catch (error) {
       console.error("Error loading product:", error);
@@ -110,11 +69,11 @@ const AdminProduct = () => {
       }
 
       toast.success("Product imported successfully!");
-      navigate(`/admin?id=${data.productId}`);
+      await loadProduct(); // Reload the product after import
+      navigate(`/landing-pages/${data.slug}`);
     } catch (error: any) {
       console.error("Error importing product:", error);
-      // Show a more user-friendly error message
-      toast.error(error.message || "Failed to import product. Please make sure you're using a valid Shopify product URL.");
+      toast.error(error.message || "Failed to import product");
     }
   };
 

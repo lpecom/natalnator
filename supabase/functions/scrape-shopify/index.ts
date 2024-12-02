@@ -8,7 +8,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -17,12 +16,10 @@ serve(async (req) => {
     const { url } = await req.json()
     console.log('Received URL:', url)
 
-    // Improved URL validation
     if (!url) {
       throw new Error('URL is required')
     }
 
-    // Parse the URL to validate it's a proper URL
     let parsedUrl;
     try {
       parsedUrl = new URL(url);
@@ -30,12 +27,11 @@ serve(async (req) => {
       throw new Error('Invalid URL format')
     }
 
-    // Check if it's a Shopify URL (either .myshopify.com or a custom domain with /products/)
     const isShopifyUrl = parsedUrl.hostname.includes('myshopify.com') || 
                         parsedUrl.pathname.includes('/products/');
     
     if (!isShopifyUrl) {
-      throw new Error('Not a valid Shopify product URL. URL must contain "myshopify.com" or "/products/"')
+      throw new Error('Not a valid Shopify product URL')
     }
 
     console.log('Fetching product page from:', url)
@@ -53,31 +49,48 @@ serve(async (req) => {
       throw new Error('Failed to parse HTML')
     }
     
-    // Extract product information with better error handling
+    // Extract product information
     const name = doc.querySelector('h1')?.textContent?.trim()
     if (!name) {
       throw new Error('Could not find product name')
     }
     console.log('Found product name:', name)
 
+    // Get description - try multiple possible selectors
     const description = doc.querySelector('[data-product-description]')?.innerHTML || 
                        doc.querySelector('.product-description')?.innerHTML ||
                        doc.querySelector('.product__description')?.innerHTML ||
+                       doc.querySelector('[property="og:description"]')?.getAttribute('content') ||
                        ''
     console.log('Found description:', description ? 'Yes' : 'No')
     
-    // Get all product images
-    const images = Array.from(doc.querySelectorAll('img[src*="/products/"]')).map(img => ({
-      url: img.getAttribute('src')?.replace(/\?.*$/, '') || '',
-      alt: img.getAttribute('alt') || ''
-    })).filter(img => img.url)
+    // Get all product images with better selectors
+    const images = Array.from(doc.querySelectorAll('img[src*="/products/"]'))
+      .map(img => {
+        const src = img.getAttribute('src')
+        // Convert protocol-relative URLs to HTTPS
+        const imageUrl = src?.startsWith('//') ? `https:${src}` : src
+        // Remove any query parameters from image URLs
+        const cleanUrl = imageUrl?.split('?')[0]
+        return {
+          url: cleanUrl || '',
+          alt: img.getAttribute('alt') || ''
+        }
+      })
+      .filter(img => img.url && !img.url.includes('thumbnail'))
+      .filter((img, index, self) => 
+        // Remove duplicates
+        index === self.findIndex((t) => t.url === img.url)
+      )
     console.log('Found images count:', images.length)
 
-    // Get price information with better selectors
+    // Get price information
     const priceElement = doc.querySelector('[data-product-price]') || 
                         doc.querySelector('.price__regular') ||
-                        doc.querySelector('.product__price')
-    const priceText = priceElement?.textContent?.trim() || ''
+                        doc.querySelector('.product__price') ||
+                        doc.querySelector('[property="og:price:amount"]')
+    const priceText = priceElement?.textContent?.trim() || 
+                     priceElement?.getAttribute('content') || ''
     const price = parseFloat(priceText.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
     console.log('Found price:', price)
 
@@ -94,12 +107,14 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Generate a unique slug by adding a timestamp
+    // Generate unique slug
     const timestamp = new Date().getTime()
-    const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    const baseSlug = name.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
     const uniqueSlug = `${baseSlug}-${timestamp}`
 
-    // First create the landing page
+    // Create landing page
     const { data: landingPage, error: landingPageError } = await supabase
       .from('landing_pages')
       .insert({
@@ -119,7 +134,7 @@ serve(async (req) => {
       throw new Error('Landing page was not created')
     }
 
-    // Then create the product
+    // Create product with description
     const { data: product, error: productError } = await supabase
       .from('landing_page_products')
       .insert({
@@ -128,25 +143,23 @@ serve(async (req) => {
         description_html: description,
         price: price,
         original_price: originalPrice,
-        stock: 100 // Default stock value
+        stock: 100
       })
       .select()
       .single()
 
     if (productError) {
       console.error('Product creation error:', productError)
-      // Clean up the landing page since product creation failed
       await supabase.from('landing_pages').delete().eq('id', landingPage.id)
       throw new Error(`Failed to create product: ${productError.message}`)
     }
 
     if (!product) {
-      // Clean up the landing page since product wasn't created
       await supabase.from('landing_pages').delete().eq('id', landingPage.id)
       throw new Error('Product was not created')
     }
 
-    // Add product images if any exist
+    // Add product images
     if (images.length > 0) {
       const productImages = images.map((image, index) => ({
         product_id: product.id,
@@ -162,7 +175,6 @@ serve(async (req) => {
 
       if (imagesError) {
         console.error('Images creation error:', imagesError)
-        // Don't throw here, just log the error since images are optional
       }
     }
 
@@ -170,7 +182,8 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         landingPageId: landingPage.id,
-        productId: product.id
+        productId: product.id,
+        slug: uniqueSlug
       }),
       { 
         headers: { 
@@ -184,7 +197,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        details: error.stack // Include stack trace for debugging
+        details: error.stack
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
