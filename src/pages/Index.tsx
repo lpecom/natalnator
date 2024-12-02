@@ -62,7 +62,7 @@ const Index = () => {
             <ProductInfo landingPageId={landingPage?.id} />
           </div>
           <Benefits landingPageId={landingPage?.id} />
-          <Reviews />
+          <Reviews landingPageId={landingPage?.id} />
         </div>
       </main>
       <Footer />

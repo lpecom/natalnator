@@ -41,7 +41,7 @@ const ProductPage = () => {
           </div>
           <ProductDetails landingPageId={id} />
           <Benefits landingPageId={id} />
-          <Reviews />
+          <Reviews landingPageId={id} />
         </div>
       </main>
       <Footer />
