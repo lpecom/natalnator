@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Truck, CreditCard, ShieldCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckoutForm } from "./CheckoutForm";
 
 interface ProductInfoProps {
   landingPageId?: string;
@@ -11,9 +11,9 @@ interface ProductInfoProps {
 }
 
 const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
-  const [selectedColor, setSelectedColor] = React.useState<string>("");
-  const [selectedHeight, setSelectedHeight] = React.useState<string>("");
-  const [showCheckoutForm, setShowCheckoutForm] = React.useState(false);
+  const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedHeight, setSelectedHeight] = useState<string>("");
+  const navigate = useNavigate();
 
   const { data: product } = useQuery({
     queryKey: ["product-info", landingPageId, productId],
@@ -48,38 +48,17 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
       return;
     }
     
-    setShowCheckoutForm(true);
-  };
-
-  const handleCheckoutSuccess = () => {
-    setShowCheckoutForm(false);
-    setSelectedColor("");
-    setSelectedHeight("");
+    const searchParams = new URLSearchParams({
+      productId: product.id,
+      color: selectedColor,
+      height: selectedHeight,
+    });
+    
+    navigate(`/checkout?${searchParams.toString()}`);
   };
 
   if (!product) {
     return <div className="text-center p-4">Loading product information...</div>;
-  }
-
-  if (showCheckoutForm) {
-    return (
-      <div className="space-y-6">
-        <button 
-          onClick={() => setShowCheckoutForm(false)}
-          className="text-sm text-gray-500 hover:text-gray-700"
-        >
-          ← Voltar para o produto
-        </button>
-        <CheckoutForm 
-          productId={product.id}
-          variantSelections={{
-            cor: selectedColor,
-            altura: selectedHeight
-          }}
-          onSuccess={handleCheckoutSuccess}
-        />
-      </div>
-    );
   }
 
   const price = product.price;

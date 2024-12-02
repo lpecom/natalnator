@@ -15,6 +15,7 @@ import CommonPages from "./pages/CommonPages";
 import EditCommonPage from "./pages/EditCommonPage";
 import ViewCommonPage from "./pages/ViewCommonPage";
 import Catalog from "./pages/Catalog";
+import Checkout from "./pages/Checkout";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/p/:id" element={<ProductPage />} />
           <Route path="/pages/:slug" element={<ViewCommonPage />} />
+          <Route path="/checkout" element={<Checkout />} />
           
           {/* Protected Admin routes */}
           <Route path="/admin" element={
