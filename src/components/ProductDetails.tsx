@@ -13,6 +13,7 @@ const ProductDetails = () => {
         .single();
       return data;
     },
+    refetchOnWindowFocus: true,
   });
 
   return (

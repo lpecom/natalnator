@@ -3,6 +3,7 @@ import { Settings } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import RichTextEditor from "@/components/RichTextEditor";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface BasicProductInfoProps {
   product: any;
@@ -10,6 +11,8 @@ interface BasicProductInfoProps {
 }
 
 const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
+  const queryClient = useQueryClient();
+  
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -26,6 +29,10 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
         .eq("id", product.id);
 
       if (error) throw error;
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["product-details"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-product"] });
       
       toast.success("Product information updated successfully");
       onUpdate();
@@ -44,6 +51,10 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
         .eq("id", product.id);
 
       if (error) throw error;
+      
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ["product-details"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-product"] });
       
       toast.success("Description updated successfully");
       onUpdate();
@@ -103,6 +114,7 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
             content={product.description_html || ""}
             onChange={handleDescriptionChange}
             showSource={true}
+            debounceMs={1000}
           />
         </div>
         <button

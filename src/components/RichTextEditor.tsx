@@ -23,12 +23,15 @@ import {
   Heading2,
   Heading3,
 } from 'lucide-react';
+import { useCallback } from 'react';
+import debounce from 'lodash/debounce';
 
 interface RichTextEditorProps {
   content: string;
   onChange?: (content: string) => void;
   editable?: boolean;
   showSource?: boolean;
+  debounceMs?: number;
 }
 
 const RichTextEditor = ({ 
@@ -36,7 +39,16 @@ const RichTextEditor = ({
   onChange, 
   editable = true,
   showSource = false,
+  debounceMs = 500,
 }: RichTextEditorProps) => {
+  // Create a debounced version of onChange
+  const debouncedOnChange = useCallback(
+    debounce((html: string) => {
+      onChange?.(html);
+    }, debounceMs),
+    [onChange, debounceMs]
+  );
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -66,7 +78,7 @@ const RichTextEditor = ({
     content,
     editable,
     onUpdate: ({ editor }) => {
-      onChange?.(editor.getHTML());
+      debouncedOnChange(editor.getHTML());
     },
   });
 
