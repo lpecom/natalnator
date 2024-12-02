@@ -1,5 +1,6 @@
 import React from "react";
 import { toast } from "sonner";
+import { Truck, CreditCard, ShieldCheck, BarcodeLine } from "lucide-react";
 
 const ProductInfo = () => {
   const handleBuy = () => {
@@ -28,14 +29,27 @@ const ProductInfo = () => {
         </span>
       </div>
 
-      <div className="bg-green-50 p-4 rounded-lg flex items-center gap-2">
-        <span className="text-success">5% OFF</span>
-        <span>no pix</span>
-        <span className="bg-success text-white text-xs px-2 py-1 rounded">
-          +Envio Prioritário
-        </span>
+      {/* Free Shipping Banner */}
+      <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+        <Truck className="w-12 h-12 text-black flex-shrink-0" />
+        <div>
+          <h3 className="font-bold text-lg">Frete Grátis</h3>
+          <p className="text-gray-500">Prazo de envio de 2 a 5 dias</p>
+          <p className="text-green-500">para Cotia, São Paulo e Região</p>
+        </div>
       </div>
 
+      {/* Stock Alert */}
+      <div className="bg-gray-100 p-4 rounded-lg">
+        <h3 className="text-center font-bold">
+          QUEIMA TOTAL: ÚLTIMAS <span className="text-primary">8</span> UNIDADES
+        </h3>
+        <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="w-1/4 h-full bg-primary rounded-full"></div>
+        </div>
+      </div>
+
+      {/* Product Options */}
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">
@@ -72,39 +86,74 @@ const ProductInfo = () => {
         </div>
       </div>
 
+      {/* Buy Button */}
       <button
         onClick={handleBuy}
-        className="w-full bg-success hover:bg-success/90 text-white py-4 rounded-lg font-bold text-lg transition-colors"
+        className="w-full bg-success hover:bg-success/90 text-white py-4 rounded-lg font-bold text-lg transition-colors uppercase"
       >
-        COMPRAR AGORA
+        Comprar Agora
       </button>
 
-      <div className="space-y-4 pt-4">
+      {/* Payment Methods */}
+      <div className="space-y-6 pt-4">
         <div className="border-t pt-4">
-          <h3 className="font-medium mb-2">FORMAS DE PAGAMENTO</h3>
-          <div className="flex gap-2 flex-wrap">
-            {["visa", "mastercard", "pix", "boleto"].map((method) => (
+          <h3 className="text-center font-medium text-gray-600 mb-4">
+            FORMAS DE PAGAMENTO
+          </h3>
+          <div className="flex gap-2 flex-wrap justify-center">
+            {[
+              "Visa",
+              "Mastercard",
+              "Hipercard",
+              "Elo",
+              "Amex",
+              "Discover",
+              "Pix",
+              "Boleto",
+            ].map((method) => (
               <div
                 key={method}
-                className="w-12 h-8 bg-gray-100 rounded flex items-center justify-center"
+                className="w-24 h-12 bg-gray-50 rounded-lg border flex items-center justify-center text-xs"
               >
+                <CreditCard className="w-5 h-5 mr-1" />
                 {method}
               </div>
             ))}
           </div>
         </div>
 
-        <div className="border-t pt-4">
-          <h3 className="font-medium mb-2">Calcule o prazo de entrega</h3>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Digite seu CEP"
-              className="flex-1 border rounded px-4 py-2"
-            />
-            <button className="bg-black text-white px-6 py-2 rounded">
-              Calcular
-            </button>
+        {/* Security Info */}
+        <div className="flex items-center gap-2 text-gray-500 justify-center">
+          <ShieldCheck className="w-5 h-5" />
+          <span>Pagamentos e informações estão seguros</span>
+        </div>
+
+        {/* Additional Info */}
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+            <Truck className="w-5 h-5 flex-shrink-0 mt-1" />
+            <div>
+              <h4 className="font-bold">Frete Grátis</h4>
+              <p className="text-gray-500 text-sm">
+                Frete grátis em pedidos acima de R$99
+              </p>
+              <p className="text-gray-500 text-sm">
+                Entrega realizado pelos Correios Brasileiro©.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+            <ShieldCheck className="w-5 h-5 flex-shrink-0 mt-1" />
+            <div>
+              <h4 className="font-bold">Devoluções Gratuitas</h4>
+              <p className="text-gray-500 text-sm">
+                Estorno de 100% do seu dinheiro
+              </p>
+              <p className="text-gray-500 text-sm">
+                7 dias após o recebimento da mercadoria.
+              </p>
+            </div>
           </div>
         </div>
       </div>
