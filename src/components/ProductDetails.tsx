@@ -22,6 +22,7 @@ const ProductDetails = () => {
         <RichTextEditor
           content={product?.description_html || "<p>Carregando detalhes do produto...</p>"}
           editable={false}
+          showSource={false}
         />
       </div>
     </div>
