@@ -4,6 +4,21 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
+import { Tables } from "@/integrations/supabase/types";
+
+interface ThemeSettings {
+  colors: {
+    primary: string;
+    success: string;
+    background: string;
+    foreground: string;
+    muted: string;
+    border: string;
+  };
+  fonts: {
+    primary: string;
+  };
+}
 
 const SiteAdmin = () => {
   const { data: settings, isLoading } = useQuery({
@@ -16,16 +31,18 @@ const SiteAdmin = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Tables<'site_settings'> & { value: ThemeSettings };
     }
   });
 
   const handleColorChange = async (colorKey: string, value: string) => {
+    if (!settings) return;
+
     try {
-      const newValue = {
-        ...settings.value,
+      const newValue: ThemeSettings = {
+        ...settings.value as ThemeSettings,
         colors: {
-          ...settings.value.colors,
+          ...(settings.value as ThemeSettings).colors,
           [colorKey]: value
         }
       };
@@ -47,6 +64,10 @@ const SiteAdmin = () => {
     return <div className="p-8">Loading...</div>;
   }
 
+  if (!settings) {
+    return <div className="p-8">No settings found</div>;
+  }
+
   return (
     <div className="container mx-auto p-8">
       <div className="flex items-center gap-2 mb-8">
@@ -62,7 +83,7 @@ const SiteAdmin = () => {
           </div>
 
           <div className="grid gap-6">
-            {Object.entries(settings.value.colors).map(([key, value]) => (
+            {Object.entries((settings.value as ThemeSettings).colors).map(([key, value]) => (
               <div key={key} className="flex flex-col gap-2">
                 <label className="text-sm font-medium capitalize">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
@@ -70,13 +91,13 @@ const SiteAdmin = () => {
                 <div className="flex gap-4">
                   <Input
                     type="color"
-                    value={value as string}
+                    value={value}
                     onChange={(e) => handleColorChange(key, e.target.value)}
                     className="w-20 h-10 p-1"
                   />
                   <Input
                     type="text"
-                    value={value as string}
+                    value={value}
                     onChange={(e) => handleColorChange(key, e.target.value)}
                     className="font-mono"
                   />
