@@ -39,7 +39,7 @@ const SiteAdmin = () => {
     if (!settings) return;
 
     try {
-      const newValue: ThemeSettings = {
+      const newSettings = {
         ...settings.value as ThemeSettings,
         colors: {
           ...(settings.value as ThemeSettings).colors,
@@ -49,7 +49,10 @@ const SiteAdmin = () => {
 
       const { error } = await supabase
         .from('site_settings')
-        .update({ value: newValue })
+        .update({ 
+          value: newSettings as unknown as Json,
+          updated_at: new Date().toISOString()
+        })
         .eq('key', 'theme');
 
       if (error) throw error;
