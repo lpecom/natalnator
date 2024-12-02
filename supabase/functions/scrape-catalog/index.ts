@@ -19,13 +19,18 @@ serve(async (req) => {
     const doc = parser.parseFromString(html, 'text/html');
     
     const products = [];
-    const productElements = doc.querySelectorAll('.product-item');
+    // Updated selector to match the product cards
+    const productElements = doc.querySelectorAll('.product-card');
+    
+    console.log('Found products:', productElements.length);
     
     productElements.forEach((product) => {
-      const name = product.querySelector('.product-name')?.textContent?.trim() || '';
-      const price = product.querySelector('.product-price')?.textContent?.trim() || '';
-      const imageUrl = product.querySelector('img')?.getAttribute('src') || '';
+      // Updated selectors to match the actual HTML structure
+      const name = product.querySelector('.product-card__name')?.textContent?.trim() || '';
+      const price = product.querySelector('.product-card__price')?.textContent?.trim() || '';
+      const imageUrl = product.querySelector('.product-card__image img')?.getAttribute('src') || '';
       
+      console.log('Processing product:', { name, price, imageUrl });
       products.push({ name, price, imageUrl });
     });
 
@@ -35,6 +40,8 @@ serve(async (req) => {
       `"${p.name}","${p.price}","${p.imageUrl}"`
     ).join('\n');
     const csv = csvHeader + csvContent;
+
+    console.log('Generated CSV with', products.length, 'products');
 
     return new Response(csv, { 
       headers: { 
