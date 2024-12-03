@@ -7,6 +7,7 @@ import { LogoUpload } from "@/components/admin/LogoUpload";
 import { ColorSettings } from "@/components/admin/ColorSettings";
 import { ThemeSettings } from "@/types/site";
 import { Tables, Json } from "@/integrations/supabase/types";
+import { Button } from "@/components/ui/button";
 
 const SiteAdmin = () => {
   const queryClient = useQueryClient();
@@ -60,6 +61,20 @@ const SiteAdmin = () => {
     updateSettings.mutate(newSettings);
   };
 
+  const handleSetDefaultLogo = () => {
+    if (!settings) return;
+
+    const newSettings = {
+      ...settings.value as ThemeSettings,
+      logo: {
+        url: 'https://iili.io/21OHmua.png',
+        alt: 'Site Logo'
+      }
+    };
+
+    updateSettings.mutate(newSettings);
+  };
+
   if (isLoading) {
     return <div className="p-8">Loading...</div>;
   }
@@ -76,10 +91,29 @@ const SiteAdmin = () => {
       </div>
 
       <div className="grid gap-8">
-        <LogoUpload 
-          settings={settings.value as ThemeSettings} 
-          onUpdate={updateSettings.mutate}
-        />
+        <div className="p-6 border rounded-lg">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <Settings className="w-5 h-5" />
+              <h2 className="text-xl font-semibold">Site Logo</h2>
+            </div>
+            <Button onClick={handleSetDefaultLogo}>
+              Load Default Logo
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            {settings.value.logo?.url && (
+              <div className="w-48 h-24 relative border rounded-lg overflow-hidden">
+                <img 
+                  src={settings.value.logo.url} 
+                  alt="Site Logo"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            )}
+          </div>
+        </div>
         <ColorSettings
           settings={settings.value as ThemeSettings}
           onColorChange={handleColorChange}
