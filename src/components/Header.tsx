@@ -33,10 +33,18 @@ const Header = () => {
         .eq('key', 'theme')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching site settings:', error);
+        throw error;
+      }
+      
+      console.log('Fetched site settings:', data?.value);
       return data?.value as ThemeSettings;
     }
   });
+
+  const logoUrl = settings?.logo?.url;
+  console.log('Logo URL:', logoUrl);
 
   return (
     <header className="bg-white border-b sticky top-0 z-50">
@@ -45,11 +53,15 @@ const Header = () => {
           {/* Logo */}
           <div className="flex justify-start lg:w-0 lg:flex-1">
             <Link to="/" className="flex items-center">
-              {settings?.logo?.url ? (
+              {logoUrl ? (
                 <img
-                  src={settings.logo.url}
+                  src={logoUrl}
                   alt="Logo"
                   className="w-[125px] h-auto"
+                  onError={(e) => {
+                    console.error('Error loading logo:', e);
+                    e.currentTarget.src = "/placeholder.svg";
+                  }}
                 />
               ) : (
                 <span className="text-xl font-bold text-gray-900">Loja</span>

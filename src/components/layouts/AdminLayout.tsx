@@ -38,10 +38,18 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         .eq('key', 'theme')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching site settings:', error);
+        throw error;
+      }
+      
+      console.log('Admin: Fetched site settings:', data?.value);
       return data?.value as ThemeSettings;
     }
   });
+
+  const logoUrl = settings?.logo?.url;
+  console.log('Admin: Logo URL:', logoUrl);
 
   const navigation = [
     {
@@ -75,18 +83,18 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
                 <div className="flex flex-shrink-0 items-center px-4">
                   <Link to="/">
-                    {settings?.logo?.url ? (
+                    {logoUrl ? (
                       <img
-                        src={settings.logo.url}
+                        src={logoUrl}
                         alt="Logo"
                         className="w-[125px] h-auto"
+                        onError={(e) => {
+                          console.error('Error loading logo:', e);
+                          e.currentTarget.src = "/placeholder.svg";
+                        }}
                       />
                     ) : (
-                      <img
-                        src="/lovable-uploads/afad369a-bb88-4bbc-aba2-54ae54f3591e.png"
-                        alt="Logo"
-                        className="w-[125px] h-auto"
-                      />
+                      <span className="text-xl font-bold text-gray-900">Loja</span>
                     )}
                   </Link>
                 </div>
