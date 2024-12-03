@@ -1,29 +1,12 @@
 import React from "react";
-import { Settings, Palette, Image } from "lucide-react";
+import { Settings } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { LogoUpload } from "@/components/admin/LogoUpload";
+import { ColorSettings } from "@/components/admin/ColorSettings";
+import { ThemeSettings } from "@/types/site";
 import { Tables, Json } from "@/integrations/supabase/types";
-
-interface ThemeSettings {
-  colors: {
-    primary: string;
-    success: string;
-    background: string;
-    foreground: string;
-    muted: string;
-    border: string;
-  };
-  fonts: {
-    primary: string;
-  };
-  logo?: {
-    url: string;
-    alt: string;
-  };
-}
 
 const SiteAdmin = () => {
   const queryClient = useQueryClient();
@@ -77,47 +60,6 @@ const SiteAdmin = () => {
     updateSettings.mutate(newSettings);
   };
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `site-logo-${Date.now()}.${fileExt}`;
-
-      // First upload the file to storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('site-assets')
-        .upload(fileName, file);
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw uploadError;
-      }
-
-      // Get the public URL for the uploaded file
-      const { data: { publicUrl } } = supabase.storage
-        .from('site-assets')
-        .getPublicUrl(fileName);
-
-      if (!settings) return;
-
-      // Update the settings with the new logo URL
-      const newSettings = {
-        ...settings.value as ThemeSettings,
-        logo: {
-          url: publicUrl,
-          alt: 'Site Logo'
-        }
-      };
-
-      updateSettings.mutate(newSettings);
-    } catch (error) {
-      console.error('Logo upload error:', error);
-      toast.error("Failed to upload logo");
-    }
-  };
-
   if (isLoading) {
     return <div className="p-8">Loading...</div>;
   }
@@ -134,66 +76,14 @@ const SiteAdmin = () => {
       </div>
 
       <div className="grid gap-8">
-        <div className="p-6 border rounded-lg">
-          <div className="flex items-center gap-2 mb-6">
-            <Image className="w-5 h-5" />
-            <h2 className="text-xl font-semibold">Site Logo</h2>
-          </div>
-
-          <div className="space-y-4">
-            {(settings.value as ThemeSettings).logo?.url && (
-              <div className="w-48 h-24 relative border rounded-lg overflow-hidden">
-                <img 
-                  src={(settings.value as ThemeSettings).logo?.url} 
-                  alt="Site Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            )}
-            <div>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={handleLogoUpload}
-                className="max-w-xs"
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                Recommended size: 240x80px
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 border rounded-lg">
-          <div className="flex items-center gap-2 mb-6">
-            <Palette className="w-5 h-5" />
-            <h2 className="text-xl font-semibold">Theme Colors</h2>
-          </div>
-
-          <div className="grid gap-6">
-            {Object.entries((settings.value as ThemeSettings).colors).map(([key, value]) => (
-              <div key={key} className="flex flex-col gap-2">
-                <label className="text-sm font-medium capitalize">
-                  {key.replace(/([A-Z])/g, ' $1').trim()}
-                </label>
-                <div className="flex gap-4">
-                  <Input
-                    type="color"
-                    value={value}
-                    onChange={(e) => handleColorChange(key, e.target.value)}
-                    className="w-20 h-10 p-1"
-                  />
-                  <Input
-                    type="text"
-                    value={value}
-                    onChange={(e) => handleColorChange(key, e.target.value)}
-                    className="font-mono"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <LogoUpload 
+          settings={settings.value as ThemeSettings} 
+          onUpdate={updateSettings.mutate}
+        />
+        <ColorSettings
+          settings={settings.value as ThemeSettings}
+          onColorChange={handleColorChange}
+        />
       </div>
     </div>
   );
