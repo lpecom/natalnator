@@ -18,10 +18,10 @@ const ProductImages = ({ product, onUpdate }: ProductImagesProps) => {
 
       if (error) throw error;
       
-      toast.success("Imagem excluída com sucesso");
+      toast.success("Image deleted successfully");
       onUpdate();
     } catch (error) {
-      toast.error("Falha ao excluir imagem");
+      toast.error("Failed to delete image");
     }
   };
 
@@ -52,10 +52,10 @@ const ProductImages = ({ product, onUpdate }: ProductImagesProps) => {
 
       if (dbError) throw dbError;
 
-      toast.success("Imagem enviada com sucesso");
+      toast.success("Image uploaded successfully");
       onUpdate();
     } catch (error) {
-      toast.error("Falha ao enviar imagem");
+      toast.error("Failed to upload image");
     }
   };
 
@@ -63,7 +63,7 @@ const ProductImages = ({ product, onUpdate }: ProductImagesProps) => {
     <div className="p-6 border rounded-lg">
       <div className="flex items-center gap-2 mb-4">
         <Image className="w-5 h-5" />
-        <h2 className="text-xl font-semibold">Imagens</h2>
+        <h2 className="text-xl font-semibold">Images</h2>
       </div>
       <div className="grid grid-cols-6 gap-4">
         {product?.product_images?.map((image: any) => (

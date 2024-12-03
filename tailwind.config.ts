@@ -19,30 +19,15 @@ export default {
     },
     extend: {
       colors: {
-        primary: "#00AB55", // Vibrant Brazilian green
-        success: "#36B37E",
+        primary: "#C41E3A",
+        success: "#4CAF50",
         border: "#E5E7EB",
         background: "#FFFFFF",
-        foreground: "#1B3A6A", // Richer dark blue
-        muted: "#637381",
-        accent: {
-          green: "#00AB55", // Vibrant Brazilian green
-          blue: "#1B3A6A", // Richer dark blue
-          yellow: "#FFC107", // Warmer Brazilian yellow
-          light: "#E6F7ED", // Softer light green background
-          orange: "#FF7A45", // Accent orange for CTAs
-        },
+        foreground: "#111827",
+        muted: "#6B7280",
       },
       fontFamily: {
         sans: ["Helvetica Neue", "Arial", "sans-serif"],
-      },
-      boxShadow: {
-        'soft': '0 2px 4px 0 rgba(0,0,0,0.05)',
-        'card': '0 0 24px rgba(0,0,0,0.05)',
-      },
-      borderRadius: {
-        'xl': '1rem',
-        '2xl': '1.5rem',
       },
     },
   },

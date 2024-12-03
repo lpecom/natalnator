@@ -1,17 +1,26 @@
 import React from "react";
-import { Settings } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Settings, Palette } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { LogoUpload } from "@/components/admin/LogoUpload";
-import { ColorSettings } from "@/components/admin/ColorSettings";
-import { ThemeSettings } from "@/types/site";
+import { Input } from "@/components/ui/input";
 import { Tables, Json } from "@/integrations/supabase/types";
-import { Button } from "@/components/ui/button";
+
+interface ThemeSettings {
+  colors: {
+    primary: string;
+    success: string;
+    background: string;
+    foreground: string;
+    muted: string;
+    border: string;
+  };
+  fonts: {
+    primary: string;
+  };
+}
 
 const SiteAdmin = () => {
-  const queryClient = useQueryClient();
-
   const { data: settings, isLoading } = useQuery({
     queryKey: ['site-settings'],
     queryFn: async () => {
@@ -26,8 +35,18 @@ const SiteAdmin = () => {
     }
   });
 
-  const updateSettings = useMutation({
-    mutationFn: async (newSettings: ThemeSettings) => {
+  const handleColorChange = async (colorKey: string, value: string) => {
+    if (!settings) return;
+
+    try {
+      const newSettings = {
+        ...settings.value as ThemeSettings,
+        colors: {
+          ...(settings.value as ThemeSettings).colors,
+          [colorKey]: value
+        }
+      };
+
       const { error } = await supabase
         .from('site_settings')
         .update({ 
@@ -37,87 +56,59 @@ const SiteAdmin = () => {
         .eq('key', 'theme');
 
       if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['site-settings'] });
-      toast.success("Configurações atualizadas com sucesso");
-    },
-    onError: () => {
-      toast.error("Falha ao atualizar configurações");
+      
+      toast.success("Theme updated successfully");
+    } catch (error) {
+      toast.error("Failed to update theme");
     }
-  });
-
-  const handleColorChange = (colorKey: string, value: string) => {
-    if (!settings) return;
-
-    const newSettings = {
-      ...settings.value as ThemeSettings,
-      colors: {
-        ...(settings.value as ThemeSettings).colors,
-        [colorKey]: value
-      }
-    };
-
-    updateSettings.mutate(newSettings);
-  };
-
-  const handleSetDefaultLogo = () => {
-    if (!settings) return;
-
-    const newSettings = {
-      ...settings.value as ThemeSettings,
-      logo: {
-        url: 'https://iili.io/21Ody1p.png',
-        alt: 'Logo do Site'
-      }
-    };
-
-    updateSettings.mutate(newSettings);
   };
 
   if (isLoading) {
-    return <div className="p-8">Carregando...</div>;
+    return <div className="p-8">Loading...</div>;
   }
 
   if (!settings) {
-    return <div className="p-8">Nenhuma configuração encontrada</div>;
+    return <div className="p-8">No settings found</div>;
   }
 
   return (
     <div className="container mx-auto p-8">
       <div className="flex items-center gap-2 mb-8">
         <Settings className="w-6 h-6" />
-        <h1 className="text-2xl font-bold">Administração do Site</h1>
+        <h1 className="text-2xl font-bold">Site Administration</h1>
       </div>
 
       <div className="grid gap-8">
         <div className="p-6 border rounded-lg">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <Settings className="w-5 h-5" />
-              <h2 className="text-xl font-semibold">Logo do Site</h2>
-            </div>
-            <Button onClick={handleSetDefaultLogo}>
-              Carregar Logo Padrão
-            </Button>
+          <div className="flex items-center gap-2 mb-6">
+            <Palette className="w-5 h-5" />
+            <h2 className="text-xl font-semibold">Theme Colors</h2>
           </div>
 
-          <div className="space-y-4">
-            {settings.value.logo?.url && (
-              <div className="w-48 h-24 relative border rounded-lg overflow-hidden">
-                <img 
-                  src={settings.value.logo.url} 
-                  alt="Logo do Site"
-                  className="w-full h-full object-contain"
-                />
+          <div className="grid gap-6">
+            {Object.entries((settings.value as ThemeSettings).colors).map(([key, value]) => (
+              <div key={key} className="flex flex-col gap-2">
+                <label className="text-sm font-medium capitalize">
+                  {key.replace(/([A-Z])/g, ' $1').trim()}
+                </label>
+                <div className="flex gap-4">
+                  <Input
+                    type="color"
+                    value={value}
+                    onChange={(e) => handleColorChange(key, e.target.value)}
+                    className="w-20 h-10 p-1"
+                  />
+                  <Input
+                    type="text"
+                    value={value}
+                    onChange={(e) => handleColorChange(key, e.target.value)}
+                    className="font-mono"
+                  />
+                </div>
               </div>
-            )}
+            ))}
           </div>
         </div>
-        <ColorSettings
-          settings={settings.value as ThemeSettings}
-          onColorChange={handleColorChange}
-        />
       </div>
     </div>
   );

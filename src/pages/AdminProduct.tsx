@@ -11,12 +11,12 @@ const AdminProduct = () => {
   const { product, loading, loadProduct } = useAdminProduct();
 
   if (loading) {
-    return <div className="p-8">Carregando...</div>;
+    return <div className="p-8">Loading...</div>;
   }
 
   return (
     <div className="p-8">
-      <AdminHeader title="Administração do Produto" />
+      <AdminHeader title="Product Administration" />
       <div className="grid gap-6">
         {product && (
           <>
