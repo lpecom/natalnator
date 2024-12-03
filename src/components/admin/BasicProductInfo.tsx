@@ -18,7 +18,8 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
     const formData = new FormData(e.currentTarget);
     
     try {
-      const { error } = await supabase
+      // First update the landing page product
+      const { error: productError } = await supabase
         .from("landing_page_products")
         .update({
           name: formData.get("name")?.toString() || "",
@@ -28,10 +29,21 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
         })
         .eq("id", product.id);
 
-      if (error) throw error;
+      if (productError) throw productError;
+
+      // Then update the landing page slug
+      const { error: pageError } = await supabase
+        .from("landing_pages")
+        .update({
+          slug: formData.get("slug")?.toString() || "",
+        })
+        .eq("id", product.landing_page_id);
+
+      if (pageError) throw pageError;
       
       queryClient.invalidateQueries({ queryKey: ["product-details"] });
       queryClient.invalidateQueries({ queryKey: ["admin-product"] });
+      queryClient.invalidateQueries({ queryKey: ["landing-page"] });
       
       toast.success("Product information updated successfully");
       onUpdate();
@@ -75,6 +87,16 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
             type="text"
             defaultValue={product.name}
             className="w-full p-2 border rounded"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">URL Slug</label>
+          <input
+            name="slug"
+            type="text"
+            defaultValue={product.landing_page?.slug}
+            className="w-full p-2 border rounded"
+            placeholder="product-url-slug"
           />
         </div>
         <div>
