@@ -17,7 +17,8 @@ const Index = () => {
         .from("landing_page_products")
         .select(`
           *,
-          product_images (*)
+          product_images (*),
+          landing_page:landing_pages(slug)
         `)
         .limit(6);
       return data;
@@ -130,7 +131,10 @@ const Index = () => {
                       </Card>
                     ))
                 : featuredProducts?.map((product) => (
-                    <Link key={product.id} to={`/p/${product.id}`}>
+                    <Link 
+                      key={product.id} 
+                      to={`/p/${product.landing_page?.slug}`}
+                    >
                       <Card className="hover:shadow-lg transition-all duration-300 group h-full">
                         <div className="aspect-square overflow-hidden rounded-t-lg relative">
                           <img
