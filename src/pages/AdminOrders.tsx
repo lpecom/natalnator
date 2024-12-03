@@ -22,7 +22,11 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Filter } from "lucide-react";
+
+interface StatusHistoryItem {
+  status: string;
+  timestamp: string;
+}
 
 const statusOptions = [
   { value: "pending", label: "Pending", color: "bg-yellow-100 text-yellow-800" },
@@ -32,11 +36,6 @@ const statusOptions = [
   { value: "delivered", label: "Delivered", color: "bg-green-100 text-green-800" },
   { value: "cancelled", label: "Cancelled", color: "bg-red-100 text-red-800" },
 ];
-
-type StatusHistoryItem = {
-  status: string;
-  timestamp: string;
-};
 
 const AdminOrders = () => {
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -101,7 +100,10 @@ const AdminOrders = () => {
       if (fetchError) throw fetchError;
 
       // Parse existing status history and append new status
-      const currentHistory = (currentOrder?.status_history as StatusHistoryItem[] | null) ?? [];
+      const currentHistory = currentOrder?.status_history 
+        ? (currentOrder.status_history as StatusHistoryItem[]) 
+        : [];
+      
       const updatedHistory = [...currentHistory, newStatusHistory];
 
       // Update order with new status and history
@@ -110,7 +112,7 @@ const AdminOrders = () => {
         .update({ 
           order_status: newStatus,
           updated_at: new Date().toISOString(),
-          status_history: updatedHistory as unknown as Json[]
+          status_history: updatedHistory
         })
         .eq("id", orderId);
 
