@@ -19,12 +19,18 @@ export default {
     },
     extend: {
       colors: {
-        primary: "#C41E3A",
+        primary: "#00A859", // Brazilian green
         success: "#4CAF50",
         border: "#E5E7EB",
         background: "#FFFFFF",
-        foreground: "#111827",
+        foreground: "#002F6C", // Dark blue
         muted: "#6B7280",
+        accent: {
+          green: "#00A859", // Brazilian green
+          blue: "#002F6C", // Dark blue
+          yellow: "#FFDE59", // Brazilian yellow
+          light: "#E6F3ED", // Light green background
+        },
       },
       fontFamily: {
         sans: ["Helvetica Neue", "Arial", "sans-serif"],
