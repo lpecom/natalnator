@@ -21,12 +21,19 @@ const HomeBanners = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        <Skeleton className="w-full h-[400px] rounded-lg" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Skeleton className="w-full h-[200px] rounded-lg" />
-          <Skeleton className="w-full h-[200px] rounded-lg" />
-          <Skeleton className="w-full h-[200px] rounded-lg" />
+      <div className="space-y-8">
+        {/* Hero Banner Skeleton */}
+        <div className="w-full">
+          <Skeleton className="w-full aspect-[3/1] md:aspect-[3/0.8] rounded-none" />
+        </div>
+        
+        {/* Small Banners Skeleton */}
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton className="w-full aspect-square md:aspect-[3/2] rounded-lg" />
+            <Skeleton className="w-full aspect-square md:aspect-[3/2] rounded-lg" />
+            <Skeleton className="w-full aspect-square md:aspect-[3/2] rounded-lg" />
+          </div>
         </div>
       </div>
     );
@@ -36,7 +43,8 @@ const HomeBanners = () => {
   const smallBanners = banners?.filter(banner => banner.banner_type === "small") || [];
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
+    <div className="space-y-8">
+      {/* Hero Banner */}
       {mainBanner && (
         <Link to={mainBanner.link_url || "#"} className="block w-full">
           <picture>
@@ -44,25 +52,28 @@ const HomeBanners = () => {
             <img
               src={mainBanner.mobile_image_url}
               alt={mainBanner.name}
-              className="w-full h-[400px] object-cover rounded-lg"
+              className="w-full h-auto object-cover"
             />
           </picture>
         </Link>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {smallBanners.slice(0, 3).map((banner) => (
-          <Link key={banner.id} to={banner.link_url || "#"} className="block">
-            <picture>
-              <source media="(min-width: 768px)" srcSet={banner.desktop_image_url} />
-              <img
-                src={banner.mobile_image_url}
-                alt={banner.name}
-                className="w-full h-[200px] object-cover rounded-lg"
-              />
-            </picture>
-          </Link>
-        ))}
+      {/* Small Banners */}
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {smallBanners.slice(0, 3).map((banner) => (
+            <Link key={banner.id} to={banner.link_url || "#"} className="block">
+              <picture>
+                <source media="(min-width: 768px)" srcSet={banner.desktop_image_url} />
+                <img
+                  src={banner.mobile_image_url}
+                  alt={banner.name}
+                  className="w-full h-auto object-cover rounded-lg"
+                />
+              </picture>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

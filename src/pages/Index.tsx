@@ -21,11 +21,12 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
-      <main className="flex-grow">
+      <main className="flex-grow space-y-12">
+        {/* Hero and Small Banners */}
         <HomeBanners />
         
         {/* Featured Products Section */}
-        <section className="container mx-auto px-4 py-12">
+        <section className="container mx-auto px-4">
           <h2 className="text-2xl font-bold mb-6">Featured Products</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {isProductsLoading ? (
@@ -34,7 +35,7 @@ const Index = () => {
                 .map((_, i) => (
                   <div
                     key={i}
-                    className="bg-gray-100 animate-pulse rounded-lg h-64"
+                    className="bg-gray-100 animate-pulse rounded-lg aspect-square"
                   />
                 ))
             ) : (
