@@ -1,9 +1,10 @@
 import React from "react";
-import { Settings, Palette } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Settings, Palette, Image } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Tables, Json } from "@/integrations/supabase/types";
 
 interface ThemeSettings {
@@ -18,9 +19,15 @@ interface ThemeSettings {
   fonts: {
     primary: string;
   };
+  logo?: {
+    url: string;
+    alt: string;
+  };
 }
 
 const SiteAdmin = () => {
+  const queryClient = useQueryClient();
+
   const { data: settings, isLoading } = useQuery({
     queryKey: ['site-settings'],
     queryFn: async () => {
@@ -35,18 +42,8 @@ const SiteAdmin = () => {
     }
   });
 
-  const handleColorChange = async (colorKey: string, value: string) => {
-    if (!settings) return;
-
-    try {
-      const newSettings = {
-        ...settings.value as ThemeSettings,
-        colors: {
-          ...(settings.value as ThemeSettings).colors,
-          [colorKey]: value
-        }
-      };
-
+  const updateSettings = useMutation({
+    mutationFn: async (newSettings: ThemeSettings) => {
       const { error } = await supabase
         .from('site_settings')
         .update({ 
@@ -56,10 +53,61 @@ const SiteAdmin = () => {
         .eq('key', 'theme');
 
       if (error) throw error;
-      
-      toast.success("Theme updated successfully");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['site-settings'] });
+      toast.success("Settings updated successfully");
+    },
+    onError: () => {
+      toast.error("Failed to update settings");
+    }
+  });
+
+  const handleColorChange = (colorKey: string, value: string) => {
+    if (!settings) return;
+
+    const newSettings = {
+      ...settings.value as ThemeSettings,
+      colors: {
+        ...(settings.value as ThemeSettings).colors,
+        [colorKey]: value
+      }
+    };
+
+    updateSettings.mutate(newSettings);
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `site-logo-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('site-assets')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('site-assets')
+        .getPublicUrl(fileName);
+
+      if (!settings) return;
+
+      const newSettings = {
+        ...settings.value as ThemeSettings,
+        logo: {
+          url: publicUrl,
+          alt: 'Site Logo'
+        }
+      };
+
+      updateSettings.mutate(newSettings);
     } catch (error) {
-      toast.error("Failed to update theme");
+      toast.error("Failed to upload logo");
     }
   };
 
@@ -79,6 +127,36 @@ const SiteAdmin = () => {
       </div>
 
       <div className="grid gap-8">
+        <div className="p-6 border rounded-lg">
+          <div className="flex items-center gap-2 mb-6">
+            <Image className="w-5 h-5" />
+            <h2 className="text-xl font-semibold">Site Logo</h2>
+          </div>
+
+          <div className="space-y-4">
+            {(settings.value as ThemeSettings).logo?.url && (
+              <div className="w-48 h-24 relative border rounded-lg overflow-hidden">
+                <img 
+                  src={(settings.value as ThemeSettings).logo?.url} 
+                  alt="Site Logo"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            )}
+            <div>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="max-w-xs"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Recommended size: 240x80px
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="p-6 border rounded-lg">
           <div className="flex items-center gap-2 mb-6">
             <Palette className="w-5 h-5" />

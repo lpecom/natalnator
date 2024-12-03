@@ -1,7 +1,9 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, Image, Settings, FileText, Package } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -9,6 +11,20 @@ interface AdminLayoutProps {
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
+
+  const { data: settings } = useQuery({
+    queryKey: ['site-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*')
+        .eq('key', 'theme')
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+  });
 
   const navigation = [
     {
@@ -41,18 +57,25 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
-        {/* Sidebar */}
         <div className="hidden md:flex md:flex-shrink-0">
           <div className="flex w-64 flex-col">
             <div className="flex min-h-0 flex-1 flex-col border-r border-gray-200 bg-white">
               <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
                 <div className="flex flex-shrink-0 items-center px-4">
                   <Link to="/">
-                    <img
-                      src="/lovable-uploads/afad369a-bb88-4bbc-aba2-54ae54f3591e.png"
-                      alt="Logo"
-                      className="h-8 w-auto"
-                    />
+                    {settings?.value?.logo?.url ? (
+                      <img
+                        src={settings.value.logo.url}
+                        alt={settings.value.logo.alt || "Site Logo"}
+                        className="h-8 w-auto"
+                      />
+                    ) : (
+                      <img
+                        src="/lovable-uploads/afad369a-bb88-4bbc-aba2-54ae54f3591e.png"
+                        alt="Logo"
+                        className="h-8 w-auto"
+                      />
+                    )}
                   </Link>
                 </div>
                 <nav className="mt-8 flex-1 space-y-1 px-2">
@@ -87,7 +110,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           </div>
         </div>
 
-        {/* Main content */}
         <div className="flex flex-1 flex-col overflow-y-auto">
           <main className="flex-1">{children}</main>
         </div>
