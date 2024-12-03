@@ -10,6 +10,7 @@ import CreateLandingPage from "./pages/CreateLandingPage";
 import EditLandingPage from "./pages/EditLandingPage";
 import AdminProduct from "./pages/AdminProduct";
 import SiteAdmin from "./pages/SiteAdmin";
+import BannerAdmin from "./pages/BannerAdmin";
 import ProductPage from "./pages/ProductPage";
 import CommonPages from "./pages/CommonPages";
 import EditCommonPage from "./pages/EditCommonPage";
@@ -18,10 +19,7 @@ import Catalog from "./pages/Catalog";
 
 const queryClient = new QueryClient();
 
-// Simple authentication check - in a real app, you'd want to use a proper auth system
 const isAuthenticated = () => {
-  // For development, we'll always return true
-  // In production, this should check for actual authentication
   return process.env.NODE_ENV === 'development';
 };
 
@@ -57,6 +55,13 @@ const App = () => (
             <ProtectedRoute>
               <AdminLayout>
                 <SiteAdmin />
+              </AdminLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/banners" element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <BannerAdmin />
               </AdminLayout>
             </ProtectedRoute>
           } />

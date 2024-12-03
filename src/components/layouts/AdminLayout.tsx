@@ -43,13 +43,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         throw error;
       }
       
-      console.log('Admin: Fetched site settings:', data?.value);
       return data?.value as ThemeSettings;
     }
   });
 
   const logoUrl = settings?.logo?.url;
-  console.log('Admin: Logo URL:', logoUrl);
 
   const navigation = [
     {
@@ -66,6 +64,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       name: "Common Pages",
       href: "/admin/common-pages",
       icon: FileText,
+    },
+    {
+      name: "Banners",
+      href: "/admin/banners",
+      icon: Image,
     },
     {
       name: "Site Settings",

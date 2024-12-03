@@ -8,9 +8,10 @@ import Reviews from "@/components/Reviews";
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import Benefits from "@/components/Benefits";
+import HomeBanners from "@/components/HomeBanners";
 
 const Index = () => {
-  const { data: landingPage, isLoading } = useQuery({
+  const { data: landingPage, isLoading: isLandingPageLoading } = useQuery({
     queryKey: ["homepage"],
     queryFn: async () => {
       const { data } = await supabase
@@ -22,7 +23,7 @@ const Index = () => {
     },
   });
 
-  if (isLoading) {
+  if (isLandingPageLoading) {
     return (
       <div className="min-h-screen bg-white flex flex-col">
         <Header />
@@ -51,6 +52,7 @@ const Index = () => {
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
       <main className="flex-grow">
+        <HomeBanners />
         <div className="container mx-auto px-4 py-3">
           <div className="text-xs text-gray-500 mb-3 flex flex-wrap items-center gap-1">
             <span>Página Inicial</span>
