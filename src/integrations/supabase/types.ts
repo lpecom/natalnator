@@ -406,9 +406,60 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          order_id: string | null
+          price: number
+          product_id: string | null
+          quantity: number
+          updated_at: string | null
+          variant_selections: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          price: number
+          product_id?: string | null
+          quantity?: number
+          updated_at?: string | null
+          variant_selections?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          price?: number
+          product_id?: string | null
+          quantity?: number
+          updated_at?: string | null
+          variant_selections?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "landing_page_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           address: string
+          call_center_confirmed: boolean | null
+          call_center_confirmed_at: string | null
+          call_center_notes: string | null
           city: string
           confirmation_date: string | null
           created_at: string
@@ -430,6 +481,9 @@ export type Database = {
         }
         Insert: {
           address: string
+          call_center_confirmed?: boolean | null
+          call_center_confirmed_at?: string | null
+          call_center_notes?: string | null
           city: string
           confirmation_date?: string | null
           created_at?: string
@@ -451,6 +505,9 @@ export type Database = {
         }
         Update: {
           address?: string
+          call_center_confirmed?: boolean | null
+          call_center_confirmed_at?: string | null
+          call_center_notes?: string | null
           city?: string
           confirmation_date?: string | null
           created_at?: string

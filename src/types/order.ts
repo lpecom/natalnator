@@ -22,6 +22,9 @@ export interface OrderDetailsType {
   pickup_date: string | null;
   delivery_date: string | null;
   status_history: StatusHistoryEntry[];
+  call_center_confirmed: boolean;
+  call_center_confirmed_at: string | null;
+  call_center_notes: string | null;
   product?: {
     name: string;
     price: number;
