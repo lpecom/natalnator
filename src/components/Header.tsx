@@ -3,6 +3,24 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface ThemeSettings {
+  colors?: {
+    primary: string;
+    success: string;
+    background: string;
+    foreground: string;
+    muted: string;
+    border: string;
+  };
+  fonts?: {
+    primary: string;
+  };
+  logo?: {
+    url: string;
+    alt: string;
+  };
+}
+
 const Header = () => {
   const { data: settings } = useQuery({
     queryKey: ['site-settings'],
@@ -14,7 +32,7 @@ const Header = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data ? { ...data, value: data.value as ThemeSettings } : null;
     }
   });
 
