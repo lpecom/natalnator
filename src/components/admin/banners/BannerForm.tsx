@@ -5,11 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 const BannerForm = () => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
 
@@ -18,13 +17,23 @@ const BannerForm = () => {
     formData.append('file', file);
     formData.append('type', type);
 
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      throw new Error('No authentication session found');
+    }
+
     const response = await fetch('/functions/v1/upload-banner', {
       method: 'POST',
       body: formData,
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`
+      }
     });
 
     if (!response.ok) {
-      throw new Error('Failed to upload file');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to upload file');
     }
 
     const { url } = await response.json();
@@ -37,6 +46,10 @@ const BannerForm = () => {
       try {
         const desktopFile = formData.get('desktop_image') as File;
         const mobileFile = formData.get('mobile_image') as File;
+
+        if (!desktopFile || !mobileFile) {
+          throw new Error('Please select both desktop and mobile images');
+        }
 
         const [desktopUrl, mobileUrl] = await Promise.all([
           uploadFile(desktopFile, 'desktop'),
@@ -67,17 +80,10 @@ const BannerForm = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["banners"] });
-      toast({
-        title: "Banner created successfully",
-        description: "The banner has been added to the homepage.",
-      });
+      toast.success("Banner created successfully");
     },
-    onError: (error) => {
-      toast({
-        title: "Error creating banner",
-        description: error.message,
-        variant: "destructive",
-      });
+    onError: (error: Error) => {
+      toast.error(`Error creating banner: ${error.message}`);
     },
   });
 
@@ -85,7 +91,6 @@ const BannerForm = () => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     createBanner.mutate(formData);
-    e.currentTarget.reset();
   };
 
   return (
@@ -142,7 +147,13 @@ const BannerForm = () => {
 
         <div>
           <Label htmlFor="display_order">Display Order</Label>
-          <Input id="display_order" name="display_order" type="number" defaultValue="0" required />
+          <Input 
+            id="display_order" 
+            name="display_order" 
+            type="number" 
+            defaultValue="0" 
+            required 
+          />
         </div>
       </div>
 

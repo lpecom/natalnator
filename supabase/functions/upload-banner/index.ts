@@ -13,17 +13,18 @@ serve(async (req) => {
 
   try {
     const formData = await req.formData()
-    const file = formData.get('file') as File
+    const file = formData.get('file')
     const type = formData.get('type') as string // 'desktop' or 'mobile'
 
-    if (!file) {
-      throw new Error('No file uploaded')
+    if (!file || !(file instanceof File)) {
+      throw new Error('Invalid file uploaded')
     }
 
-    console.log('Uploading file:', {
-      name: file.name,
-      type: file.type,
-      size: file.size
+    console.log('Processing upload:', {
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size,
+      uploadType: type
     })
 
     const supabase = createClient(
@@ -31,22 +32,26 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    // Generate a clean filename
     const fileExt = file.name.split('.').pop()
     const fileName = `${crypto.randomUUID()}.${fileExt}`
     const filePath = `${type}/${fileName}`
 
-    const { data, error: uploadError } = await supabase.storage
+    // Upload the file
+    const { error: uploadError } = await supabase.storage
       .from('banners')
-      .upload(filePath, file, {
+      .upload(filePath, file.stream(), {
         contentType: file.type,
+        duplex: 'half',
         upsert: false
       })
 
     if (uploadError) {
       console.error('Upload error:', uploadError)
-      throw uploadError
+      throw new Error(`Failed to upload file: ${uploadError.message}`)
     }
 
+    // Get the public URL
     const { data: { publicUrl } } = supabase.storage
       .from('banners')
       .getPublicUrl(filePath)
@@ -57,21 +62,23 @@ serve(async (req) => {
       JSON.stringify({ url: publicUrl }),
       { 
         headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       }
     )
   } catch (error) {
     console.error('Function error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'An unknown error occurred during upload'
+      }),
       { 
         headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        }, 
-        status: 400 
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        },
+        status: 400
       }
     )
   }
