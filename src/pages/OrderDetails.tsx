@@ -3,8 +3,7 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { OrderDetails as OrderDetailsType } from "@/types/order";
-import { Database, Json } from "@/integrations/supabase/types";
+import { OrderDetailsType } from "@/types/order";
 import { CustomerCard } from "@/components/orders/CustomerCard";
 import { ProductCard } from "@/components/orders/ProductCard";
 import { AddressCard } from "@/components/orders/AddressCard";
@@ -45,20 +44,7 @@ const OrderDetails = () => {
         throw new Error("Order not found");
       }
 
-      const transformedOrder: OrderDetailsType = {
-        ...orderData,
-        status_history: Array.isArray(orderData.status_history) 
-          ? orderData.status_history.map((entry: any) => ({
-              status: entry.status,
-              timestamp: entry.timestamp,
-            }))
-          : [],
-        variant_selections: orderData.variant_selections as Record<string, string> | null,
-        product: orderData.product?.[0] || null,
-        driver: orderData.driver?.[0] || null,
-      };
-
-      return transformedOrder;
+      return orderData as OrderDetailsType;
     },
   });
 
@@ -74,9 +60,9 @@ const OrderDetails = () => {
         },
       ];
 
-      const updates: Database["public"]["Tables"]["orders"]["Update"] = {
+      const updates = {
         order_status: newStatus,
-        status_history: statusHistory as unknown as Json[],
+        status_history: statusHistory,
         confirmation_date: newStatus === "confirmed" ? new Date().toISOString() : order.confirmation_date,
         pickup_date: newStatus === "ready_for_pickup" ? new Date().toISOString() : order.pickup_date,
         delivery_date: newStatus === "delivered" ? new Date().toISOString() : order.delivery_date,
