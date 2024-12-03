@@ -27,6 +27,20 @@ import {
   Truck,
 } from "lucide-react";
 import { OrderDetails as OrderDetailsType, StatusHistoryEntry } from "@/types/order";
+import { Database } from "@/integrations/supabase/types";
+
+type OrderResponse = Database["public"]["Tables"]["orders"]["Row"] & {
+  product: (Database["public"]["Tables"]["landing_page_products"]["Row"] & {
+    name: string;
+    price: number;
+    original_price: number | null;
+    description_html: string | null;
+  })[];
+  driver: {
+    name: string;
+    phone_number: string;
+  }[];
+};
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -84,13 +98,18 @@ const OrderDetails = () => {
 
       if (error) throw error;
 
+      const rawOrder = orderData as OrderResponse;
+
       // Transform the data to match our TypeScript interface
       const transformedOrder: OrderDetailsType = {
-        ...orderData,
-        status_history: (orderData.status_history || []) as StatusHistoryEntry[],
-        variant_selections: orderData.variant_selections as Record<string, string> | null,
-        product: orderData.product?.[0] || null, // Since it returns an array
-        driver: orderData.driver?.[0] || null // Since it returns an array
+        ...rawOrder,
+        status_history: (rawOrder.status_history as any[] || []).map((entry) => ({
+          status: entry.status as string,
+          timestamp: entry.timestamp as string,
+        })),
+        variant_selections: rawOrder.variant_selections as Record<string, string> | null,
+        product: rawOrder.product?.[0] || null,
+        driver: rawOrder.driver?.[0] || null
       };
 
       return transformedOrder;
@@ -109,19 +128,13 @@ const OrderDetails = () => {
         },
       ];
 
-      const updates = {
+      const updates: Database["public"]["Tables"]["orders"]["Update"] = {
         order_status: newStatus,
-        status_history: statusHistory,
+        status_history: statusHistory as any,
+        confirmation_date: newStatus === "confirmed" ? new Date().toISOString() : undefined,
+        pickup_date: newStatus === "ready_for_pickup" ? new Date().toISOString() : undefined,
+        delivery_date: newStatus === "delivered" ? new Date().toISOString() : undefined,
       };
-
-      // Add specific date fields based on status
-      if (newStatus === "confirmed") {
-        updates.confirmation_date = new Date().toISOString();
-      } else if (newStatus === "ready_for_pickup") {
-        updates.pickup_date = new Date().toISOString();
-      } else if (newStatus === "delivered") {
-        updates.delivery_date = new Date().toISOString();
-      }
 
       const { error } = await supabase
         .from("orders")
