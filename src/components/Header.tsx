@@ -44,7 +44,7 @@ const Header = () => {
               <img
                 src={settings.logo.url}
                 alt="Logo"
-                className="h-8 w-auto"
+                className="w-[125px] h-auto"
               />
             ) : (
               "Loja"

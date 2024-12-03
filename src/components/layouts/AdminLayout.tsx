@@ -69,7 +69,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
-        {/* Sidebar */}
         <div className="hidden md:flex md:flex-shrink-0">
           <div className="flex w-64 flex-col">
             <div className="flex min-h-0 flex-1 flex-col border-r border-gray-200 bg-white">
@@ -80,13 +79,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                       <img
                         src={settings.logo.url}
                         alt="Logo"
-                        className="h-8 w-auto"
+                        className="w-[125px] h-auto"
                       />
                     ) : (
                       <img
                         src="/lovable-uploads/afad369a-bb88-4bbc-aba2-54ae54f3591e.png"
                         alt="Logo"
-                        className="h-8 w-auto"
+                        className="w-[125px] h-auto"
                       />
                     )}
                   </Link>
@@ -123,7 +122,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           </div>
         </div>
 
-        {/* Main content */}
         <div className="flex flex-1 flex-col overflow-y-auto">
           <main className="flex-1">{children}</main>
         </div>
