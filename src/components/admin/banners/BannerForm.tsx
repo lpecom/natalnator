@@ -32,12 +32,17 @@ const BannerForm = () => {
         }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
-        throw new Error(errorData.error || `Upload failed with status: ${response.status}`);
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Invalid response format from server');
       }
 
       const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || `Upload failed with status: ${response.status}`);
+      }
+
       if (!data.url) {
         throw new Error('No URL returned from upload');
       }
@@ -45,7 +50,7 @@ const BannerForm = () => {
       return data.url;
     } catch (error) {
       console.error('Upload error:', error);
-      throw new Error(error instanceof Error ? error.message : 'Failed to upload file');
+      throw error instanceof Error ? error : new Error('Failed to upload file');
     }
   };
 

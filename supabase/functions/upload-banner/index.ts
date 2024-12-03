@@ -16,7 +16,10 @@ serve(async (req) => {
     // Verify authentication
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
-      throw new Error('No authorization header')
+      return new Response(
+        JSON.stringify({ error: 'No authorization header' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
     }
 
     const formData = await req.formData()
@@ -30,11 +33,17 @@ serve(async (req) => {
     })
 
     if (!file || !(file instanceof File)) {
-      throw new Error('Invalid file uploaded')
+      return new Response(
+        JSON.stringify({ error: 'Invalid file uploaded' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
     }
 
     if (!type || (type !== 'desktop' && type !== 'mobile')) {
-      throw new Error('Invalid type specified')
+      return new Response(
+        JSON.stringify({ error: 'Invalid type specified' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
     }
 
     const supabase = createClient(
@@ -42,14 +51,12 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Generate a clean filename
     const fileExt = file.name.split('.').pop()
     const fileName = `${crypto.randomUUID()}.${fileExt}`
     const filePath = `${type}/${fileName}`
 
     console.log('Uploading file:', { filePath, contentType: file.type })
 
-    // Upload the file
     const { error: uploadError } = await supabase.storage
       .from('banners')
       .upload(filePath, file, {
@@ -60,10 +67,12 @@ serve(async (req) => {
 
     if (uploadError) {
       console.error('Upload error:', uploadError)
-      throw new Error(`Failed to upload file: ${uploadError.message}`)
+      return new Response(
+        JSON.stringify({ error: 'Failed to upload file', details: uploadError }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
     }
 
-    // Get the public URL
     const { data: { publicUrl } } = supabase.storage
       .from('banners')
       .getPublicUrl(filePath)
@@ -72,12 +81,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ url: publicUrl }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
     console.error('Function error:', error)
@@ -86,11 +90,8 @@ serve(async (req) => {
         error: error instanceof Error ? error.message : 'An unknown error occurred during upload'
       }),
       { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        },
-        status: 400
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500
       }
     )
   }
