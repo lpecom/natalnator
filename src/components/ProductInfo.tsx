@@ -43,15 +43,25 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
   const heightVariants = product?.product_variants?.filter(v => v.name === "Altura") || [];
 
   const handleBuy = () => {
-    if (!selectedColor || !selectedHeight) {
-      toast.error("Por favor selecione a cor e altura antes de continuar");
+    if (!product) {
+      toast.error("Produto não encontrado");
+      return;
+    }
+
+    if (colorVariants.length > 0 && !selectedColor) {
+      toast.error("Por favor selecione uma cor");
+      return;
+    }
+
+    if (heightVariants.length > 0 && !selectedHeight) {
+      toast.error("Por favor selecione uma altura");
       return;
     }
     
     const searchParams = new URLSearchParams({
       productId: product.id,
-      color: selectedColor,
-      height: selectedHeight,
+      ...(selectedColor && { color: selectedColor }),
+      ...(selectedHeight && { height: selectedHeight }),
     });
     
     navigate(`/checkout?${searchParams.toString()}`);
@@ -63,9 +73,6 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
 
   const price = product.price;
   const originalPrice = product.original_price || price * 1.5;
-  const pixDiscount = 0.05; // 5% discount
-  const pixPrice = price * (1 - pixDiscount);
-  const pixSavings = price - pixPrice;
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -97,46 +104,50 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
       </div>
 
       <div className="space-y-3">
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Cor: <span className="text-primary">{selectedColor || "Selecione uma cor"}</span>
-          </label>
-          <div className="flex gap-2">
-            {colorVariants.map((variant) => (
-              <button
-                key={variant.id}
-                className={`w-14 h-14 border-2 rounded ${
-                  selectedColor === variant.value ? "border-primary" : "border-gray-200"
-                }`}
-                style={{
-                  backgroundColor: variant.value.toLowerCase()
-                }}
-                onClick={() => setSelectedColor(variant.value)}
-              />
-            ))}
+        {colorVariants.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Cor: <span className="text-primary">{selectedColor || "Selecione uma cor"}</span>
+            </label>
+            <div className="flex gap-2">
+              {colorVariants.map((variant) => (
+                <button
+                  key={variant.id}
+                  className={`w-14 h-14 border-2 rounded ${
+                    selectedColor === variant.value ? "border-primary" : "border-gray-200"
+                  }`}
+                  style={{
+                    backgroundColor: variant.value.toLowerCase()
+                  }}
+                  onClick={() => setSelectedColor(variant.value)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Altura: <span className="text-primary">{selectedHeight || "Selecione uma altura"}</span>
-          </label>
-          <div className="flex gap-2">
-            {heightVariants.map((variant) => (
-              <button
-                key={variant.id}
-                className={`px-4 py-2 border-2 rounded font-medium text-sm ${
-                  selectedHeight === variant.value
-                    ? "border-primary text-primary"
-                    : "border-gray-200 text-gray-500"
-                }`}
-                onClick={() => setSelectedHeight(variant.value)}
-              >
-                {variant.value}
-              </button>
-            ))}
+        {heightVariants.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Altura: <span className="text-primary">{selectedHeight || "Selecione uma altura"}</span>
+            </label>
+            <div className="flex gap-2">
+              {heightVariants.map((variant) => (
+                <button
+                  key={variant.id}
+                  className={`px-4 py-2 border-2 rounded font-medium text-sm ${
+                    selectedHeight === variant.value
+                      ? "border-primary text-primary"
+                      : "border-gray-200 text-gray-500"
+                  }`}
+                  onClick={() => setSelectedHeight(variant.value)}
+                >
+                  {variant.value}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <button
