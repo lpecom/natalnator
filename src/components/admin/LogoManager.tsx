@@ -1,9 +1,10 @@
-import React from "react";
-import { Image } from "lucide-react";
+import React, { useState } from "react";
+import { Image, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { ThemeSettings } from "@/types/theme";
 
 interface LogoManagerProps {
@@ -12,34 +13,40 @@ interface LogoManagerProps {
 
 export const LogoManager = ({ settings }: LogoManagerProps) => {
   const queryClient = useQueryClient();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(settings?.logo?.url || null);
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) {
       toast.error("No file selected");
       return;
     }
 
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleSave = async () => {
+    if (!selectedFile) {
+      toast.error("No file selected");
+      return;
+    }
+
     try {
-      // Upload file to storage
-      const fileExt = file.name.split('.').pop();
+      const fileExt = selectedFile.name.split('.').pop();
       const fileName = `logo-${Date.now()}.${fileExt}`;
       
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('site-assets')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(fileName, selectedFile);
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('site-assets')
         .getPublicUrl(fileName);
 
-      // Update site settings with new logo URL
       const newSettings = {
         ...settings,
         logo: {
@@ -59,9 +66,38 @@ export const LogoManager = ({ settings }: LogoManagerProps) => {
       
       toast.success("Logo updated successfully");
       queryClient.invalidateQueries({ queryKey: ['site-settings'] });
+      setSelectedFile(null);
     } catch (error) {
       console.error('Error uploading logo:', error);
       toast.error("Failed to upload logo");
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      // Update settings without logo
+      const newSettings = {
+        ...settings,
+        logo: undefined
+      };
+
+      const { error: updateError } = await supabase
+        .from('site_settings')
+        .update({ 
+          value: newSettings,
+          updated_at: new Date().toISOString()
+        })
+        .eq('key', 'theme');
+
+      if (updateError) throw updateError;
+      
+      toast.success("Logo removed successfully");
+      queryClient.invalidateQueries({ queryKey: ['site-settings'] });
+      setPreviewUrl(null);
+      setSelectedFile(null);
+    } catch (error) {
+      console.error('Error removing logo:', error);
+      toast.error("Failed to remove logo");
     }
   };
 
@@ -73,25 +109,41 @@ export const LogoManager = ({ settings }: LogoManagerProps) => {
       </div>
 
       <div className="space-y-4">
-        {settings?.logo?.url && (
-          <div className="w-32">
-            <img 
-              src={settings.logo.url} 
-              alt="Site logo" 
-              className="w-full h-auto"
-            />
+        {(previewUrl || settings?.logo?.url) && (
+          <div className="flex items-center gap-4">
+            <div className="w-32">
+              <img 
+                src={previewUrl || settings?.logo?.url} 
+                alt="Site logo" 
+                className="w-full h-auto"
+              />
+            </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDelete}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Remove Logo
+            </Button>
           </div>
         )}
-        <div>
+        <div className="space-y-4">
           <Input
             type="file"
             accept="image/*"
-            onChange={handleLogoUpload}
+            onChange={handleFileSelect}
             className="max-w-sm"
           />
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground">
             Recommended size: 200x50px
           </p>
+          {selectedFile && (
+            <Button onClick={handleSave} className="mt-4">
+              Save Changes
+            </Button>
+          )}
         </div>
       </div>
     </div>
