@@ -23,21 +23,30 @@ const BannerForm = () => {
       throw new Error('No authentication session found');
     }
 
-    const response = await fetch('/functions/v1/upload-banner', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Authorization': `Bearer ${session.access_token}`
+    try {
+      const response = await fetch('/functions/v1/upload-banner', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
+        throw new Error(errorData.error || `Upload failed with status: ${response.status}`);
       }
-    });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to upload file');
+      const data = await response.json();
+      if (!data.url) {
+        throw new Error('No URL returned from upload');
+      }
+
+      return data.url;
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw new Error(error instanceof Error ? error.message : 'Failed to upload file');
     }
-
-    const { url } = await response.json();
-    return url;
   };
 
   const createBanner = useMutation({
@@ -83,6 +92,7 @@ const BannerForm = () => {
       toast.success("Banner created successfully");
     },
     onError: (error: Error) => {
+      console.error('Banner creation error:', error);
       toast.error(`Error creating banner: ${error.message}`);
     },
   });
