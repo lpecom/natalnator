@@ -1,9 +1,10 @@
 import React from "react";
-import { Settings, Palette } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Settings, Palette, Image } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Tables, Json } from "@/integrations/supabase/types";
 
 interface ThemeSettings {
@@ -18,9 +19,14 @@ interface ThemeSettings {
   fonts: {
     primary: string;
   };
+  logo?: {
+    url: string;
+  };
 }
 
 const SiteAdmin = () => {
+  const queryClient = useQueryClient();
+  
   const { data: settings, isLoading } = useQuery({
     queryKey: ['site-settings'],
     queryFn: async () => {
@@ -58,8 +64,54 @@ const SiteAdmin = () => {
       if (error) throw error;
       
       toast.success("Theme updated successfully");
+      queryClient.invalidateQueries({ queryKey: ['site-settings'] });
     } catch (error) {
       toast.error("Failed to update theme");
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !settings) return;
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
+
+      // Upload file to storage
+      const { error: uploadError } = await supabase.storage
+        .from('site-assets')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('site-assets')
+        .getPublicUrl(fileName);
+
+      // Update site settings with new logo URL
+      const newSettings = {
+        ...settings.value as ThemeSettings,
+        logo: {
+          url: publicUrl
+        }
+      };
+
+      const { error: updateError } = await supabase
+        .from('site_settings')
+        .update({ 
+          value: newSettings as unknown as Json,
+          updated_at: new Date().toISOString()
+        })
+        .eq('key', 'theme');
+
+      if (updateError) throw updateError;
+      
+      toast.success("Logo updated successfully");
+      queryClient.invalidateQueries({ queryKey: ['site-settings'] });
+    } catch (error) {
+      toast.error("Failed to upload logo");
     }
   };
 
@@ -79,6 +131,36 @@ const SiteAdmin = () => {
       </div>
 
       <div className="grid gap-8">
+        <div className="p-6 border rounded-lg">
+          <div className="flex items-center gap-2 mb-6">
+            <Image className="w-5 h-5" />
+            <h2 className="text-xl font-semibold">Logo</h2>
+          </div>
+
+          <div className="space-y-4">
+            {(settings.value as ThemeSettings).logo?.url && (
+              <div className="w-32">
+                <img 
+                  src={(settings.value as ThemeSettings).logo.url} 
+                  alt="Site logo" 
+                  className="w-full h-auto"
+                />
+              </div>
+            )}
+            <div>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="max-w-sm"
+              />
+              <p className="text-sm text-muted-foreground mt-1">
+                Recommended size: 200x50px
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="p-6 border rounded-lg">
           <div className="flex items-center gap-2 mb-6">
             <Palette className="w-5 h-5" />

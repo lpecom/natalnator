@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      banners: {
+        Row: {
+          banner_type: string
+          created_at: string
+          desktop_image_url: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          link_url: string | null
+          mobile_image_url: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          banner_type?: string
+          created_at?: string
+          desktop_image_url: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          mobile_image_url: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          banner_type?: string
+          created_at?: string
+          desktop_image_url?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          mobile_image_url?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       campaign_metrics: {
         Row: {
           campaign_id: string | null
@@ -213,6 +252,39 @@ export type Database = {
           },
         ]
       }
+      drivers: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          phone_number: string
+          region: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone_number: string
+          region?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone_number?: string
+          region?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       landing_page_products: {
         Row: {
           benefits_html: string | null
@@ -372,6 +444,137 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      order_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          order_id: string | null
+          price: number
+          product_id: string | null
+          quantity: number
+          updated_at: string | null
+          variant_selections: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          price: number
+          product_id?: string | null
+          quantity?: number
+          updated_at?: string | null
+          variant_selections?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          price?: number
+          product_id?: string | null
+          quantity?: number
+          updated_at?: string | null
+          variant_selections?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "landing_page_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          address: string
+          call_center_confirmed: boolean | null
+          call_center_confirmed_at: string | null
+          call_center_notes: string | null
+          city: string
+          confirmation_date: string | null
+          created_at: string
+          customer_name: string
+          delivery_date: string | null
+          driver_id: string | null
+          driver_notes: string | null
+          email: string | null
+          id: string
+          order_status: string
+          phone_number: string
+          pickup_date: string | null
+          postal_code: string
+          product_id: string | null
+          state: string
+          status_history: Json | null
+          updated_at: string
+          variant_selections: Json | null
+        }
+        Insert: {
+          address: string
+          call_center_confirmed?: boolean | null
+          call_center_confirmed_at?: string | null
+          call_center_notes?: string | null
+          city: string
+          confirmation_date?: string | null
+          created_at?: string
+          customer_name: string
+          delivery_date?: string | null
+          driver_id?: string | null
+          driver_notes?: string | null
+          email?: string | null
+          id?: string
+          order_status?: string
+          phone_number: string
+          pickup_date?: string | null
+          postal_code: string
+          product_id?: string | null
+          state: string
+          status_history?: Json | null
+          updated_at?: string
+          variant_selections?: Json | null
+        }
+        Update: {
+          address?: string
+          call_center_confirmed?: boolean | null
+          call_center_confirmed_at?: string | null
+          call_center_notes?: string | null
+          city?: string
+          confirmation_date?: string | null
+          created_at?: string
+          customer_name?: string
+          delivery_date?: string | null
+          driver_id?: string | null
+          driver_notes?: string | null
+          email?: string | null
+          id?: string
+          order_status?: string
+          phone_number?: string
+          pickup_date?: string | null
+          postal_code?: string
+          product_id?: string | null
+          state?: string
+          status_history?: Json | null
+          updated_at?: string
+          variant_selections?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "landing_page_products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payment_methods: {
         Row: {
@@ -539,6 +742,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          is_admin: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          is_admin?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       publisher_metrics: {
         Row: {

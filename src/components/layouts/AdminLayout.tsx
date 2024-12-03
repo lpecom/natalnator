@@ -2,6 +2,8 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, Image, Settings, FileText } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -9,6 +11,20 @@ interface AdminLayoutProps {
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
+
+  const { data: settings } = useQuery({
+    queryKey: ['site-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*')
+        .eq('key', 'theme')
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+  });
 
   const navigation = [
     {
@@ -43,11 +59,19 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
                 <div className="flex flex-shrink-0 items-center px-4">
                   <Link to="/">
-                    <img
-                      src="/lovable-uploads/afad369a-bb88-4bbc-aba2-54ae54f3591e.png"
-                      alt="Logo"
-                      className="h-8 w-auto"
-                    />
+                    {settings?.value?.logo?.url ? (
+                      <img
+                        src={settings.value.logo.url}
+                        alt="Logo"
+                        className="h-8 w-auto"
+                      />
+                    ) : (
+                      <img
+                        src="/lovable-uploads/afad369a-bb88-4bbc-aba2-54ae54f3591e.png"
+                        alt="Logo"
+                        className="h-8 w-auto"
+                      />
+                    )}
                   </Link>
                 </div>
                 <nav className="mt-8 flex-1 space-y-1 px-2">

@@ -1,13 +1,37 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
+  const { data: settings } = useQuery({
+    queryKey: ['site-settings'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*')
+        .eq('key', 'theme')
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
   return (
     <header className="bg-white border-b">
       <div className="container mx-auto px-6 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" className="text-xl font-bold text-gray-900">
-            Loja
+            {settings?.value?.logo?.url ? (
+              <img
+                src={settings.value.logo.url}
+                alt="Logo"
+                className="h-8 w-auto"
+              />
+            ) : (
+              "Loja"
+            )}
           </Link>
           <nav>
             <ul className="flex items-center space-x-6">
