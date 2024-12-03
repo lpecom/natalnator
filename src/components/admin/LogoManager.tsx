@@ -37,15 +37,32 @@ export const LogoManager = ({ settings }: LogoManagerProps) => {
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `logo-${Date.now()}.${fileExt}`;
       
+      // Add upsert and cacheControl options
       const { error: uploadError } = await supabase.storage
         .from('site-assets')
-        .upload(fileName, selectedFile);
+        .upload(fileName, selectedFile, {
+          cacheControl: '3600',
+          upsert: true // Allow overwriting existing files
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('site-assets')
         .getPublicUrl(fileName);
+
+      // Delete old logo file if it exists
+      if (settings?.logo?.url) {
+        const oldFileName = settings.logo.url.split('/').pop();
+        if (oldFileName) {
+          await supabase.storage
+            .from('site-assets')
+            .remove([oldFileName]);
+        }
+      }
 
       const newSettings = {
         ...settings,
@@ -69,13 +86,21 @@ export const LogoManager = ({ settings }: LogoManagerProps) => {
       setSelectedFile(null);
     } catch (error) {
       console.error('Error uploading logo:', error);
-      toast.error("Failed to upload logo");
+      toast.error("Failed to upload logo: " + (error.message || 'Unknown error'));
     }
   };
 
   const handleDelete = async () => {
     try {
-      // Update settings without logo
+      if (settings?.logo?.url) {
+        const fileName = settings.logo.url.split('/').pop();
+        if (fileName) {
+          await supabase.storage
+            .from('site-assets')
+            .remove([fileName]);
+        }
+      }
+
       const newSettings = {
         ...settings,
         logo: undefined
@@ -97,7 +122,7 @@ export const LogoManager = ({ settings }: LogoManagerProps) => {
       setSelectedFile(null);
     } catch (error) {
       console.error('Error removing logo:', error);
-      toast.error("Failed to remove logo");
+      toast.error("Failed to remove logo: " + (error.message || 'Unknown error'));
     }
   };
 
