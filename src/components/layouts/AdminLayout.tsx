@@ -85,13 +85,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                       <img
                         src={settings.value.logo.url}
                         alt={settings.value.logo.alt || "Site Logo"}
-                        className="h-8 w-auto"
+                        className="h-12 w-auto" // Increased from h-8 to h-12
                       />
                     ) : (
                       <img
                         src="/lovable-uploads/afad369a-bb88-4bbc-aba2-54ae54f3591e.png"
                         alt="Logo"
-                        className="h-8 w-auto"
+                        className="h-12 w-auto" // Increased from h-8 to h-12
                       />
                     )}
                   </Link>
