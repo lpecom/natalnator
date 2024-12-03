@@ -3,11 +3,34 @@ import { useNavigate } from "react-router-dom";
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Check if user is already logged in and is admin
+    const checkAdmin = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile?.is_admin) {
+          navigate('/admin');
+        } else {
+          toast.error("You don't have admin access");
+          await supabase.auth.signOut();
+        }
+      }
+    };
+
+    checkAdmin();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session) {
@@ -19,6 +42,9 @@ const AdminLogin = () => {
 
           if (profile?.is_admin) {
             navigate('/admin');
+          } else {
+            toast.error("You don't have admin access");
+            await supabase.auth.signOut();
           }
         }
       }
