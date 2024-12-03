@@ -26,7 +26,7 @@ import {
   Truck,
 } from "lucide-react";
 import { OrderDetails as OrderDetailsType, StatusHistoryEntry } from "@/types/order";
-import { Database } from "@/integrations/supabase/types";
+import { Database, Json } from "@/integrations/supabase/types";
 
 type OrderResponse = {
   id: string;
@@ -122,7 +122,6 @@ const OrderDetails = () => {
         throw new Error("Order not found");
       }
 
-      // Transform the data to match our TypeScript interface
       const transformedOrder: OrderDetailsType = {
         ...orderData,
         status_history: Array.isArray(orderData.status_history) 
