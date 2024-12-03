@@ -100,10 +100,7 @@ const AdminOrders = () => {
       if (fetchError) throw fetchError;
 
       // Parse existing status history and append new status
-      const currentHistory = currentOrder?.status_history 
-        ? (currentOrder.status_history as StatusHistoryItem[]) 
-        : [];
-      
+      const currentHistory = (currentOrder?.status_history as StatusHistoryItem[] | null) ?? [];
       const updatedHistory = [...currentHistory, newStatusHistory];
 
       // Update order with new status and history
@@ -112,7 +109,7 @@ const AdminOrders = () => {
         .update({ 
           order_status: newStatus,
           updated_at: new Date().toISOString(),
-          status_history: updatedHistory
+          status_history: updatedHistory as unknown as Json
         })
         .eq("id", orderId);
 
