@@ -1,9 +1,11 @@
+import { Json } from "@/integrations/supabase/types";
+
 export interface StatusHistoryEntry {
   status: string;
   timestamp: string;
 }
 
-export interface OrderDetails {
+export type OrderDetailsType = {
   id: string;
   customer_name: string;
   phone_number: string;
@@ -33,3 +35,5 @@ export interface OrderDetails {
     phone_number: string;
   } | null;
 }
+
+export type OrderDetails = OrderDetailsType;

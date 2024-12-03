@@ -1,3 +1,10 @@
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
 export const formatStatus = (status: string) => {
   switch (status) {
     case "ready_for_pickup":
@@ -26,4 +33,11 @@ export const getStatusColor = (status: string) => {
     default:
       return "bg-gray-100 text-gray-800";
   }
+};
+
+export const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(amount);
 };

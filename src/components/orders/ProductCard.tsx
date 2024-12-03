@@ -28,7 +28,7 @@ export const ProductCard = ({ order }: { order: OrderDetailsType }) => {
               <div className="text-sm font-medium">Selected Options:</div>
               {Object.entries(order.variant_selections).map(([key, value]) => (
                 <div key={key} className="text-sm text-muted-foreground">
-                  {key}: {value}
+                  {key}: {String(value)}
                 </div>
               ))}
             </div>
