@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Settings } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import RichTextEditor from "@/components/RichTextEditor";
 import { useQueryClient } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
 
 interface BasicProductInfoProps {
   product: any;
@@ -12,6 +13,23 @@ interface BasicProductInfoProps {
 
 const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
   const queryClient = useQueryClient();
+  const [slug, setSlug] = useState(product.landing_page?.slug || '');
+  
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value;
+    if (!slug || slug === product.landing_page?.slug) {
+      // Only auto-generate slug if it hasn't been manually edited
+      setSlug(generateSlug(newName));
+    }
+  };
   
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,7 +53,7 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
       const { error: pageError } = await supabase
         .from("landing_pages")
         .update({
-          slug: formData.get("slug")?.toString() || "",
+          slug: slug || generateSlug(formData.get("name")?.toString() || ""),
         })
         .eq("id", product.landing_page_id);
 
@@ -82,50 +100,50 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
       <form onSubmit={handleUpdate} className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">Name</label>
-          <input
+          <Input
             name="name"
             type="text"
             defaultValue={product.name}
-            className="w-full p-2 border rounded"
+            onChange={handleNameChange}
           />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">URL Slug</label>
-          <input
+          <Input
             name="slug"
             type="text"
-            defaultValue={product.landing_page?.slug}
-            className="w-full p-2 border rounded"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
             placeholder="product-url-slug"
           />
+          <p className="text-sm text-muted-foreground mt-1">
+            This will be used in the URL: /p/{slug}
+          </p>
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Price</label>
-          <input
+          <Input
             name="price"
             type="number"
             step="0.01"
             defaultValue={product.price}
-            className="w-full p-2 border rounded"
           />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Original Price</label>
-          <input
+          <Input
             name="original_price"
             type="number"
             step="0.01"
             defaultValue={product.original_price}
-            className="w-full p-2 border rounded"
           />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Stock</label>
-          <input
+          <Input
             name="stock"
             type="number"
             defaultValue={product.stock}
-            className="w-full p-2 border rounded"
           />
         </div>
         <div>
