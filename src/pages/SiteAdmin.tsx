@@ -85,18 +85,24 @@ const SiteAdmin = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `site-logo-${Date.now()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
+      // First upload the file to storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('site-assets')
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
+      // Get the public URL for the uploaded file
       const { data: { publicUrl } } = supabase.storage
         .from('site-assets')
         .getPublicUrl(fileName);
 
       if (!settings) return;
 
+      // Update the settings with the new logo URL
       const newSettings = {
         ...settings.value as ThemeSettings,
         logo: {
@@ -107,6 +113,7 @@ const SiteAdmin = () => {
 
       updateSettings.mutate(newSettings);
     } catch (error) {
+      console.error('Logo upload error:', error);
       toast.error("Failed to upload logo");
     }
   };
