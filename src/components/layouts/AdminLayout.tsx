@@ -1,9 +1,10 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Image, Settings, FileText } from "lucide-react";
+import { LayoutDashboard, Image, Settings, FileText, LogOut } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -28,6 +29,7 @@ interface ThemeSettings {
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const { data: settings } = useQuery({
     queryKey: ['site-settings'],
@@ -46,6 +48,15 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       return data?.value as ThemeSettings;
     }
   });
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Error signing out");
+    } else {
+      navigate("/admin/login");
+    }
+  };
 
   const logoUrl = settings?.logo?.url;
 
@@ -97,7 +108,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                         }}
                       />
                     ) : (
-                      <span className="text-xl font-bold text-gray-900">Loja</span>
+                      <span className="text-xl font-bold text-gray-900">Admin</span>
                     )}
                   </Link>
                 </div>
@@ -127,6 +138,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                       </Link>
                     );
                   })}
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center rounded-md px-2 py-2 text-sm font-medium"
+                  >
+                    <LogOut className="text-gray-400 group-hover:text-gray-500 mr-3 h-5 w-5 flex-shrink-0" />
+                    Logout
+                  </button>
                 </nav>
               </div>
             </div>

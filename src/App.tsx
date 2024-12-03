@@ -3,8 +3,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "./components/layouts/AdminLayout";
 import Index from "./pages/Index";
+import AdminLogin from "./pages/AdminLogin";
 import LandingPages from "./pages/LandingPages";
 import CreateLandingPage from "./pages/CreateLandingPage";
 import EditLandingPage from "./pages/EditLandingPage";
@@ -19,14 +22,46 @@ import Catalog from "./pages/Catalog";
 
 const queryClient = new QueryClient();
 
-const isAuthenticated = () => {
-  return process.env.NODE_ENV === 'development';
-};
-
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  if (!isAuthenticated()) {
-    return <Navigate to="/" replace />;
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        setIsAdmin(false);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+
+      setIsAdmin(!!profile?.is_admin);
+    };
+
+    checkAdmin();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkAdmin();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (isAdmin === null) {
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+    </div>;
   }
+
+  if (!isAdmin) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
   return <>{children}</>;
 };
 
@@ -42,6 +77,7 @@ const App = () => (
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/p/:id" element={<ProductPage />} />
           <Route path="/pages/:slug" element={<ViewCommonPage />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           
           {/* Protected Admin routes */}
           <Route path="/admin" element={
