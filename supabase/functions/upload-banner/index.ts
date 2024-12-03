@@ -13,12 +13,18 @@ serve(async (req) => {
 
   try {
     const formData = await req.formData()
-    const file = formData.get('file')
-    const type = formData.get('type') // 'desktop' or 'mobile'
+    const file = formData.get('file') as File
+    const type = formData.get('type') as string // 'desktop' or 'mobile'
 
     if (!file) {
       throw new Error('No file uploaded')
     }
+
+    console.log('Uploading file:', {
+      name: file.name,
+      type: file.type,
+      size: file.size
+    })
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -31,9 +37,13 @@ serve(async (req) => {
 
     const { data, error: uploadError } = await supabase.storage
       .from('banners')
-      .upload(filePath, file)
+      .upload(filePath, file, {
+        contentType: file.type,
+        upsert: false
+      })
 
     if (uploadError) {
+      console.error('Upload error:', uploadError)
       throw uploadError
     }
 
@@ -41,14 +51,28 @@ serve(async (req) => {
       .from('banners')
       .getPublicUrl(filePath)
 
+    console.log('Upload successful:', { filePath, publicUrl })
+
     return new Response(
       JSON.stringify({ url: publicUrl }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
     )
   } catch (error) {
+    console.error('Function error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        }, 
+        status: 400 
+      }
     )
   }
 })
