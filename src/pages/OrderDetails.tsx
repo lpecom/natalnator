@@ -26,6 +26,7 @@ import {
   XCircle,
   Truck,
 } from "lucide-react";
+import { OrderDetails as OrderDetailsType, StatusHistoryEntry } from "@/types/order";
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -60,7 +61,7 @@ const formatStatus = (status: string) => {
 const OrderDetails = () => {
   const { orderId } = useParams();
 
-  const { data: order, isLoading } = useQuery({
+  const { data: order, isLoading } = useQuery<OrderDetailsType>({
     queryKey: ["order", orderId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -82,7 +83,10 @@ const OrderDetails = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return {
+        ...data,
+        status_history: (data.status_history || []) as StatusHistoryEntry[]
+      };
     },
   });
 
@@ -96,7 +100,7 @@ const OrderDetails = () => {
         },
       ];
 
-      const updates: any = {
+      const updates: Partial<OrderDetailsType> = {
         order_status: newStatus,
         status_history: statusHistory,
       };
@@ -221,7 +225,7 @@ const OrderDetails = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {order.status_history?.map((history: any, index: number) => (
+              {order.status_history.map((history, index) => (
                 <div key={index} className="flex items-start gap-4">
                   <div className="w-2 h-2 mt-2 rounded-full bg-primary" />
                   <div>
