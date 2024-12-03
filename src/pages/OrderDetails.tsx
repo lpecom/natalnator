@@ -19,8 +19,6 @@ const OrderDetails = () => {
     queryFn: async () => {
       if (!orderId) throw new Error("Order ID is required");
 
-      console.log("Fetching order with ID:", orderId);
-
       const { data: orderData, error } = await supabase
         .from("orders")
         .select(`
@@ -30,10 +28,6 @@ const OrderDetails = () => {
             price,
             original_price,
             description_html
-          ),
-          driver:drivers(
-            name,
-            phone_number
           )
         `)
         .eq("id", orderId)
@@ -49,8 +43,6 @@ const OrderDetails = () => {
         throw new Error("Order not found");
       }
 
-      console.log("Raw order data:", orderData);
-
       // Transform the data to match our type
       const transformedOrder: OrderDetailsType = {
         ...orderData,
@@ -60,10 +52,8 @@ const OrderDetails = () => {
         })),
         variant_selections: orderData.variant_selections as Record<string, string> | null,
         product: orderData.product?.[0] || null,
-        driver: orderData.driver?.[0] || null,
       };
 
-      console.log("Transformed order:", transformedOrder);
       return transformedOrder;
     },
   });
@@ -80,7 +70,6 @@ const OrderDetails = () => {
         },
       ];
 
-      // Transform the status history to match Supabase's expected JSON type
       const updates = {
         order_status: newStatus,
         status_history: statusHistory.map(entry => ({

@@ -18,8 +18,6 @@ export interface OrderDetailsType {
   variant_selections: Record<string, string> | null;
   created_at: string;
   updated_at: string;
-  driver_id: string | null;
-  driver_notes: string | null;
   confirmation_date: string | null;
   pickup_date: string | null;
   delivery_date: string | null;
@@ -29,10 +27,6 @@ export interface OrderDetailsType {
     price: number;
     original_price: number | null;
     description_html: string | null;
-  } | null;
-  driver?: {
-    name: string;
-    phone_number: string;
   } | null;
 }
 
