@@ -30,12 +30,12 @@ import { OrderDetails as OrderDetailsType, StatusHistoryEntry } from "@/types/or
 import { Database } from "@/integrations/supabase/types";
 
 type OrderResponse = Database["public"]["Tables"]["orders"]["Row"] & {
-  product: (Database["public"]["Tables"]["landing_page_products"]["Row"] & {
+  product: {
     name: string;
     price: number;
     original_price: number | null;
     description_html: string | null;
-  })[];
+  }[];
   driver: {
     name: string;
     phone_number: string;
@@ -98,7 +98,7 @@ const OrderDetails = () => {
 
       if (error) throw error;
 
-      const rawOrder = orderData as OrderResponse;
+      const rawOrder = orderData as unknown as OrderResponse;
 
       // Transform the data to match our TypeScript interface
       const transformedOrder: OrderDetailsType = {
