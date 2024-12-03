@@ -9,6 +9,23 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
+interface ThemeSettings {
+  colors?: {
+    primary: string;
+    success: string;
+    background: string;
+    foreground: string;
+    muted: string;
+    border: string;
+  };
+  fonts?: {
+    primary: string;
+  };
+  logo?: {
+    url: string;
+  };
+}
+
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
 
@@ -22,7 +39,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data?.value as ThemeSettings;
     }
   });
 
@@ -59,9 +76,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
                 <div className="flex flex-shrink-0 items-center px-4">
                   <Link to="/">
-                    {settings?.value?.logo?.url ? (
+                    {settings?.logo?.url ? (
                       <img
-                        src={settings.value.logo.url}
+                        src={settings.logo.url}
                         alt="Logo"
                         className="h-8 w-auto"
                       />

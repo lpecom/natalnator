@@ -3,6 +3,23 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface ThemeSettings {
+  colors?: {
+    primary: string;
+    success: string;
+    background: string;
+    foreground: string;
+    muted: string;
+    border: string;
+  };
+  fonts?: {
+    primary: string;
+  };
+  logo?: {
+    url: string;
+  };
+}
+
 const Header = () => {
   const { data: settings } = useQuery({
     queryKey: ['site-settings'],
@@ -14,7 +31,7 @@ const Header = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data?.value as ThemeSettings;
     }
   });
 
@@ -23,9 +40,9 @@ const Header = () => {
       <div className="container mx-auto px-6 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" className="text-xl font-bold text-gray-900">
-            {settings?.value?.logo?.url ? (
+            {settings?.logo?.url ? (
               <img
-                src={settings.value.logo.url}
+                src={settings.logo.url}
                 alt="Logo"
                 className="h-8 w-auto"
               />
