@@ -67,7 +67,7 @@ const SiteAdmin = () => {
     const newSettings = {
       ...settings.value as ThemeSettings,
       logo: {
-        url: 'https://iili.io/21OHmua.png',
+        url: 'https://iili.io/21Ody1p.png',
         alt: 'Site Logo'
       }
     };
