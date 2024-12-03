@@ -67,19 +67,23 @@ const SiteAdmin = () => {
       queryClient.invalidateQueries({ queryKey: ['site-settings'] });
     } catch (error) {
       toast.error("Failed to update theme");
+      console.error('Error updating theme:', error);
     }
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !settings) return;
+    if (!file || !settings) {
+      toast.error("No file selected");
+      return;
+    }
 
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `logo-${Date.now()}.${fileExt}`;
 
       // Upload file to storage
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError, data } = await supabase.storage
         .from('site-assets')
         .upload(fileName, file);
 
@@ -112,6 +116,7 @@ const SiteAdmin = () => {
       queryClient.invalidateQueries({ queryKey: ['site-settings'] });
     } catch (error) {
       toast.error("Failed to upload logo");
+      console.error('Error uploading logo:', error);
     }
   };
 
