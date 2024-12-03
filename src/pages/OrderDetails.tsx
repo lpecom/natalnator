@@ -11,6 +11,7 @@ import { ActionsCard } from "@/components/orders/ActionsCard";
 import { CallCenterActions } from "@/components/orders/CallCenterActions";
 import { OrderItems } from "@/components/orders/OrderItems";
 import { formatStatus, getStatusColor } from "@/lib/utils";
+import { toast } from "sonner";
 
 const OrderDetails = () => {
   const { orderId } = useParams();
@@ -95,43 +96,48 @@ const OrderDetails = () => {
       </div>
 
       <div>
-        <ActionsCard order={order} onUpdateStatus={async (newStatus) => {
-          if (!order.call_center_confirmed && newStatus !== "cancelled") {
-            toast.error("Order must be confirmed by call center first");
-            return;
-          }
-      const statusHistory = [
-        ...(order.status_history || []),
-        {
-          status: newStatus,
-          timestamp: new Date().toISOString(),
-        },
-      ];
+        <ActionsCard 
+          order={order} 
+          onUpdateStatus={async (newStatus) => {
+            try {
+              if (!order.call_center_confirmed && newStatus !== "cancelled") {
+                toast.error("Order must be confirmed by call center first");
+                return;
+              }
 
-      const updates = {
-        order_status: newStatus,
-        status_history: statusHistory.map(entry => ({
-          status: entry.status,
-          timestamp: entry.timestamp
-        })),
-        confirmation_date: newStatus === "confirmed" ? new Date().toISOString() : order.confirmation_date,
-        pickup_date: newStatus === "ready_for_pickup" ? new Date().toISOString() : order.pickup_date,
-        delivery_date: newStatus === "delivered" ? new Date().toISOString() : order.delivery_date,
-      };
+              const statusHistory = [
+                ...(order.status_history || []),
+                {
+                  status: newStatus,
+                  timestamp: new Date().toISOString(),
+                },
+              ];
 
-      const { error } = await supabase
-        .from("orders")
-        .update(updates)
-        .eq("id", orderId);
+              const updates = {
+                order_status: newStatus,
+                status_history: statusHistory.map(entry => ({
+                  status: entry.status,
+                  timestamp: entry.timestamp
+                })),
+                confirmation_date: newStatus === "confirmed" ? new Date().toISOString() : order.confirmation_date,
+                pickup_date: newStatus === "ready_for_pickup" ? new Date().toISOString() : order.pickup_date,
+                delivery_date: newStatus === "delivered" ? new Date().toISOString() : order.delivery_date,
+              };
 
-      if (error) throw error;
-      toast.success(`Order status updated to ${formatStatus(newStatus)}`);
-      refetch();
-    } catch (error) {
-      console.error("Error updating order status:", error);
-      toast.error("Failed to update order status");
-    }
-        }} />
+              const { error } = await supabase
+                .from("orders")
+                .update(updates)
+                .eq("id", orderId);
+
+              if (error) throw error;
+              toast.success(`Order status updated to ${formatStatus(newStatus)}`);
+              refetch();
+            } catch (error) {
+              console.error("Error updating order status:", error);
+              toast.error("Failed to update order status");
+            }
+          }} 
+        />
       </div>
     </div>
   );
