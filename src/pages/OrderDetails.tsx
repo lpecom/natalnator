@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -29,7 +28,25 @@ import {
 import { OrderDetails as OrderDetailsType, StatusHistoryEntry } from "@/types/order";
 import { Database } from "@/integrations/supabase/types";
 
-type OrderResponse = Database["public"]["Tables"]["orders"]["Row"] & {
+type OrderResponse = {
+  id: string;
+  customer_name: string;
+  phone_number: string;
+  email: string | null;
+  address: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  order_status: string;
+  variant_selections: Record<string, string> | null;
+  created_at: string;
+  updated_at: string;
+  driver_id: string | null;
+  driver_notes: string | null;
+  confirmation_date: string | null;
+  pickup_date: string | null;
+  delivery_date: string | null;
+  status_history: StatusHistoryEntry[];
   product: {
     name: string;
     price: number;
@@ -75,7 +92,7 @@ const formatStatus = (status: string) => {
 const OrderDetails = () => {
   const { orderId } = useParams();
 
-  const { data: order, isLoading } = useQuery<OrderDetailsType>({
+  const { data: order, isLoading } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
       const { data: orderData, error } = await supabase
@@ -96,20 +113,27 @@ const OrderDetails = () => {
         .eq("id", orderId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching order:", error);
+        throw error;
+      }
 
-      const rawOrder = orderData as unknown as OrderResponse;
+      if (!orderData) {
+        throw new Error("Order not found");
+      }
 
       // Transform the data to match our TypeScript interface
       const transformedOrder: OrderDetailsType = {
-        ...rawOrder,
-        status_history: (rawOrder.status_history as any[] || []).map((entry) => ({
-          status: entry.status as string,
-          timestamp: entry.timestamp as string,
-        })),
-        variant_selections: rawOrder.variant_selections as Record<string, string> | null,
-        product: rawOrder.product?.[0] || null,
-        driver: rawOrder.driver?.[0] || null
+        ...orderData,
+        status_history: Array.isArray(orderData.status_history) 
+          ? orderData.status_history.map((entry: any) => ({
+              status: entry.status,
+              timestamp: entry.timestamp,
+            }))
+          : [],
+        variant_selections: orderData.variant_selections as Record<string, string> | null,
+        product: orderData.product?.[0] || null,
+        driver: orderData.driver?.[0] || null,
       };
 
       return transformedOrder;
@@ -117,7 +141,7 @@ const OrderDetails = () => {
   });
 
   const updateOrderStatus = async (newStatus: string) => {
-    if (!order) return;
+    if (!order || !orderId) return;
 
     try {
       const statusHistory = [
@@ -128,12 +152,12 @@ const OrderDetails = () => {
         },
       ];
 
-      const updates: Database["public"]["Tables"]["orders"]["Update"] = {
+      const updates = {
         order_status: newStatus,
-        status_history: statusHistory as any,
-        confirmation_date: newStatus === "confirmed" ? new Date().toISOString() : undefined,
-        pickup_date: newStatus === "ready_for_pickup" ? new Date().toISOString() : undefined,
-        delivery_date: newStatus === "delivered" ? new Date().toISOString() : undefined,
+        status_history: statusHistory,
+        confirmation_date: newStatus === "confirmed" ? new Date().toISOString() : order.confirmation_date,
+        pickup_date: newStatus === "ready_for_pickup" ? new Date().toISOString() : order.pickup_date,
+        delivery_date: newStatus === "delivered" ? new Date().toISOString() : order.delivery_date,
       };
 
       const { error } = await supabase
@@ -144,6 +168,7 @@ const OrderDetails = () => {
       if (error) throw error;
       toast.success(`Order status updated to ${formatStatus(newStatus)}`);
     } catch (error) {
+      console.error("Error updating order status:", error);
       toast.error("Failed to update order status");
     }
   };
