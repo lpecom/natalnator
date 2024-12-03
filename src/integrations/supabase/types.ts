@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      banners: {
+        Row: {
+          banner_type: string
+          created_at: string
+          desktop_image_url: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          link_url: string | null
+          mobile_image_url: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          banner_type?: string
+          created_at?: string
+          desktop_image_url: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          mobile_image_url: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          banner_type?: string
+          created_at?: string
+          desktop_image_url?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          mobile_image_url?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       campaign_metrics: {
         Row: {
           campaign_id: string | null

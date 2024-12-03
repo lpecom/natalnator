@@ -8,8 +8,40 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useMediaQuery } from "@/hooks/use-mobile";
 
 const Index = () => {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  const { data: mainBanner } = useQuery({
+    queryKey: ["main-banner"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("banners")
+        .select("*")
+        .eq("banner_type", "main")
+        .eq("is_active", true)
+        .order("display_order")
+        .limit(1)
+        .single();
+      return data;
+    },
+  });
+
+  const { data: smallBanners } = useQuery({
+    queryKey: ["small-banners"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("banners")
+        .select("*")
+        .eq("banner_type", "small")
+        .eq("is_active", true)
+        .order("display_order")
+        .limit(3);
+      return data;
+    },
+  });
+
   const { data: featuredProducts, isLoading } = useQuery({
     queryKey: ["featured-products"],
     queryFn: async () => {
@@ -50,63 +82,28 @@ const Index = () => {
     <div className="min-h-screen bg-white flex flex-col">
       <Header />
       <main className="flex-grow">
-        {/* Hero Section - More impactful and mobile-first */}
-        <section className="relative bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5">
-          <div className="container mx-auto px-4 py-12 md:py-24">
-            <div className="max-w-3xl mx-auto text-center space-y-6">
-              <Badge variant="secondary" className="mb-4 animate-fade-in">
-                Novidades toda semana
-              </Badge>
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight animate-fade-in">
-                Descubra Produtos Incríveis
-              </h1>
-              <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto animate-fade-in">
-                As melhores ofertas com entrega rápida e segura para todo o Brasil
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in">
-                <Link to="/catalog">
-                  <Button size="lg" className="w-full sm:w-auto text-lg px-8 h-12">
-                    Ver Catálogo
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-                <Link to="/catalog">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto text-lg px-8 h-12">
-                    Ofertas Especiais
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* Main Banner Section */}
+        {mainBanner && (
+          <section className="w-full">
+            {mainBanner.link_url ? (
+              <Link to={mainBanner.link_url}>
+                <img
+                  src={isMobile ? mainBanner.mobile_image_url : mainBanner.desktop_image_url}
+                  alt={mainBanner.name}
+                  className="w-full h-auto object-cover"
+                />
+              </Link>
+            ) : (
+              <img
+                src={isMobile ? mainBanner.mobile_image_url : mainBanner.desktop_image_url}
+                alt={mainBanner.name}
+                className="w-full h-auto object-cover"
+              />
+            )}
+          </section>
+        )}
 
-        {/* Benefits Section - Enhanced visual appeal */}
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-              {benefits.map((benefit, index) => (
-                <Card 
-                  key={index} 
-                  className="border-none shadow-soft hover:shadow-card transition-all duration-300 hover:-translate-y-1"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start space-x-4">
-                      <div className={`p-3 rounded-xl ${benefit.color}`}>
-                        {benefit.icon}
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2">{benefit.title}</h3>
-                        <p className="text-gray-600">{benefit.description}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Featured Products Section - Improved grid and loading states */}
+        {/* Featured Products Section */}
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
@@ -176,13 +173,60 @@ const Index = () => {
                     </Link>
                   ))}
             </div>
-            <div className="text-center mt-12">
-              <Link to="/catalog">
-                <Button variant="outline" size="lg" className="gap-2">
-                  Ver Todos os Produtos
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
+          </div>
+        </section>
+
+        {/* Small Banners Section */}
+        {smallBanners && smallBanners.length > 0 && (
+          <section className="py-16 bg-white">
+            <div className="container mx-auto px-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {smallBanners.map((banner) => (
+                  <div key={banner.id} className="relative overflow-hidden rounded-lg">
+                    {banner.link_url ? (
+                      <Link to={banner.link_url}>
+                        <img
+                          src={isMobile ? banner.mobile_image_url : banner.desktop_image_url}
+                          alt={banner.name}
+                          className="w-full h-auto object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      </Link>
+                    ) : (
+                      <img
+                        src={isMobile ? banner.mobile_image_url : banner.desktop_image_url}
+                        alt={banner.name}
+                        className="w-full h-auto object-cover"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Benefits Section */}
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              {benefits.map((benefit, index) => (
+                <Card 
+                  key={index} 
+                  className="border-none shadow-soft hover:shadow-card transition-all duration-300 hover:-translate-y-1"
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-4">
+                      <div className={`p-3 rounded-xl ${benefit.color}`}>
+                        {benefit.icon}
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold mb-2">{benefit.title}</h3>
+                        <p className="text-gray-600">{benefit.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </section>
