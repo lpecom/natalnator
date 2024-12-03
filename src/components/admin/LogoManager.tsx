@@ -21,13 +21,16 @@ export const LogoManager = ({ settings }: LogoManagerProps) => {
     }
 
     try {
+      // Upload file to storage
       const fileExt = file.name.split('.').pop();
       const fileName = `logo-${Date.now()}.${fileExt}`;
-
-      // Upload file to storage
+      
       const { error: uploadError, data } = await supabase.storage
         .from('site-assets')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) throw uploadError;
 
@@ -57,8 +60,8 @@ export const LogoManager = ({ settings }: LogoManagerProps) => {
       toast.success("Logo updated successfully");
       queryClient.invalidateQueries({ queryKey: ['site-settings'] });
     } catch (error) {
-      toast.error("Failed to upload logo");
       console.error('Error uploading logo:', error);
+      toast.error("Failed to upload logo");
     }
   };
 
