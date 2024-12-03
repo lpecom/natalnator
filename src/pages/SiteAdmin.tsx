@@ -40,10 +40,10 @@ const SiteAdmin = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['site-settings'] });
-      toast.success("Settings updated successfully");
+      toast.success("Configurações atualizadas com sucesso");
     },
     onError: () => {
-      toast.error("Failed to update settings");
+      toast.error("Falha ao atualizar configurações");
     }
   });
 
@@ -68,7 +68,7 @@ const SiteAdmin = () => {
       ...settings.value as ThemeSettings,
       logo: {
         url: 'https://iili.io/21Ody1p.png',
-        alt: 'Site Logo'
+        alt: 'Logo do Site'
       }
     };
 
@@ -76,18 +76,18 @@ const SiteAdmin = () => {
   };
 
   if (isLoading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-8">Carregando...</div>;
   }
 
   if (!settings) {
-    return <div className="p-8">No settings found</div>;
+    return <div className="p-8">Nenhuma configuração encontrada</div>;
   }
 
   return (
     <div className="container mx-auto p-8">
       <div className="flex items-center gap-2 mb-8">
         <Settings className="w-6 h-6" />
-        <h1 className="text-2xl font-bold">Site Administration</h1>
+        <h1 className="text-2xl font-bold">Administração do Site</h1>
       </div>
 
       <div className="grid gap-8">
@@ -95,10 +95,10 @@ const SiteAdmin = () => {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <Settings className="w-5 h-5" />
-              <h2 className="text-xl font-semibold">Site Logo</h2>
+              <h2 className="text-xl font-semibold">Logo do Site</h2>
             </div>
             <Button onClick={handleSetDefaultLogo}>
-              Load Default Logo
+              Carregar Logo Padrão
             </Button>
           </div>
 
@@ -107,7 +107,7 @@ const SiteAdmin = () => {
               <div className="w-48 h-24 relative border rounded-lg overflow-hidden">
                 <img 
                   src={settings.value.logo.url} 
-                  alt="Site Logo"
+                  alt="Logo do Site"
                   className="w-full h-full object-contain"
                 />
               </div>

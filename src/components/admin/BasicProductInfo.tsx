@@ -33,10 +33,10 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
       queryClient.invalidateQueries({ queryKey: ["product-details"] });
       queryClient.invalidateQueries({ queryKey: ["admin-product"] });
       
-      toast.success("Product information updated successfully");
+      toast.success("Informações do produto atualizadas com sucesso");
       onUpdate();
     } catch (error) {
-      toast.error("Failed to update product information");
+      toast.error("Falha ao atualizar informações do produto");
     }
   };
 
@@ -54,10 +54,10 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
       queryClient.invalidateQueries({ queryKey: ["product-details"] });
       queryClient.invalidateQueries({ queryKey: ["admin-product"] });
       
-      toast.success("Description updated successfully");
+      toast.success("Descrição atualizada com sucesso");
       onUpdate();
     } catch (error) {
-      toast.error("Failed to update description");
+      toast.error("Falha ao atualizar descrição");
     }
   };
 
@@ -65,11 +65,11 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
     <div className="p-6 border rounded-lg">
       <div className="flex items-center gap-2 mb-4">
         <Settings className="w-5 h-5" />
-        <h2 className="text-xl font-semibold">Basic Information</h2>
+        <h2 className="text-xl font-semibold">Informações Básicas</h2>
       </div>
       <form onSubmit={handleUpdate} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Name</label>
+          <label className="block text-sm font-medium mb-1">Nome</label>
           <input
             name="name"
             type="text"
@@ -78,7 +78,7 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Price</label>
+          <label className="block text-sm font-medium mb-1">Preço</label>
           <input
             name="price"
             type="number"
@@ -88,7 +88,7 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Original Price</label>
+          <label className="block text-sm font-medium mb-1">Preço Original</label>
           <input
             name="original_price"
             type="number"
@@ -98,7 +98,7 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Stock</label>
+          <label className="block text-sm font-medium mb-1">Estoque</label>
           <input
             name="stock"
             type="number"
@@ -107,7 +107,7 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Description</label>
+          <label className="block text-sm font-medium mb-1">Descrição</label>
           <RichTextEditor
             content={product.description_html || ""}
             onChange={handleDescriptionChange}
@@ -119,7 +119,7 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
           type="submit"
           className="w-full bg-primary text-white py-2 rounded hover:bg-primary/90"
         >
-          Save Changes
+          Salvar Alterações
         </button>
       </form>
     </div>
