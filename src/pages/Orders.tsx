@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import AdminHeader from "@/components/admin/AdminHeader";
+import { Link } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -164,8 +165,9 @@ const OrdersTable = ({ orders }: { orders: any[] }) => {
                   variant="outline"
                   size="sm"
                   className="w-[110px]"
+                  asChild
                 >
-                  View Details
+                  <Link to={`/admin/orders/${order.id}`}>View Details</Link>
                 </Button>
               </div>
             </TableCell>
