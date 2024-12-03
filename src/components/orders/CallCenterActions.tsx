@@ -43,7 +43,7 @@ export const CallCenterActions = ({ order, onUpdate }: CallCenterActionsProps) =
   if (order.call_center_confirmed) {
     return (
       <div className="flex items-center gap-2">
-        <Badge variant="success" className="gap-1">
+        <Badge variant="secondary" className="gap-1 bg-green-100 text-green-700 hover:bg-green-200">
           <CheckCircle className="w-4 h-4" />
           Confirmed by Call Center
         </Badge>
