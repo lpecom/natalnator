@@ -60,7 +60,8 @@ const OrderDetails = () => {
         })),
         variant_selections: orderData.variant_selections as Record<string, string> | null,
         product: orderData.product?.[0] || null,
-        driver: orderData.driver || null,
+        // Access the first driver from the array and ensure it matches the expected type
+        driver: orderData.driver?.[0] || null,
       };
 
       console.log("Transformed order:", transformedOrder);
@@ -83,7 +84,7 @@ const OrderDetails = () => {
       // Transform the status history to match Supabase's expected JSON type
       const updates = {
         order_status: newStatus,
-        status_history: statusHistory as unknown as any[],
+        status_history: statusHistory,
         confirmation_date: newStatus === "confirmed" ? new Date().toISOString() : order.confirmation_date,
         pickup_date: newStatus === "ready_for_pickup" ? new Date().toISOString() : order.pickup_date,
         delivery_date: newStatus === "delivered" ? new Date().toISOString() : order.delivery_date,
