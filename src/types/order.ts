@@ -5,7 +5,7 @@ export interface StatusHistoryEntry {
   timestamp: string;
 }
 
-export type OrderDetailsType = {
+export interface OrderDetailsType {
   id: string;
   customer_name: string;
   phone_number: string;
