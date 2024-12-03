@@ -32,11 +32,6 @@ const BannerForm = () => {
         }
       });
 
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Invalid response format from server');
-      }
-
       const data = await response.json();
 
       if (!response.ok) {

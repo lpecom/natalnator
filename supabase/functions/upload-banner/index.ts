@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Content-Type': 'application/json'
 }
 
 serve(async (req) => {
@@ -18,7 +19,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'No authorization header' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+        { headers: corsHeaders, status: 401 }
       )
     }
 
@@ -35,14 +36,14 @@ serve(async (req) => {
     if (!file || !(file instanceof File)) {
       return new Response(
         JSON.stringify({ error: 'Invalid file uploaded' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: corsHeaders, status: 400 }
       )
     }
 
     if (!type || (type !== 'desktop' && type !== 'mobile')) {
       return new Response(
         JSON.stringify({ error: 'Invalid type specified' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { headers: corsHeaders, status: 400 }
       )
     }
 
@@ -69,7 +70,7 @@ serve(async (req) => {
       console.error('Upload error:', uploadError)
       return new Response(
         JSON.stringify({ error: 'Failed to upload file', details: uploadError }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        { headers: corsHeaders, status: 500 }
       )
     }
 
@@ -81,7 +82,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ url: publicUrl }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: corsHeaders }
     )
   } catch (error) {
     console.error('Function error:', error)
@@ -89,10 +90,7 @@ serve(async (req) => {
       JSON.stringify({ 
         error: error instanceof Error ? error.message : 'An unknown error occurred during upload'
       }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      }
+      { headers: corsHeaders, status: 500 }
     )
   }
 })
