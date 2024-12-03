@@ -3,8 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./hooks/useAuth";
 import AdminLayout from "./components/layouts/AdminLayout";
 import Index from "./pages/Index";
+import Login from "./pages/Login";
 import LandingPages from "./pages/LandingPages";
 import CreateLandingPage from "./pages/CreateLandingPage";
 import EditLandingPage from "./pages/EditLandingPage";
@@ -21,17 +23,21 @@ import OrderDetails from "./pages/OrderDetails";
 
 const queryClient = new QueryClient();
 
-// Simple authentication check - in a real app, you'd want to use a proper auth system
-const isAuthenticated = () => {
-  // For development, we'll always return true
-  // In production, this should check for actual authentication
-  return process.env.NODE_ENV === 'development';
-};
-
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  if (!isAuthenticated()) {
+  const { isLoading, isAdmin, session } = useAuth();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
     return <Navigate to="/" replace />;
   }
+
   return <>{children}</>;
 };
 
@@ -44,6 +50,7 @@ const App = () => (
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/p/:slug" element={<ProductPage />} />
           <Route path="/pages/:slug" element={<ViewCommonPage />} />
