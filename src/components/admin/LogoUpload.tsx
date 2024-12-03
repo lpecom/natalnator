@@ -22,7 +22,10 @@ export const LogoUpload = ({ settings, onUpdate }: LogoUploadProps) => {
       // Upload to site-assets bucket
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('site-assets')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
