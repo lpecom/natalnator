@@ -11,6 +11,9 @@ import {
 } from "@/components/ui/table";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { formatCurrency } from "@/lib/utils";
 
 const Orders = () => {
   const { data: orders, isLoading } = useQuery({
@@ -20,7 +23,7 @@ const Orders = () => {
         .from("orders")
         .select(`
           *,
-          product:landing_page_products(name)
+          product:landing_page_products(name, price)
         `)
         .order("created_at", { ascending: false });
 
@@ -59,6 +62,22 @@ const Orders = () => {
     }
   };
 
+  const getTodayOrders = () => {
+    if (!orders) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return orders.filter((order) => {
+      const orderDate = new Date(order.created_at);
+      orderDate.setHours(0, 0, 0, 0);
+      return orderDate.getTime() === today.getTime();
+    });
+  };
+
+  const getFilteredOrders = (status: string) => {
+    if (!orders) return [];
+    return orders.filter((order) => order.order_status === status);
+  };
+
   if (isLoading) {
     return <div className="p-8">Loading...</div>;
   }
@@ -67,37 +86,93 @@ const Orders = () => {
     <div className="p-8">
       <AdminHeader title="Orders" />
       
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order ID</TableHead>
-              <TableHead>Product</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Date</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders?.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-medium">{order.id.slice(0, 8)}</TableCell>
-                <TableCell>{order.product?.name}</TableCell>
-                <TableCell>{order.customer_name}</TableCell>
-                <TableCell>
-                  <Badge variant="secondary" className={getStatusColor(order.order_status)}>
-                    {formatStatus(order.order_status)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {format(new Date(order.created_at), "MMM d, yyyy")}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <Tabs defaultValue="all" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="all">All Orders</TabsTrigger>
+          <TabsTrigger value="today">Today's Orders</TabsTrigger>
+          <TabsTrigger value="pending">Pending</TabsTrigger>
+          <TabsTrigger value="ready">Ready for Pickup</TabsTrigger>
+          <TabsTrigger value="transit">In Transit</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all" className="rounded-md border">
+          <OrdersTable orders={orders || []} />
+        </TabsContent>
+
+        <TabsContent value="today" className="rounded-md border">
+          <OrdersTable orders={getTodayOrders()} />
+        </TabsContent>
+
+        <TabsContent value="pending" className="rounded-md border">
+          <OrdersTable orders={getFilteredOrders('pending')} />
+        </TabsContent>
+
+        <TabsContent value="ready" className="rounded-md border">
+          <OrdersTable orders={getFilteredOrders('ready_for_pickup')} />
+        </TabsContent>
+
+        <TabsContent value="transit" className="rounded-md border">
+          <OrdersTable orders={getFilteredOrders('in_transit')} />
+        </TabsContent>
+      </Tabs>
     </div>
+  );
+};
+
+const OrdersTable = ({ orders }: { orders: any[] }) => {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Order ID</TableHead>
+          <TableHead>Customer</TableHead>
+          <TableHead>Address</TableHead>
+          <TableHead>Amount</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Date</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {orders.map((order) => (
+          <TableRow key={order.id}>
+            <TableCell className="font-medium">{order.id.slice(0, 8)}</TableCell>
+            <TableCell>
+              <div>
+                <div className="font-medium">{order.customer_name}</div>
+                <div className="text-sm text-muted-foreground">{order.phone_number}</div>
+              </div>
+            </TableCell>
+            <TableCell>
+              <div className="text-sm">
+                <div>{order.address}</div>
+                <div>{order.city}, {order.state} {order.postal_code}</div>
+              </div>
+            </TableCell>
+            <TableCell>{formatCurrency(order.product?.price || 0)}</TableCell>
+            <TableCell>
+              <Badge variant="secondary" className={getStatusColor(order.order_status)}>
+                {formatStatus(order.order_status)}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              {format(new Date(order.created_at), "MMM d, yyyy")}
+            </TableCell>
+            <TableCell>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-[110px]"
+                >
+                  View Details
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 };
 
