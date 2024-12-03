@@ -16,6 +16,7 @@ import EditCommonPage from "./pages/EditCommonPage";
 import ViewCommonPage from "./pages/ViewCommonPage";
 import Catalog from "./pages/Catalog";
 import Checkout from "./pages/Checkout";
+import Orders from "./pages/Orders";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,13 @@ const App = () => (
             <ProtectedRoute>
               <AdminLayout>
                 <SiteAdmin />
+              </AdminLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/orders" element={
+            <ProtectedRoute>
+              <AdminLayout>
+                <Orders />
               </AdminLayout>
             </ProtectedRoute>
           } />
