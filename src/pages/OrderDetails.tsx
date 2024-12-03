@@ -152,9 +152,9 @@ const OrderDetails = () => {
         },
       ];
 
-      const updates = {
+      const updates: Database["public"]["Tables"]["orders"]["Update"] = {
         order_status: newStatus,
-        status_history: statusHistory,
+        status_history: statusHistory as unknown as Json[],
         confirmation_date: newStatus === "confirmed" ? new Date().toISOString() : order.confirmation_date,
         pickup_date: newStatus === "ready_for_pickup" ? new Date().toISOString() : order.pickup_date,
         delivery_date: newStatus === "delivered" ? new Date().toISOString() : order.delivery_date,
