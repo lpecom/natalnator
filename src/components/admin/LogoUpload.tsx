@@ -19,18 +19,17 @@ export const LogoUpload = ({ settings, onUpdate }: LogoUploadProps) => {
       const fileExt = file.name.split('.').pop();
       const fileName = `site-logo-${Date.now()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
+      // Upload to site-assets bucket
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('site-assets')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(fileName, file);
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
-        throw uploadError;
+        throw new Error(uploadError.message);
       }
 
+      // Get the public URL for the uploaded file
       const { data: { publicUrl } } = supabase.storage
         .from('site-assets')
         .getPublicUrl(fileName);
@@ -44,9 +43,10 @@ export const LogoUpload = ({ settings, onUpdate }: LogoUploadProps) => {
       };
 
       onUpdate(newSettings);
+      toast.success("Logo uploaded successfully");
     } catch (error) {
       console.error('Logo upload error:', error);
-      toast.error("Failed to upload logo");
+      toast.error("Failed to upload logo: " + (error as Error).message);
     }
   };
 
