@@ -65,7 +65,7 @@ const EditLandingPage = () => {
               <h1 className="text-xl font-semibold">{landingPage.title}</h1>
             </div>
             <a 
-              href={`/pages/${landingPage.slug}`} 
+              href={`/p/${landingPage.id}`} 
               target="_blank"
               className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/90 font-medium"
             >
