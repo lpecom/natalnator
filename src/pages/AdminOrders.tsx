@@ -100,7 +100,12 @@ const AdminOrders = () => {
       if (fetchError) throw fetchError;
 
       // Parse existing status history and append new status
-      const currentHistory = (currentOrder?.status_history as StatusHistoryItem[] | null) ?? [];
+      const rawHistory = currentOrder?.status_history as Json[] || [];
+      const currentHistory: StatusHistoryItem[] = rawHistory.map(item => ({
+        status: (item as any).status,
+        timestamp: (item as any).timestamp,
+      }));
+      
       const updatedHistory = [...currentHistory, newStatusHistory];
 
       // Update order with new status and history
