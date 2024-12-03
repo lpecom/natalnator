@@ -64,7 +64,7 @@ const OrderDetails = () => {
   const { data: order, isLoading } = useQuery<OrderDetailsType>({
     queryKey: ["order", orderId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: orderData, error } = await supabase
         .from("orders")
         .select(`
           *,
@@ -83,24 +83,33 @@ const OrderDetails = () => {
         .single();
 
       if (error) throw error;
-      return {
-        ...data,
-        status_history: (data.status_history || []) as StatusHistoryEntry[]
+
+      // Transform the data to match our TypeScript interface
+      const transformedOrder: OrderDetailsType = {
+        ...orderData,
+        status_history: (orderData.status_history || []) as StatusHistoryEntry[],
+        variant_selections: orderData.variant_selections as Record<string, string> | null,
+        product: orderData.product?.[0] || null, // Since it returns an array
+        driver: orderData.driver?.[0] || null // Since it returns an array
       };
+
+      return transformedOrder;
     },
   });
 
   const updateOrderStatus = async (newStatus: string) => {
+    if (!order) return;
+
     try {
       const statusHistory = [
-        ...(order?.status_history || []),
+        ...(order.status_history || []),
         {
           status: newStatus,
           timestamp: new Date().toISOString(),
         },
       ];
 
-      const updates: Partial<OrderDetailsType> = {
+      const updates = {
         order_status: newStatus,
         status_history: statusHistory,
       };
