@@ -14,9 +14,13 @@ import { formatStatus, getStatusColor } from "@/lib/utils";
 const OrderDetails = () => {
   const { orderId } = useParams();
 
-  const { data: order, isLoading } = useQuery({
+  const { data: order, isLoading, error } = useQuery({
     queryKey: ["order", orderId],
     queryFn: async () => {
+      if (!orderId) throw new Error("Order ID is required");
+
+      console.log("Fetching order with ID:", orderId);
+
       const { data: orderData, error } = await supabase
         .from("orders")
         .select(`
@@ -41,8 +45,11 @@ const OrderDetails = () => {
       }
 
       if (!orderData) {
+        console.error("No order data found for ID:", orderId);
         throw new Error("Order not found");
       }
+
+      console.log("Raw order data:", orderData);
 
       // Transform the data to match our type
       const transformedOrder: OrderDetailsType = {
@@ -53,9 +60,10 @@ const OrderDetails = () => {
         })),
         variant_selections: orderData.variant_selections as Record<string, string> | null,
         product: orderData.product?.[0] || null,
-        driver: orderData.driver?.[0] || null,
+        driver: orderData.driver || null,
       };
 
+      console.log("Transformed order:", transformedOrder);
       return transformedOrder;
     },
   });
@@ -94,8 +102,13 @@ const OrderDetails = () => {
     }
   };
 
+  if (error) {
+    console.error("Error in OrderDetails:", error);
+    return <div className="p-8">Error loading order: {error.message}</div>;
+  }
+
   if (isLoading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-8">Loading order details...</div>;
   }
 
   if (!order) {
