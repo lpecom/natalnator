@@ -1,9 +1,9 @@
 import { User, Truck, CheckCircle } from "lucide-react";
 
 const steps = [
-  { id: 1, name: "Personal Info", icon: User },
-  { id: 2, name: "Delivery", icon: Truck },
-  { id: 3, name: "Confirmation", icon: CheckCircle },
+  { id: 1, name: "Dados Pessoais", icon: User },
+  { id: 2, name: "Entrega", icon: Truck },
+  { id: 3, name: "Confirmação", icon: CheckCircle },
 ];
 
 interface CheckoutStepsProps {
@@ -12,7 +12,7 @@ interface CheckoutStepsProps {
 
 export const CheckoutSteps = ({ currentStep }: CheckoutStepsProps) => {
   return (
-    <nav aria-label="Progress" className="mb-8 animate-fade-in">
+    <nav aria-label="Progresso" className="mb-8 animate-fade-in">
       <ol className="flex items-center justify-center space-x-4 md:space-x-8">
         {steps.map((step, stepIdx) => {
           const StepIcon = step.icon;
