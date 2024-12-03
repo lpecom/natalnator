@@ -45,7 +45,7 @@ const Header = () => {
               <img 
                 src={settings.value.logo.url} 
                 alt={settings.value.logo.alt || "Site Logo"}
-                className="h-12 w-auto" // Increased from h-8 to h-12
+                className="h-28 w-auto" // Increased from h-12 to h-28 (108px)
               />
             ) : (
               <span className="text-xl font-bold text-gray-900">
