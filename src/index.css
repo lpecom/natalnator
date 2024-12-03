@@ -5,82 +5,82 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 211 100% 21%;
+    --foreground: 215 60% 26%;
 
     --card: 0 0% 100%;
-    --card-foreground: 211 100% 21%;
+    --card-foreground: 215 60% 26%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 211 100% 21%;
+    --popover-foreground: 215 60% 26%;
 
-    --primary: 144 100% 33%;
+    --primary: 151 100% 34%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 144 30% 96%;
-    --secondary-foreground: 211 100% 21%;
+    --secondary: 151 30% 96%;
+    --secondary-foreground: 215 60% 26%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 215 15% 45%;
+    --muted-foreground: 215 15% 45%;
 
-    --accent: 144 100% 33%;
-    --accent-foreground: 211 100% 21%;
+    --accent: 151 100% 34%;
+    --accent-foreground: 215 60% 26%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 211 100% 21%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 151 100% 34%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 144 30% 96%;
-    --sidebar-foreground: 211 100% 21%;
-    --sidebar-primary: 144 100% 33%;
+    --sidebar-background: 151 30% 96%;
+    --sidebar-foreground: 215 60% 26%;
+    --sidebar-primary: 151 100% 34%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 144 30% 96%;
-    --sidebar-accent-foreground: 211 100% 21%;
-    --sidebar-border: 144 30% 90%;
-    --sidebar-ring: 144 100% 33%;
+    --sidebar-accent: 151 30% 96%;
+    --sidebar-accent-foreground: 215 60% 26%;
+    --sidebar-border: 151 30% 90%;
+    --sidebar-ring: 151 100% 34%;
   }
 
   .dark {
-    --background: 211 100% 21%;
+    --background: 215 60% 26%;
     --foreground: 0 0% 100%;
 
-    --card: 211 100% 21%;
+    --card: 215 60% 26%;
     --card-foreground: 0 0% 100%;
 
-    --popover: 211 100% 21%;
+    --popover: 215 60% 26%;
     --popover-foreground: 0 0% 100%;
 
-    --primary: 144 100% 33%;
+    --primary: 151 100% 34%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 144 30% 26%;
+    --secondary: 151 30% 26%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 144 30% 26%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 151 30% 26%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 144 30% 26%;
+    --accent: 151 30% 26%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 144 30% 26%;
-    --input: 144 30% 26%;
-    --ring: 144 100% 33%;
+    --border: 151 30% 26%;
+    --input: 151 30% 26%;
+    --ring: 151 100% 34%;
 
-    --sidebar-background: 211 100% 21%;
-    --sidebar-foreground: 144 30% 96%;
-    --sidebar-primary: 144 100% 33%;
+    --sidebar-background: 215 60% 26%;
+    --sidebar-foreground: 151 30% 96%;
+    --sidebar-primary: 151 100% 34%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 211 30% 26%;
-    --sidebar-accent-foreground: 144 30% 96%;
-    --sidebar-border: 211 30% 26%;
-    --sidebar-ring: 144 100% 33%;
+    --sidebar-accent: 215 30% 26%;
+    --sidebar-accent-foreground: 151 30% 96%;
+    --sidebar-border: 215 30% 26%;
+    --sidebar-ring: 151 100% 34%;
   }
 }
 
@@ -92,4 +92,35 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Add smooth transitions for color changes */
+  .transition-colors {
+    @apply transition-all duration-200;
+  }
+
+  /* Add hover effects to buttons */
+  button:not([disabled]) {
+    @apply hover:brightness-105 active:brightness-95 transition-all duration-200;
+  }
+
+  /* Add card hover effects */
+  .hover-card {
+    @apply transition-all duration-200 hover:shadow-card hover:-translate-y-1;
+  }
+}
+
+/* Add subtle animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
 }
