@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Image, Settings, FileText, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, Settings, FileText, LogOut, Image } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -87,14 +87,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   const navigation = [
     {
-      name: "Product",
+      name: "Dashboard",
       href: "/admin",
       icon: LayoutDashboard,
     },
     {
-      name: "Landing Pages",
+      name: "Products",
       href: "/landing-pages",
-      icon: Image,
+      icon: Package,
     },
     {
       name: "Common Pages",

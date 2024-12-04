@@ -125,21 +125,21 @@ const App = () => (
               </AdminLayout>
             </ProtectedRoute>
           } />
-          <Route path="/landing-pages" element={
+          <Route path="/products" element={
             <ProtectedRoute>
               <AdminLayout>
                 <LandingPages />
               </AdminLayout>
             </ProtectedRoute>
           } />
-          <Route path="/landing-pages/create" element={
+          <Route path="/products/create" element={
             <ProtectedRoute>
               <AdminLayout>
                 <CreateLandingPage />
               </AdminLayout>
             </ProtectedRoute>
           } />
-          <Route path="/landing-pages/:id/edit" element={
+          <Route path="/products/:id/edit" element={
             <ProtectedRoute>
               <AdminLayout>
                 <EditLandingPage />
