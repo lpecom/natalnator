@@ -93,7 +93,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     },
     {
       name: "Products",
-      href: "/landing-pages",
+      href: "/admin/products",
       icon: Package,
     },
     {
