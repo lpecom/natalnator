@@ -12,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import PageSettings from "@/components/admin/landing-page/PageSettings";
-import PriceManager from "@/components/admin/landing-page/PriceManager";
 
 const EditLandingPage = () => {
   const { id } = useParams();
