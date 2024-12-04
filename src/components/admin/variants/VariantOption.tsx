@@ -20,9 +20,14 @@ const VariantOption = ({
 }: VariantOptionProps) => {
   if (!variants.length) return null;
 
+  // Format the title to be more user-friendly
+  const formattedTitle = title === 'Option1' ? 'Cor' : 
+                        title === 'Option2' ? 'Altura' : 
+                        title;
+
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium">{title}</h3>
+      <h3 className="text-lg font-medium">{formattedTitle}</h3>
       <ToggleGroup 
         type="single" 
         value={selectedValue}
@@ -33,13 +38,15 @@ const VariantOption = ({
           <div key={variant.id} className="relative group">
             <ToggleGroupItem
               value={variant.value}
-              className="w-full p-4 border-2 rounded-lg text-center transition-all data-[state=on]:border-primary data-[state=on]:text-primary"
+              className="w-full p-4 border-2 rounded-lg text-center transition-all data-[state=on]:border-primary data-[state=on]:bg-primary/5"
             >
               <span className="block font-medium">{variant.value}</span>
-              <span className="text-sm text-gray-500">
-                {variant.price_adjustment > 0 ? '+' : ''}
-                R$ {variant.price_adjustment.toFixed(2)}
-              </span>
+              {variant.price_adjustment !== 0 && (
+                <span className="text-sm text-gray-500">
+                  {variant.price_adjustment > 0 ? '+' : ''}
+                  R$ {variant.price_adjustment.toFixed(2)}
+                </span>
+              )}
               {variant.stock !== null && (
                 <span className="text-xs text-gray-400 block mt-1">
                   Stock: {variant.stock}

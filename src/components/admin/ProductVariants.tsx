@@ -14,6 +14,40 @@ interface ProductVariantsProps {
 const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
   const [selectedOptions, setSelectedOptions] = React.useState<Record<string, string>>({});
 
+  // Group variants by their option name (Option1, Option2, Option3)
+  const variantGroups = React.useMemo(() => {
+    if (!product?.product_variants) return {};
+    
+    const groups: Record<string, any[]> = {
+      'Option1': [],
+      'Option2': [],
+      'Option3': []
+    };
+    
+    product.product_variants.forEach((variant: any) => {
+      if (variant.name in groups) {
+        groups[variant.name].push(variant);
+      }
+    });
+    
+    return groups;
+  }, [product?.product_variants]);
+
+  // Set default selections when variants are loaded
+  React.useEffect(() => {
+    const defaultSelections: Record<string, string> = {};
+    
+    Object.entries(variantGroups).forEach(([optionName, variants]) => {
+      if (variants.length > 0 && !selectedOptions[optionName]) {
+        defaultSelections[optionName] = variants[0].value;
+      }
+    });
+
+    if (Object.keys(defaultSelections).length > 0) {
+      setSelectedOptions(prev => ({ ...prev, ...defaultSelections }));
+    }
+  }, [variantGroups]);
+
   const handleAddVariant = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -57,25 +91,6 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
     }
   };
 
-  // Group variants by their option name (Option1, Option2, Option3)
-  const variantGroups = React.useMemo(() => {
-    if (!product?.product_variants) return {};
-    
-    const groups: Record<string, any[]> = {
-      'Option1': [],
-      'Option2': [],
-      'Option3': []
-    };
-    
-    product.product_variants.forEach((variant: any) => {
-      if (variant.name in groups) {
-        groups[variant.name].push(variant);
-      }
-    });
-    
-    return groups;
-  }, [product?.product_variants]);
-
   const basePrice = product?.price || 0;
 
   return (
@@ -96,7 +111,7 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
         {Object.entries(variantGroups).map(([optionName, variants]) => (
           <VariantOption
             key={optionName}
-            title={`${optionName}`}
+            title={optionName}
             variants={variants}
             selectedValue={selectedOptions[optionName]}
             onValueChange={(value) => 

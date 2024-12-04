@@ -21,8 +21,8 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
             className="w-full mt-1 border rounded-md p-2"
             required
           >
-            <option value="Option1">Option 1</option>
-            <option value="Option2">Option 2</option>
+            <option value="Option1">Cor</option>
+            <option value="Option2">Altura</option>
             <option value="Option3">Option 3</option>
           </select>
         </div>
