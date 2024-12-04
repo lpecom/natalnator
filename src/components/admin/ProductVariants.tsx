@@ -14,7 +14,6 @@ interface ProductVariantsProps {
 const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
   const [selectedOptions, setSelectedOptions] = React.useState<Record<string, string>>({});
 
-  // Group variants by their option name
   const variantGroups = React.useMemo(() => {
     if (!product?.product_variants) return {};
     
@@ -49,24 +48,34 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    try {
-      const { error } = await supabase
-        .from("product_variants")
-        .insert({
-          product_id: product.id,
-          name: formData.get("name")?.toString() || "",
-          value: formData.get("value")?.toString() || "",
-          price_adjustment: Number(formData.get("price_adjustment")) || 0,
-          checkout_url: formData.get("checkout_url")?.toString() || "",
-        });
+    const variantData = {
+      product_id: product.id,
+      name: formData.get("name")?.toString() || "",
+      value: formData.get("value")?.toString() || "",
+      price_adjustment: Number(formData.get("price_adjustment")) || 0,
+      checkout_url: formData.get("checkout_url")?.toString() || "",
+    };
 
-      if (error) throw error;
+    console.log("Adding variant with data:", variantData);
+    
+    try {
+      const { data, error } = await supabase
+        .from("product_variants")
+        .insert(variantData);
+
+      console.log("Supabase response:", { data, error });
+
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
       
       toast.success("Variant added successfully");
       onUpdate();
       e.currentTarget.reset();
     } catch (error) {
-      toast.error("Failed to add variant");
+      console.error("Error details:", error);
+      toast.error("Failed to add variant. Please check the console for details.");
     }
   };
 
