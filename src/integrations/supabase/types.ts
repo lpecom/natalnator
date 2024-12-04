@@ -287,55 +287,169 @@ export type Database = {
       }
       landing_page_products: {
         Row: {
+          barcode: string | null
           benefits_html: string | null
+          compare_price_brasil: number | null
+          compare_price_espanha: number | null
+          compare_price_spain: number | null
+          cost_per_item: number | null
           created_at: string | null
           description: string | null
           description_html: string | null
           external_metadata: Json | null
+          gift_card: boolean | null
+          google_shopping_age_group: string | null
+          google_shopping_category: string | null
+          google_shopping_condition: string | null
+          google_shopping_custom_label_0: string | null
+          google_shopping_custom_label_1: string | null
+          google_shopping_custom_label_2: string | null
+          google_shopping_custom_label_3: string | null
+          google_shopping_custom_label_4: string | null
+          google_shopping_custom_product: boolean | null
+          google_shopping_gender: string | null
+          google_shopping_mpn: string | null
           id: string
+          included_brasil: boolean | null
+          included_espanha: boolean | null
+          included_spain: boolean | null
+          is_taxable: boolean | null
           landing_page_id: string | null
           name: string
           original_price: number | null
           price: number
+          price_brasil: number | null
+          price_espanha: number | null
+          price_spain: number | null
+          product_category: string | null
+          product_type: string | null
+          published: boolean | null
+          requires_shipping: boolean | null
+          seo_description: string | null
+          seo_title: string | null
           settings: Json | null
           sku: string | null
           source: string
+          status: string | null
           stock: number | null
+          tags: string[] | null
+          tax_code: string | null
           updated_at: string | null
+          variant_fulfillment_service: string | null
+          variant_inventory_policy: string | null
+          vendor: string | null
+          weight: number | null
+          weight_unit: string | null
         }
         Insert: {
+          barcode?: string | null
           benefits_html?: string | null
+          compare_price_brasil?: number | null
+          compare_price_espanha?: number | null
+          compare_price_spain?: number | null
+          cost_per_item?: number | null
           created_at?: string | null
           description?: string | null
           description_html?: string | null
           external_metadata?: Json | null
+          gift_card?: boolean | null
+          google_shopping_age_group?: string | null
+          google_shopping_category?: string | null
+          google_shopping_condition?: string | null
+          google_shopping_custom_label_0?: string | null
+          google_shopping_custom_label_1?: string | null
+          google_shopping_custom_label_2?: string | null
+          google_shopping_custom_label_3?: string | null
+          google_shopping_custom_label_4?: string | null
+          google_shopping_custom_product?: boolean | null
+          google_shopping_gender?: string | null
+          google_shopping_mpn?: string | null
           id?: string
+          included_brasil?: boolean | null
+          included_espanha?: boolean | null
+          included_spain?: boolean | null
+          is_taxable?: boolean | null
           landing_page_id?: string | null
           name: string
           original_price?: number | null
           price: number
+          price_brasil?: number | null
+          price_espanha?: number | null
+          price_spain?: number | null
+          product_category?: string | null
+          product_type?: string | null
+          published?: boolean | null
+          requires_shipping?: boolean | null
+          seo_description?: string | null
+          seo_title?: string | null
           settings?: Json | null
           sku?: string | null
           source?: string
+          status?: string | null
           stock?: number | null
+          tags?: string[] | null
+          tax_code?: string | null
           updated_at?: string | null
+          variant_fulfillment_service?: string | null
+          variant_inventory_policy?: string | null
+          vendor?: string | null
+          weight?: number | null
+          weight_unit?: string | null
         }
         Update: {
+          barcode?: string | null
           benefits_html?: string | null
+          compare_price_brasil?: number | null
+          compare_price_espanha?: number | null
+          compare_price_spain?: number | null
+          cost_per_item?: number | null
           created_at?: string | null
           description?: string | null
           description_html?: string | null
           external_metadata?: Json | null
+          gift_card?: boolean | null
+          google_shopping_age_group?: string | null
+          google_shopping_category?: string | null
+          google_shopping_condition?: string | null
+          google_shopping_custom_label_0?: string | null
+          google_shopping_custom_label_1?: string | null
+          google_shopping_custom_label_2?: string | null
+          google_shopping_custom_label_3?: string | null
+          google_shopping_custom_label_4?: string | null
+          google_shopping_custom_product?: boolean | null
+          google_shopping_gender?: string | null
+          google_shopping_mpn?: string | null
           id?: string
+          included_brasil?: boolean | null
+          included_espanha?: boolean | null
+          included_spain?: boolean | null
+          is_taxable?: boolean | null
           landing_page_id?: string | null
           name?: string
           original_price?: number | null
           price?: number
+          price_brasil?: number | null
+          price_espanha?: number | null
+          price_spain?: number | null
+          product_category?: string | null
+          product_type?: string | null
+          published?: boolean | null
+          requires_shipping?: boolean | null
+          seo_description?: string | null
+          seo_title?: string | null
           settings?: Json | null
           sku?: string | null
           source?: string
+          status?: string | null
           stock?: number | null
+          tags?: string[] | null
+          tax_code?: string | null
           updated_at?: string | null
+          variant_fulfillment_service?: string | null
+          variant_inventory_policy?: string | null
+          vendor?: string | null
+          weight?: number | null
+          weight_unit?: string | null
         }
         Relationships: [
           {
@@ -659,7 +773,10 @@ export type Database = {
         Row: {
           checkout_url: string | null
           created_at: string | null
+          grams: number | null
           id: string
+          image_url: string | null
+          inventory_tracker: string | null
           name: string
           price_adjustment: number | null
           product_id: string | null
@@ -670,7 +787,10 @@ export type Database = {
         Insert: {
           checkout_url?: string | null
           created_at?: string | null
+          grams?: number | null
           id?: string
+          image_url?: string | null
+          inventory_tracker?: string | null
           name: string
           price_adjustment?: number | null
           product_id?: string | null
@@ -681,7 +801,10 @@ export type Database = {
         Update: {
           checkout_url?: string | null
           created_at?: string | null
+          grams?: number | null
           id?: string
+          image_url?: string | null
+          inventory_tracker?: string | null
           name?: string
           price_adjustment?: number | null
           product_id?: string | null
