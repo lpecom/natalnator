@@ -15,6 +15,7 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
   const [selectedOptions, setSelectedOptions] = React.useState<Record<string, string>>({});
   const [variants, setVariants] = React.useState(product?.product_variants || []);
 
+  // Group variants by option name (e.g., "Option1", "Option2", etc.)
   const variantGroups = React.useMemo(() => {
     if (!variants) return {};
     
@@ -31,7 +32,7 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
     return groups;
   }, [variants]);
 
-  // Set default selections when variants are loaded
+  // Set default selections
   React.useEffect(() => {
     const defaultSelections: Record<string, string> = {};
     
@@ -81,20 +82,15 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
         .from("product_variants")
         .insert(variantData);
 
-      console.log("Supabase response:", { data, error });
-
-      if (error) {
-        console.error("Supabase error:", error);
-        throw error;
-      }
+      if (error) throw error;
       
       toast.success("Variant added successfully");
       await refreshVariants();
       onUpdate();
       e.currentTarget.reset();
     } catch (error) {
-      console.error("Error details:", error);
-      toast.error("Failed to add variant. Please check the console for details.");
+      console.error("Error adding variant:", error);
+      toast.error("Failed to add variant");
     }
   };
 
@@ -111,6 +107,7 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
       await refreshVariants();
       onUpdate();
     } catch (error) {
+      console.error("Error deleting variant:", error);
       toast.error("Failed to delete variant");
     }
   };

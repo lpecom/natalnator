@@ -20,9 +20,15 @@ const VariantOption = ({
 }: VariantOptionProps) => {
   if (!variants.length) return null;
 
+  // Format the title to be more user-friendly
+  const formattedTitle = title === 'Option1' ? 'Color' : 
+                        title === 'Option2' ? 'Size' : 
+                        title === 'Option3' ? 'Style' : 
+                        title;
+
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-medium">{title}</h3>
+      <h3 className="text-lg font-medium">{formattedTitle}</h3>
       <ToggleGroup 
         type="single" 
         value={selectedValue}
@@ -37,8 +43,13 @@ const VariantOption = ({
             >
               <span className="block font-medium">{variant.value}</span>
               <span className="text-sm text-gray-500">
-                R$ {variant.price_adjustment.toFixed(2)}
+                {variant.price_adjustment > 0 ? '+' : ''}{variant.price_adjustment !== 0 ? `R$ ${variant.price_adjustment.toFixed(2)}` : 'No adjustment'}
               </span>
+              {variant.checkout_url && (
+                <span className="text-xs text-gray-400 block mt-1 truncate">
+                  Has checkout URL
+                </span>
+              )}
             </ToggleGroupItem>
             <Button
               variant="ghost"
