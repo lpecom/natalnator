@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LogoManager } from "@/components/admin/LogoManager";
 import { ColorThemeManager } from "@/components/admin/ColorThemeManager";
 import { ThemeSettings, ThemeSettingsJson } from "@/types/theme";
-import { Tables } from "@/integrations/supabase/types";
+import { Tables, Json } from "@/integrations/supabase/types";
 
 const defaultThemeSettings: ThemeSettingsJson = {
   colors: {
