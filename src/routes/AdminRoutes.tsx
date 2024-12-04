@@ -67,8 +67,8 @@ export const AdminRoutes = [
     }
   />,
   <Route
-    key="admin-products"
-    path="/admin/products"
+    key="admin-landing-pages"
+    path="/landing-pages"
     element={
       <ProtectedRoute>
         <AdminLayout>
@@ -78,8 +78,8 @@ export const AdminRoutes = [
     }
   />,
   <Route
-    key="admin-products-create"
-    path="/admin/products/create"
+    key="admin-landing-pages-create"
+    path="/landing-pages/create"
     element={
       <ProtectedRoute>
         <AdminLayout>
@@ -89,8 +89,8 @@ export const AdminRoutes = [
     }
   />,
   <Route
-    key="admin-products-edit"
-    path="/admin/products/:id/edit"
+    key="admin-landing-pages-edit"
+    path="/landing-pages/:id/edit"
     element={
       <ProtectedRoute>
         <AdminLayout>
