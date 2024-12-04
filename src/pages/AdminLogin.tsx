@@ -9,36 +9,52 @@ const AdminLogin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in and is admin
-    const checkAdmin = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile?.is_admin) {
-          navigate('/admin');
-        } else {
-          toast.error("You don't have admin access");
-          await supabase.auth.signOut();
-        }
-      }
-    };
-
-    checkAdmin();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
         if (session) {
-          const { data: profile } = await supabase
+          const { data: profile, error } = await supabase
             .from('profiles')
             .select('is_admin')
             .eq('id', session.user.id)
             .single();
+
+          if (error) {
+            console.error('Error fetching profile:', error);
+            toast.error("Error checking admin status");
+            return;
+          }
+
+          if (profile?.is_admin) {
+            navigate('/admin');
+          } else {
+            toast.error("You don't have admin access");
+            await supabase.auth.signOut();
+          }
+        }
+      } catch (error) {
+        console.error('Error in auth check:', error);
+        toast.error("An error occurred while checking authentication");
+      }
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session) {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', session.user.id)
+            .single();
+
+          if (error) {
+            console.error('Error fetching profile:', error);
+            toast.error("Error checking admin status");
+            return;
+          }
 
           if (profile?.is_admin) {
             navigate('/admin');

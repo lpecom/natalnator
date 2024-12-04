@@ -27,20 +27,30 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const checkAdmin = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          setIsAdmin(false);
+          return;
+        }
+
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+
+        if (error || !profile?.is_admin) {
+          setIsAdmin(false);
+          return;
+        }
+
+        setIsAdmin(true);
+      } catch (error) {
+        console.error('Error checking admin status:', error);
         setIsAdmin(false);
-        return;
       }
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', session.user.id)
-        .single();
-
-      setIsAdmin(!!profile?.is_admin);
     };
 
     checkAdmin();
