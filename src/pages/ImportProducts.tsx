@@ -49,6 +49,8 @@ const ImportProducts = () => {
       const rows = text.split('\n');
       const headers = rows[0].split(',').map(header => header.trim());
       
+      console.log('Headers found:', headers); // Debug log
+
       const products: ShopifyProduct[] = rows.slice(1).map(row => {
         const values = row.split(',');
         return headers.reduce((obj: any, header, index) => {
@@ -57,13 +59,21 @@ const ImportProducts = () => {
         }, {});
       });
 
+      console.log('First product data:', products[0]); // Debug log
+
       let successCount = 0;
       let errorCount = 0;
 
       for (const product of products) {
-        if (!product.Title || !product["Variant Price"]) continue;
+        if (!product.Title || !product["Variant Price"]) {
+          console.log('Skipping product due to missing required fields:', product);
+          errorCount++;
+          continue;
+        }
 
         try {
+          console.log('Attempting to create landing page for:', product.Title);
+          
           // Create landing page
           const { data: landingPage, error: landingPageError } = await supabase
             .from("landing_pages")
@@ -77,7 +87,12 @@ const ImportProducts = () => {
             .select()
             .single();
 
-          if (landingPageError) throw landingPageError;
+          if (landingPageError) {
+            console.error('Landing page creation error:', landingPageError);
+            throw landingPageError;
+          }
+
+          console.log('Landing page created:', landingPage);
 
           // Create product
           const { error: productError } = await supabase
@@ -92,7 +107,10 @@ const ImportProducts = () => {
               external_metadata: { shopify_handle: product.Handle }
             });
 
-          if (productError) throw productError;
+          if (productError) {
+            console.error('Product creation error:', productError);
+            throw productError;
+          }
 
           // Add product image if available
           if (product["Image Src"]) {
@@ -106,7 +124,10 @@ const ImportProducts = () => {
                 display_order: 0
               });
 
-            if (imageError) throw imageError;
+            if (imageError) {
+              console.error('Image creation error:', imageError);
+              throw imageError;
+            }
           }
 
           // Add variants if available
@@ -119,7 +140,10 @@ const ImportProducts = () => {
                 value: product["Option1 Value"]
               });
 
-            if (variantError) throw variantError;
+            if (variantError) {
+              console.error('Variant 1 creation error:', variantError);
+              throw variantError;
+            }
           }
 
           if (product["Option2 Name"] && product["Option2 Value"]) {
@@ -131,7 +155,10 @@ const ImportProducts = () => {
                 value: product["Option2 Value"]
               });
 
-            if (variantError) throw variantError;
+            if (variantError) {
+              console.error('Variant 2 creation error:', variantError);
+              throw variantError;
+            }
           }
 
           successCount++;
@@ -141,9 +168,11 @@ const ImportProducts = () => {
         }
       }
 
-      toast.success(`Import completed: ${successCount} products imported successfully, ${errorCount} failed`);
       if (successCount > 0) {
+        toast.success(`Import completed: ${successCount} products imported successfully, ${errorCount} failed`);
         navigate("/admin/products");
+      } else {
+        toast.error(`Import failed: ${errorCount} products failed to import. Check console for details.`);
       }
     } catch (error) {
       console.error("Error processing CSV:", error);
