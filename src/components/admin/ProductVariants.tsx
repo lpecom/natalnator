@@ -13,21 +13,23 @@ interface ProductVariantsProps {
 
 const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
   const [selectedOptions, setSelectedOptions] = React.useState<Record<string, string>>({});
+  const [variants, setVariants] = React.useState(product?.product_variants || []);
 
   const variantGroups = React.useMemo(() => {
-    if (!product?.product_variants) return {};
+    if (!variants) return {};
     
     const groups: Record<string, any[]> = {};
     
-    product.product_variants.forEach((variant: any) => {
+    variants.forEach((variant: any) => {
       if (!groups[variant.name]) {
         groups[variant.name] = [];
       }
       groups[variant.name].push(variant);
     });
     
+    console.log("Variant groups:", groups);
     return groups;
-  }, [product?.product_variants]);
+  }, [variants]);
 
   // Set default selections when variants are loaded
   React.useEffect(() => {
@@ -43,6 +45,22 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
       setSelectedOptions(prev => ({ ...prev, ...defaultSelections }));
     }
   }, [variantGroups]);
+
+  const refreshVariants = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("product_variants")
+        .select("*")
+        .eq("product_id", product.id);
+
+      if (error) throw error;
+      console.log("Refreshed variants:", data);
+      setVariants(data);
+    } catch (error) {
+      console.error("Error refreshing variants:", error);
+      toast.error("Failed to refresh variants");
+    }
+  };
 
   const handleAddVariant = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -71,6 +89,7 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
       }
       
       toast.success("Variant added successfully");
+      await refreshVariants();
       onUpdate();
       e.currentTarget.reset();
     } catch (error) {
@@ -89,6 +108,7 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
       if (error) throw error;
       
       toast.success("Variant deleted successfully");
+      await refreshVariants();
       onUpdate();
     } catch (error) {
       toast.error("Failed to delete variant");
