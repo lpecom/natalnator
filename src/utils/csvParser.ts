@@ -6,7 +6,48 @@ export interface ShopifyProduct {
   "Variant Compare At Price"?: string;
   "Image Src"?: string;
   "Image Alt Text"?: string;
+  "Image Position"?: string;
   Status?: string;
+  Tags?: string;
+  Vendor?: string;
+  Type?: string;
+  Published?: string;
+  "Variant SKU"?: string;
+  "Product Category"?: string;
+  "Variant Inventory Policy"?: string;
+  "Variant Fulfillment Service"?: string;
+  "Variant Requires Shipping"?: string;
+  "Variant Taxable"?: string;
+  "Variant Barcode"?: string;
+  "Gift Card"?: string;
+  "SEO Title"?: string;
+  "SEO Description"?: string;
+  "Option1 Name"?: string;
+  "Option1 Value"?: string;
+  "Variant Inventory Tracker"?: string;
+  "Variant Grams"?: string;
+  "Variant Image"?: string;
+  "Google Shopping / Google Product Category"?: string;
+  "Google Shopping / Gender"?: string;
+  "Google Shopping / Age Group"?: string;
+  "Google Shopping / MPN"?: string;
+  "Google Shopping / Condition"?: string;
+  "Google Shopping / Custom Product"?: string;
+  "Google Shopping / Custom Label 0"?: string;
+  "Google Shopping / Custom Label 1"?: string;
+  "Google Shopping / Custom Label 2"?: string;
+  "Google Shopping / Custom Label 3"?: string;
+  "Google Shopping / Custom Label 4"?: string;
+  "Cost per item"?: string;
+  "Included / Espanha"?: string;
+  "Price / Espanha"?: string;
+  "Compare At Price / Espanha"?: string;
+  "Included / Brasil"?: string;
+  "Price / Brasil"?: string;
+  "Compare At Price / Brasil"?: string;
+  "Included / Spain"?: string;
+  "Price / Spain"?: string;
+  "Compare At Price / Spain"?: string;
 }
 
 export const parseCSV = (csvText: string): { headers: string[], rows: string[][] } => {
