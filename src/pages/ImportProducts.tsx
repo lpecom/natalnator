@@ -28,6 +28,10 @@ const ImportProducts = () => {
       
       const text = await file.text();
       const { headers, rows } = parseCSV(text);
+      console.log('CSV Content:', text.substring(0, 500)); // Log first 500 chars of CSV
+      console.log('Parsed Headers:', headers);
+      console.log('First Row:', rows[0]);
+      
       const products = mapRowsToProducts(headers, rows);
       
       console.log('\nBeginning product import');
