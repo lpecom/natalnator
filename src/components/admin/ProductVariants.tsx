@@ -28,6 +28,7 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
           price_adjustment: Number(formData.get("price_adjustment")) || 0,
           stock: Number(formData.get("stock")) || 0,
           checkout_url: formData.get("checkout_url")?.toString() || "",
+          description: formData.get("description")?.toString() || "",
         });
 
       if (error) throw error;
@@ -75,14 +76,23 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
     return groups;
   }, [product?.product_variants]);
 
+  const basePrice = product?.price || 0;
+
   return (
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-6">
         <Package2 className="w-5 h-5 text-muted-foreground" />
-        <h2 className="text-xl font-semibold">Product Variants</h2>
+        <h2 className="text-xl font-semibold">Product Variants & Pricing</h2>
       </div>
 
       <div className="space-y-8">
+        <div className="p-4 bg-gray-50 rounded-lg">
+          <h3 className="font-medium mb-2">Base Product Price</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            The base price is R$ {basePrice.toFixed(2)}. Variant prices are calculated as adjustments to this base price.
+          </p>
+        </div>
+
         {Object.entries(variantGroups).map(([optionName, variants]) => (
           <VariantOption
             key={optionName}

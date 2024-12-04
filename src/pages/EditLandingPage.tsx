@@ -147,7 +147,6 @@ const EditLandingPage = () => {
           <TabsList className="bg-white border">
             <TabsTrigger value="settings">Page Settings</TabsTrigger>
             <TabsTrigger value="product">Product Information</TabsTrigger>
-            <TabsTrigger value="pricing">Pricing</TabsTrigger>
             <TabsTrigger value="media">Media</TabsTrigger>
             <TabsTrigger value="variants">Variants</TabsTrigger>
             <TabsTrigger value="benefits">Benefits</TabsTrigger>
@@ -165,10 +164,6 @@ const EditLandingPage = () => {
             <>
               <TabsContent value="product">
                 <BasicProductInfo product={product} onUpdate={refetch} />
-              </TabsContent>
-
-              <TabsContent value="pricing">
-                <PriceManager product={product} onUpdate={handleUpdateProduct} />
               </TabsContent>
 
               <TabsContent value="media">

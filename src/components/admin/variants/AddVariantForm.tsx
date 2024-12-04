@@ -48,8 +48,12 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
               step="0.01"
               placeholder="0.00"
               className="pl-8"
+              required
             />
           </div>
+          <p className="text-xs text-gray-500 mt-1">
+            Amount to add/subtract from base price
+          </p>
         </div>
         <div>
           <Label htmlFor="stock">Stock</Label>
@@ -59,6 +63,7 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
             type="number"
             placeholder="0"
             className="mt-1"
+            required
           />
         </div>
         <div className="md:col-span-2">
@@ -73,7 +78,7 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
           />
         </div>
         <div className="md:col-span-3">
-          <Label htmlFor="description">Description (Optional)</Label>
+          <Label htmlFor="description">Description</Label>
           <Input
             id="description"
             name="description"

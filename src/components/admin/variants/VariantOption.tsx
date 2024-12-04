@@ -36,14 +36,18 @@ const VariantOption = ({
               className="w-full p-4 border-2 rounded-lg text-center transition-all data-[state=on]:border-primary data-[state=on]:text-primary"
             >
               <span className="block font-medium">{variant.value}</span>
-              {variant.price_adjustment > 0 && (
-                <span className="text-sm text-gray-500">
-                  +R$ {variant.price_adjustment.toFixed(2)}
+              <span className="text-sm text-gray-500">
+                {variant.price_adjustment > 0 ? '+' : ''}
+                R$ {variant.price_adjustment.toFixed(2)}
+              </span>
+              {variant.stock !== null && (
+                <span className="text-xs text-gray-400 block mt-1">
+                  Stock: {variant.stock}
                 </span>
               )}
-              {variant.stock !== null && (
-                <span className="text-xs text-gray-400">
-                  Stock: {variant.stock}
+              {variant.description && (
+                <span className="text-xs text-gray-400 block mt-1">
+                  {variant.description}
                 </span>
               )}
             </ToggleGroupItem>
