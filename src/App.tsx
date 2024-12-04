@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes } from "react-router-dom";
 import { PublicRoutes } from "./routes/PublicRoutes";
-import { AdminRoutes } from "./routes/AdminRoutes";
+import { adminRoutes } from "./routes/AdminRoutes";
 
 const queryClient = new QueryClient();
 
@@ -16,7 +16,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           {PublicRoutes}
-          {AdminRoutes}
+          {adminRoutes}
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
