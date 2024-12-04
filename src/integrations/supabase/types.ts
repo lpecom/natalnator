@@ -773,6 +773,7 @@ export type Database = {
         Row: {
           checkout_url: string | null
           created_at: string | null
+          description: string | null
           grams: number | null
           id: string
           image_url: string | null
@@ -787,6 +788,7 @@ export type Database = {
         Insert: {
           checkout_url?: string | null
           created_at?: string | null
+          description?: string | null
           grams?: number | null
           id?: string
           image_url?: string | null
@@ -801,6 +803,7 @@ export type Database = {
         Update: {
           checkout_url?: string | null
           created_at?: string | null
+          description?: string | null
           grams?: number | null
           id?: string
           image_url?: string | null

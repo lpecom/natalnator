@@ -39,14 +39,17 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
         </div>
         <div>
           <Label htmlFor="price_adjustment">Price Adjustment</Label>
-          <Input
-            id="price_adjustment"
-            name="price_adjustment"
-            type="number"
-            step="0.01"
-            placeholder="0.00"
-            className="mt-1"
-          />
+          <div className="relative mt-1">
+            <span className="absolute left-3 top-2.5 text-gray-500">R$</span>
+            <Input
+              id="price_adjustment"
+              name="price_adjustment"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              className="pl-8"
+            />
+          </div>
         </div>
         <div>
           <Label htmlFor="stock">Stock</Label>
@@ -67,6 +70,16 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
             placeholder="https://..."
             className="mt-1"
             required
+          />
+        </div>
+        <div className="md:col-span-3">
+          <Label htmlFor="description">Description (Optional)</Label>
+          <Input
+            id="description"
+            name="description"
+            type="text"
+            placeholder="Additional details about this variant..."
+            className="mt-1"
           />
         </div>
       </div>

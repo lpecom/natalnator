@@ -9,13 +9,10 @@ import ReviewsManager from "@/components/admin/ReviewsManager";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalLink, Settings } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
+import PageSettings from "@/components/admin/landing-page/PageSettings";
+import PriceManager from "@/components/admin/landing-page/PriceManager";
 
 const EditLandingPage = () => {
   const { id } = useParams();
@@ -64,6 +61,35 @@ const EditLandingPage = () => {
       toast({
         title: "Error",
         description: "Failed to update landing page",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleUpdateProduct = async (updates: any) => {
+    if (!landingPage?.landing_page_products?.[0]) return;
+    
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from("landing_page_products")
+        .update(updates)
+        .eq("id", landingPage.landing_page_products[0].id);
+
+      if (error) throw error;
+
+      await refetch();
+      toast({
+        title: "Success",
+        description: "Product updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update product",
         variant: "destructive",
       });
     } finally {
@@ -121,95 +147,43 @@ const EditLandingPage = () => {
           <TabsList className="bg-white border">
             <TabsTrigger value="settings">Page Settings</TabsTrigger>
             <TabsTrigger value="product">Product Information</TabsTrigger>
+            <TabsTrigger value="pricing">Pricing</TabsTrigger>
             <TabsTrigger value="media">Media</TabsTrigger>
             <TabsTrigger value="variants">Variants</TabsTrigger>
             <TabsTrigger value="benefits">Benefits</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="settings" className="space-y-6">
-            <div className="bg-white p-6 rounded-lg border space-y-6">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Page Title</Label>
-                  <Input
-                    id="title"
-                    value={landingPage.title}
-                    onChange={(e) => handleUpdateLandingPage({ title: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="slug">URL Slug</Label>
-                  <Input
-                    id="slug"
-                    value={landingPage.slug}
-                    onChange={(e) => handleUpdateLandingPage({ slug: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="template">Template</Label>
-                  <Select
-                    value={landingPage.template_name}
-                    onValueChange={(value) => handleUpdateLandingPage({ template_name: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="default">Default Template</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={landingPage.status}
-                    onValueChange={(value) => handleUpdateLandingPage({ status: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="published">Published</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_homepage"
-                  checked={landingPage.is_homepage}
-                  onCheckedChange={(checked) => handleUpdateLandingPage({ is_homepage: checked })}
-                />
-                <Label htmlFor="is_homepage">Set as Homepage</Label>
-              </div>
-            </div>
+          <TabsContent value="settings">
+            <PageSettings 
+              landingPage={landingPage} 
+              onUpdate={handleUpdateLandingPage} 
+            />
           </TabsContent>
 
           {product && (
             <>
-              <TabsContent value="product" className="mt-6">
+              <TabsContent value="product">
                 <BasicProductInfo product={product} onUpdate={refetch} />
               </TabsContent>
 
-              <TabsContent value="media" className="mt-6">
+              <TabsContent value="pricing">
+                <PriceManager product={product} onUpdate={handleUpdateProduct} />
+              </TabsContent>
+
+              <TabsContent value="media">
                 <ProductImages product={product} onUpdate={refetch} />
               </TabsContent>
 
-              <TabsContent value="variants" className="mt-6">
+              <TabsContent value="variants">
                 <ProductVariants product={product} onUpdate={refetch} />
               </TabsContent>
 
-              <TabsContent value="benefits" className="mt-6">
+              <TabsContent value="benefits">
                 <Benefits productId={product.id} editable={true} />
               </TabsContent>
 
-              <TabsContent value="reviews" className="mt-6">
+              <TabsContent value="reviews">
                 <ReviewsManager landingPageId={landingPage.id} />
               </TabsContent>
             </>
