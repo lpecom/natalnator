@@ -1,32 +1,22 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { ShopifyProduct } from "../utils/csvParser";
 
-const generateSlug = (title: string) => {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
-};
-
 export const importProduct = async (product: ShopifyProduct) => {
   console.log('\nImporting product:', product.Title);
   
   try {
-    if (!product.Title || !product["Variant Price"]) {
+    if (!product.Title || !product.Handle || !product["Variant Price"]) {
       console.error('Missing required fields:', {
         hasTitle: !!product.Title,
+        hasHandle: !!product.Handle,
         hasPrice: !!product["Variant Price"]
       });
       throw new Error('Missing required fields');
     }
 
-    // Use Handle as slug if available, otherwise generate from Title
-    const slug = product.Handle || generateSlug(product.Title);
-    
     console.log('Creating landing page with:', {
       title: product.Title,
-      slug: slug,
+      slug: product.Handle,
       price: parseFloat(product["Variant Price"])
     });
 
@@ -35,7 +25,7 @@ export const importProduct = async (product: ShopifyProduct) => {
       .from("landing_pages")
       .insert({
         title: product.Title,
-        slug: slug,
+        slug: product.Handle,
         status: 'draft',
         template_name: 'default',
         route_type: 'product'
@@ -54,7 +44,7 @@ export const importProduct = async (product: ShopifyProduct) => {
       .insert({
         landing_page_id: landingPage.id,
         name: product.Title,
-        description_html: product["Body (HTML)"],
+        description_html: product["Body (HTML)"] || '',
         price: parseFloat(product["Variant Price"]) || 0,
         original_price: parseFloat(product["Variant Compare At Price"]) || null,
         source: 'shopify',

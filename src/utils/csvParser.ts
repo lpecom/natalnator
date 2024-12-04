@@ -6,11 +6,6 @@ export interface ShopifyProduct {
   "Variant Compare At Price": string;
   "Image Src": string;
   "Image Alt Text": string;
-  "Option1 Name": string;
-  "Option1 Value": string;
-  "Option2 Name": string;
-  "Option2 Value": string;
-  Status: string;
 }
 
 export const parseCSV = (text: string): { headers: string[], rows: string[][] } => {
@@ -34,49 +29,49 @@ export const parseCSV = (text: string): { headers: string[], rows: string[][] } 
   
   // Parse rows
   const rows: string[][] = [];
-  let currentRow: string[] = [];
-  let currentField = '';
-  let insideQuotes = false;
   
   // Start from line 1 (skip headers)
-  for (let lineIndex = 1; lineIndex < lines.length; lineIndex++) {
-    const line = lines[lineIndex];
-    currentRow = [];
-    currentField = '';
-    insideQuotes = false;
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    const values: string[] = [];
+    let currentValue = '';
+    let insideQuotes = false;
     
-    console.log(`\nProcessing line ${lineIndex}:`, line);
+    console.log(`Processing line ${i}:`, line);
     
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
+    for (let j = 0; j < line.length; j++) {
+      const char = line[j];
       
       if (char === '"') {
-        if (insideQuotes && line[i + 1] === '"') {
+        if (insideQuotes && line[j + 1] === '"') {
           // Handle escaped quotes
-          currentField += '"';
-          i++; // Skip next quote
+          currentValue += '"';
+          j++; // Skip next quote
         } else {
           // Toggle quote state
           insideQuotes = !insideQuotes;
         }
       } else if (char === ',' && !insideQuotes) {
         // End of field
-        currentRow.push(currentField.trim());
-        currentField = '';
+        values.push(currentValue.trim());
+        currentValue = '';
       } else {
-        currentField += char;
+        currentValue += char;
       }
     }
     
     // Add the last field
-    currentRow.push(currentField.trim());
+    values.push(currentValue.trim());
     
-    if (currentRow.length === headers.length) {
-      rows.push(currentRow);
-      console.log('Row processed:', currentRow);
+    if (values.length === headers.length) {
+      rows.push(values);
+      console.log('Row processed successfully:', {
+        handle: values[headers.indexOf('Handle')],
+        title: values[headers.indexOf('Title')],
+        price: values[headers.indexOf('Variant Price')]
+      });
     } else {
-      console.warn(`Skipping row ${lineIndex} - column count mismatch. Expected ${headers.length}, got ${currentRow.length}`);
-      console.warn('Row data:', currentRow);
+      console.warn(`Row ${i} has incorrect number of fields. Expected ${headers.length}, got ${values.length}`);
     }
   }
   
@@ -90,28 +85,31 @@ export const mapRowsToProducts = (headers: string[], rows: string[][]): ShopifyP
   console.log('Headers:', headers);
   
   const products: ShopifyProduct[] = [];
-  const requiredFields = ['Title', 'Variant Price'];
+  const requiredFields = ['Handle', 'Title', 'Variant Price'];
   
   rows.forEach((row, index) => {
     const product: any = {};
     let hasAllRequiredFields = true;
     
     headers.forEach((header, colIndex) => {
-      const value = row[colIndex] || '';
-      product[header] = value;
-      
-      if (requiredFields.includes(header) && !value) {
-        hasAllRequiredFields = false;
-        console.warn(`Row ${index + 1}: Missing required field "${header}"`);
+      // Only map fields we care about
+      if (['Handle', 'Title', 'Body (HTML)', 'Variant Price', 'Variant Compare At Price', 'Image Src', 'Image Alt Text'].includes(header)) {
+        const value = row[colIndex] || '';
+        product[header] = value;
+        
+        if (requiredFields.includes(header) && !value) {
+          hasAllRequiredFields = false;
+          console.warn(`Row ${index + 1}: Missing required field "${header}"`);
+        }
       }
     });
     
     if (hasAllRequiredFields) {
       products.push(product as ShopifyProduct);
-      console.log(`Product ${index + 1} mapped:`, {
+      console.log(`Product ${index + 1} mapped successfully:`, {
+        handle: product.Handle,
         title: product.Title,
-        price: product['Variant Price'],
-        handle: product.Handle
+        hasDescription: !!product['Body (HTML)']
       });
     } else {
       console.warn(`Row ${index + 1}: Skipped due to missing required fields`);
