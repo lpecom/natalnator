@@ -2,39 +2,26 @@ export interface ShopifyProduct {
   Handle: string;
   Title: string;
   "Body (HTML)"?: string;
-  Vendor?: string;
-  "Product Category"?: string;
-  Type?: string;
-  Tags?: string;
-  Published?: string;
-  "Option1 Name"?: string;
-  "Option1 Value"?: string;
-  "Variant SKU"?: string;
   "Variant Price"?: string;
   "Variant Compare At Price"?: string;
   "Image Src"?: string;
-  "Image Position"?: string;
   "Image Alt Text"?: string;
   Status?: string;
 }
 
 export const parseCSV = (csvText: string): { headers: string[], rows: string[][] } => {
-  console.log('\nStarting CSV parsing');
+  console.log('\nStarting CSV parsing with simplified approach');
   
-  // Split the CSV text into lines, handling both \n and \r\n
-  const lines = csvText
-    .split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(line => line.length > 0);
-  
-  console.log('Total lines found:', lines.length);
+  // Split into lines and clean up
+  const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  console.log('Number of lines found:', lines.length);
   
   if (lines.length === 0) {
-    console.error('No lines found in CSV');
+    console.error('No valid lines found in CSV');
     return { headers: [], rows: [] };
   }
 
-  // Parse headers from first line
+  // Parse headers (first line)
   const headers = parseCSVLine(lines[0]);
   console.log('Headers found:', headers);
 
@@ -43,15 +30,17 @@ export const parseCSV = (csvText: string): { headers: string[], rows: string[][]
   for (let i = 1; i < lines.length; i++) {
     try {
       const row = parseCSVLine(lines[i]);
-      
-      // Only add rows that have the correct number of fields
       if (row.length === headers.length) {
         rows.push(row);
+        console.log(`Row ${i} parsed successfully:`, {
+          handle: row[headers.indexOf('Handle')],
+          title: row[headers.indexOf('Title')]
+        });
       } else {
         console.error(`Row ${i + 1} has incorrect number of fields:`, {
           expected: headers.length,
           got: row.length,
-          content: lines[i].substring(0, 100) + '...'
+          rowContent: lines[i].substring(0, 100)
         });
       }
     } catch (error) {
@@ -59,93 +48,77 @@ export const parseCSV = (csvText: string): { headers: string[], rows: string[][]
     }
   }
 
-  console.log('Successfully parsed rows:', rows.length);
   return { headers, rows };
 };
 
 const parseCSVLine = (line: string): string[] => {
-  const fields: string[] = [];
-  let field = '';
-  let inQuotes = false;
-  let i = 0;
-
-  while (i < line.length) {
+  const result: string[] = [];
+  let currentField = '';
+  let insideQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
     const char = line[i];
-
-    // Handle quoted fields
+    const nextChar = line[i + 1];
+    
     if (char === '"') {
-      if (!inQuotes) {
-        // Starting a quoted field
-        inQuotes = true;
-        i++;
-        continue;
+      if (insideQuotes && nextChar === '"') {
+        // Handle escaped quotes
+        currentField += '"';
+        i++; // Skip next quote
+      } else {
+        // Toggle quote state
+        insideQuotes = !insideQuotes;
       }
-      
-      // Check for escaped quotes
-      if (i + 1 < line.length && line[i + 1] === '"') {
-        field += '"';
-        i += 2;
-        continue;
-      }
-      
-      // Ending a quoted field
-      inQuotes = false;
-      i++;
-      continue;
+    } else if (char === ',' && !insideQuotes) {
+      // End of field
+      result.push(currentField.trim());
+      currentField = '';
+    } else {
+      currentField += char;
     }
-
-    // Handle field separators
-    if (char === ',' && !inQuotes) {
-      fields.push(field.trim());
-      field = '';
-      i++;
-      continue;
-    }
-
-    // Add character to current field
-    field += char;
-    i++;
   }
-
+  
   // Add the last field
-  fields.push(field.trim());
-  return fields;
-}
+  result.push(currentField.trim());
+  return result;
+};
 
 export const mapRowsToProducts = (headers: string[], rows: string[][]): ShopifyProduct[] => {
-  console.log('\nMapping rows to products');
+  console.log('\nMapping rows to products with simplified approach');
   
-  // Create a map of header names to column indices
-  const headerMap = new Map<string, number>();
+  const headerIndexes = new Map<string, number>();
   headers.forEach((header, index) => {
-    headerMap.set(header, index);
+    headerIndexes.set(header, index);
   });
 
   const products: ShopifyProduct[] = [];
 
   rows.forEach((row, rowIndex) => {
     try {
-      const product: Partial<ShopifyProduct> = {};
-      
-      // Map each field from the CSV to our product object
-      headerMap.forEach((columnIndex, headerName) => {
-        const value = row[columnIndex];
-        if (value !== undefined && value !== '') {
-          (product as any)[headerName] = value;
-        }
-      });
+      // Get required fields first
+      const handle = row[headerIndexes.get('Handle') || -1];
+      const title = row[headerIndexes.get('Title') || -1];
 
-      // Validate required fields
-      if (!product.Handle || !product.Title) {
-        console.error(`Row ${rowIndex + 1}: Missing required fields`, {
-          handle: product.Handle,
-          title: product.Title
-        });
+      console.log(`Mapping row ${rowIndex + 1}:`, { handle, title });
+
+      if (!handle || !title) {
+        console.error(`Row ${rowIndex + 1}: Missing required fields`, { handle, title });
         return;
       }
 
-      products.push(product as ShopifyProduct);
-      console.log(`Mapped product ${rowIndex + 1}:`, {
+      const product: ShopifyProduct = {
+        Handle: handle,
+        Title: title,
+        "Body (HTML)": row[headerIndexes.get('Body (HTML)') || -1],
+        "Variant Price": row[headerIndexes.get('Variant Price') || -1],
+        "Variant Compare At Price": row[headerIndexes.get('Variant Compare At Price') || -1],
+        "Image Src": row[headerIndexes.get('Image Src') || -1],
+        "Image Alt Text": row[headerIndexes.get('Image Alt Text') || -1],
+        Status: row[headerIndexes.get('Status') || -1]
+      };
+
+      products.push(product);
+      console.log(`Successfully mapped product ${rowIndex + 1}:`, {
         handle: product.Handle,
         title: product.Title
       });
