@@ -1,37 +1,21 @@
 import React, { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Package, Settings, FileText, LogOut, Image } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { adminNavigation } from "./navigation/AdminNavigation";
+import { ThemeSettings } from "@/types/theme";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
-}
-
-interface ThemeSettings {
-  colors?: {
-    primary: string;
-    success: string;
-    background: string;
-    foreground: string;
-    muted: string;
-    border: string;
-  };
-  fonts?: {
-    primary: string;
-  };
-  logo?: {
-    url: string;
-  };
 }
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -40,7 +24,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         return;
       }
 
-      // Check if user is admin
       const { data: profile } = await supabase
         .from('profiles')
         .select('is_admin')
@@ -85,34 +68,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   const logoUrl = settings?.logo?.url;
 
-  const navigation = [
-    {
-      name: "Dashboard",
-      href: "/admin",
-      icon: LayoutDashboard,
-    },
-    {
-      name: "Products",
-      href: "/admin/products",
-      icon: Package,
-    },
-    {
-      name: "Common Pages",
-      href: "/admin/common-pages",
-      icon: FileText,
-    },
-    {
-      name: "Banners",
-      href: "/admin/banners",
-      icon: Image,
-    },
-    {
-      name: "Site Settings",
-      href: "/admin/settings",
-      icon: Settings,
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
@@ -138,7 +93,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                   </Link>
                 </div>
                 <nav className="mt-8 flex-1 space-y-1 px-2">
-                  {navigation.map((item) => {
+                  {adminNavigation.map((item) => {
                     const Icon = item.icon;
                     return (
                       <Link
