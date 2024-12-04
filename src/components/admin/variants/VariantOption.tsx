@@ -18,6 +18,8 @@ const VariantOption = ({
   onValueChange,
   onDelete,
 }: VariantOptionProps) => {
+  if (!variants.length) return null;
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">{title}</h3>
@@ -37,6 +39,11 @@ const VariantOption = ({
               {variant.price_adjustment > 0 && (
                 <span className="text-sm text-gray-500">
                   +R$ {variant.price_adjustment.toFixed(2)}
+                </span>
+              )}
+              {variant.stock !== null && (
+                <span className="text-xs text-gray-400">
+                  Stock: {variant.stock}
                 </span>
               )}
             </ToggleGroupItem>

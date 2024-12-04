@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Package2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,8 +12,7 @@ interface ProductVariantsProps {
 }
 
 const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
-  const [selectedColor, setSelectedColor] = useState<string>("");
-  const [selectedHeight, setSelectedHeight] = useState<string>("");
+  const [selectedOptions, setSelectedOptions] = React.useState<Record<string, string>>({});
 
   const handleAddVariant = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -57,9 +56,24 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
     }
   };
 
-  // Group variants by their type (Color or Height)
-  const colorVariants = product?.product_variants?.filter((v: any) => v.name === "Cor") || [];
-  const heightVariants = product?.product_variants?.filter((v: any) => v.name === "Altura") || [];
+  // Group variants by their option name (Option1, Option2, Option3)
+  const variantGroups = React.useMemo(() => {
+    if (!product?.product_variants) return {};
+    
+    const groups: Record<string, any[]> = {
+      'Option1': [],
+      'Option2': [],
+      'Option3': []
+    };
+    
+    product.product_variants.forEach((variant: any) => {
+      if (variant.name in groups) {
+        groups[variant.name].push(variant);
+      }
+    });
+    
+    return groups;
+  }, [product?.product_variants]);
 
   return (
     <Card className="p-6">
@@ -69,25 +83,19 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
       </div>
 
       <div className="space-y-8">
-        {/* Color Selection */}
-        <VariantOption
-          title="Option 1: Color"
-          variants={colorVariants}
-          selectedValue={selectedColor}
-          onValueChange={setSelectedColor}
-          onDelete={handleDeleteVariant}
-        />
+        {Object.entries(variantGroups).map(([optionName, variants]) => (
+          <VariantOption
+            key={optionName}
+            title={`${optionName}`}
+            variants={variants}
+            selectedValue={selectedOptions[optionName]}
+            onValueChange={(value) => 
+              setSelectedOptions(prev => ({ ...prev, [optionName]: value }))
+            }
+            onDelete={handleDeleteVariant}
+          />
+        ))}
 
-        {/* Height Selection */}
-        <VariantOption
-          title="Option 2: Height"
-          variants={heightVariants}
-          selectedValue={selectedHeight}
-          onValueChange={setSelectedHeight}
-          onDelete={handleDeleteVariant}
-        />
-
-        {/* Add Variant Form */}
         <AddVariantForm onSubmit={handleAddVariant} />
       </div>
     </Card>

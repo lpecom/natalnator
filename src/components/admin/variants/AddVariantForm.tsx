@@ -21,8 +21,9 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
             className="w-full mt-1 border rounded-md p-2"
             required
           >
-            <option value="Cor">Color</option>
-            <option value="Altura">Height</option>
+            <option value="Option1">Option 1</option>
+            <option value="Option2">Option 2</option>
+            <option value="Option3">Option 3</option>
           </select>
         </div>
         <div>
@@ -31,7 +32,7 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
             id="value"
             name="value"
             type="text"
-            placeholder="e.g., Dourada Noel"
+            placeholder="Option value"
             className="mt-1"
             required
           />
