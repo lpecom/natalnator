@@ -108,7 +108,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     },
     {
       name: "Site Settings",
-      href: "/admin/site",
+      href: "/admin/settings",
       icon: Settings,
     },
   ];

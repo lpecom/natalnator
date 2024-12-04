@@ -97,7 +97,7 @@ const App = () => (
               </AdminLayout>
             </ProtectedRoute>
           } />
-          <Route path="/admin/site" element={
+          <Route path="/admin/settings" element={
             <ProtectedRoute>
               <AdminLayout>
                 <SiteAdmin />
