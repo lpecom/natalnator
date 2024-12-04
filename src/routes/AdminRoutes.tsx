@@ -98,5 +98,16 @@ export const AdminRoutes = [
         </AdminLayout>
       </ProtectedRoute>
     }
+  />,
+  <Route
+    key="admin-product-edit"
+    path="/admin/product/:id"
+    element={
+      <ProtectedRoute>
+        <AdminLayout>
+          <AdminProduct />
+        </AdminLayout>
+      </ProtectedRoute>
+    }
   />
 ];
