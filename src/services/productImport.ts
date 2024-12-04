@@ -14,6 +14,10 @@ export const importProduct = async (product: ShopifyProduct) => {
   
   try {
     if (!product.Title || !product["Variant Price"]) {
+      console.error('Missing required fields:', {
+        hasTitle: !!product.Title,
+        hasPrice: !!product["Variant Price"]
+      });
       throw new Error('Missing required fields');
     }
 
@@ -23,7 +27,7 @@ export const importProduct = async (product: ShopifyProduct) => {
     console.log('Creating landing page with:', {
       title: product.Title,
       slug: slug,
-      price: product["Variant Price"]
+      price: parseFloat(product["Variant Price"])
     });
 
     // Create landing page
@@ -32,7 +36,7 @@ export const importProduct = async (product: ShopifyProduct) => {
       .insert({
         title: product.Title,
         slug: slug,
-        status: product.Status?.toLowerCase() === 'active' ? 'published' : 'draft',
+        status: 'draft',
         template_name: 'default',
         route_type: 'product'
       })

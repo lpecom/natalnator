@@ -14,89 +14,108 @@ export interface ShopifyProduct {
 }
 
 export const parseCSV = (text: string): { headers: string[], rows: string[][] } => {
-  console.log('Starting CSV parsing');
-  console.log('Raw text length:', text.length);
+  console.log('\nStarting CSV parsing');
   
   // Split by newlines and filter empty lines
   const lines = text.split(/\r?\n/).filter(line => line.trim());
-  console.log('Total lines found (including header):', lines.length);
+  console.log('Total lines found:', lines.length);
   
-  // Parse headers
+  if (lines.length === 0) {
+    console.error('No lines found in CSV');
+    return { headers: [], rows: [] };
+  }
+  
+  // Parse headers - first line
   const headers = lines[0].split(',').map(header => {
-    const cleaned = header.trim().replace(/^"/, '').replace(/"$/, '');
-    console.log('Found header:', cleaned);
-    return cleaned;
+    return header.trim().replace(/^"/, '').replace(/"$/, '');
   });
   
-  // Parse rows with detailed logging
+  console.log('Headers found:', headers);
+  
+  // Parse rows
   const rows: string[][] = [];
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    const row: string[] = [];
-    let inQuotes = false;
-    let currentValue = '';
+  let currentRow: string[] = [];
+  let currentField = '';
+  let insideQuotes = false;
+  
+  // Start from line 1 (skip headers)
+  for (let lineIndex = 1; lineIndex < lines.length; lineIndex++) {
+    const line = lines[lineIndex];
+    currentRow = [];
+    currentField = '';
+    insideQuotes = false;
     
-    console.log(`\nProcessing line ${i}:`);
-    console.log('Raw line:', line);
+    console.log(`\nProcessing line ${lineIndex}:`, line);
     
-    for (let j = 0; j < line.length; j++) {
-      const char = line[j];
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
       if (char === '"') {
-        if (line[j + 1] === '"') {
+        if (insideQuotes && line[i + 1] === '"') {
           // Handle escaped quotes
-          currentValue += '"';
-          j++;
+          currentField += '"';
+          i++; // Skip next quote
         } else {
-          inQuotes = !inQuotes;
+          // Toggle quote state
+          insideQuotes = !insideQuotes;
         }
-      } else if (char === ',' && !inQuotes) {
-        row.push(currentValue.trim());
-        console.log(`Column value:`, currentValue.trim());
-        currentValue = '';
+      } else if (char === ',' && !insideQuotes) {
+        // End of field
+        currentRow.push(currentField.trim());
+        currentField = '';
       } else {
-        currentValue += char;
+        currentField += char;
       }
     }
-    // Push the last value
-    row.push(currentValue.trim());
-    console.log(`Final column value:`, currentValue.trim());
     
-    if (row.length !== headers.length) {
-      console.warn(`Row ${i} has ${row.length} columns but headers has ${headers.length} columns`);
-      console.warn('Row data:', row);
+    // Add the last field
+    currentRow.push(currentField.trim());
+    
+    if (currentRow.length === headers.length) {
+      rows.push(currentRow);
+      console.log('Row processed:', currentRow);
+    } else {
+      console.warn(`Skipping row ${lineIndex} - column count mismatch. Expected ${headers.length}, got ${currentRow.length}`);
+      console.warn('Row data:', currentRow);
     }
-    
-    rows.push(row);
   }
-
-  console.log('\nParsing summary:');
-  console.log('Total valid rows:', rows.length);
-  console.log('Headers count:', headers.length);
   
+  console.log('\nParsing complete');
+  console.log('Total valid rows:', rows.length);
   return { headers, rows };
 };
 
 export const mapRowsToProducts = (headers: string[], rows: string[][]): ShopifyProduct[] => {
-  console.log('\nStarting product mapping');
-  const products: ShopifyProduct[] = [];
+  console.log('\nMapping rows to products');
+  console.log('Headers:', headers);
   
-  rows.forEach((values, index) => {
-    console.log(`\nMapping product ${index + 1}:`);
-    const product = headers.reduce((obj: any, header, i) => {
-      obj[header] = values[i] || '';
-      console.log(`${header}: ${values[i] || '(empty)'}`);
-      return obj;
-    }, {});
+  const products: ShopifyProduct[] = [];
+  const requiredFields = ['Title', 'Variant Price'];
+  
+  rows.forEach((row, index) => {
+    const product: any = {};
+    let hasAllRequiredFields = true;
     
-    // Validate required fields
-    if (!product.Title || !product["Variant Price"]) {
-      console.warn(`Product ${index + 1} missing required fields:`, {
-        hasTitle: !!product.Title,
-        hasPrice: !!product["Variant Price"]
+    headers.forEach((header, colIndex) => {
+      const value = row[colIndex] || '';
+      product[header] = value;
+      
+      if (requiredFields.includes(header) && !value) {
+        hasAllRequiredFields = false;
+        console.warn(`Row ${index + 1}: Missing required field "${header}"`);
+      }
+    });
+    
+    if (hasAllRequiredFields) {
+      products.push(product as ShopifyProduct);
+      console.log(`Product ${index + 1} mapped:`, {
+        title: product.Title,
+        price: product['Variant Price'],
+        handle: product.Handle
       });
+    } else {
+      console.warn(`Row ${index + 1}: Skipped due to missing required fields`);
     }
-    
-    products.push(product as ShopifyProduct);
   });
   
   console.log('\nProduct mapping complete');
