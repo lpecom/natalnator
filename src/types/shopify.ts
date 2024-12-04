@@ -18,6 +18,11 @@ export interface ShopifyProduct {
   "Included / Espanha"?: string;
   "Included / Brasil"?: string;
   "Included / Spain"?: string;
+  "Option1 Name"?: string;
+  "Option1 Value"?: string;
+  "Variant Inventory Qty"?: string;
+  "Variant Inventory Tracker"?: string;
+  "Variant Grams"?: string;
 }
 
 export interface ParsedCSVResult {
