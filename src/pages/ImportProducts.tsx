@@ -4,7 +4,6 @@ import { Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import AdminHeader from "@/components/admin/AdminHeader";
 
 interface ShopifyProduct {
@@ -34,6 +33,37 @@ const ImportProducts = () => {
       .replace(/-+/g, '-');
   };
 
+  const parseCSV = (text: string): { headers: string[], rows: string[][] } => {
+    // Split by newlines but filter out empty lines
+    const lines = text.split('\n').filter(line => line.trim());
+    
+    // Parse headers
+    const headers = lines[0].split(',').map(header => header.trim());
+    console.log('Headers found:', headers);
+
+    // Parse rows, handling quoted values correctly
+    const rows = lines.slice(1).map(line => {
+      let row = [];
+      let inQuotes = false;
+      let currentValue = '';
+      
+      for (let char of line) {
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          row.push(currentValue.trim());
+          currentValue = '';
+        } else {
+          currentValue += char;
+        }
+      }
+      row.push(currentValue.trim()); // Push the last value
+      return row;
+    });
+
+    return { headers, rows };
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -46,20 +76,19 @@ const ImportProducts = () => {
     setImporting(true);
     try {
       const text = await file.text();
-      const rows = text.split('\n');
-      const headers = rows[0].split(',').map(header => header.trim());
+      const { headers, rows } = parseCSV(text);
       
-      console.log('Headers found:', headers); // Debug log
+      console.log(`Total rows found: ${rows.length}`);
 
-      const products: ShopifyProduct[] = rows.slice(1).map(row => {
-        const values = row.split(',');
-        return headers.reduce((obj: any, header, index) => {
-          obj[header] = values[index]?.trim();
+      // Map rows to products
+      const products: ShopifyProduct[] = rows.map(values => {
+        const product = headers.reduce((obj: any, header, index) => {
+          obj[header] = values[index] || '';
           return obj;
         }, {});
+        console.log('Mapped product:', product);
+        return product;
       });
-
-      console.log('First product data:', products[0]); // Debug log
 
       let successCount = 0;
       let errorCount = 0;
