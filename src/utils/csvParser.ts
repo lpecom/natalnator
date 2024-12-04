@@ -1,4 +1,4 @@
-import { ParsedCSVResult, ShopifyProduct } from "../types/shopify";
+import { ParsedCSVResult } from "../types/shopify";
 import { parseCSVLine } from "./csvLineParser";
 
 export const parseCSV = (csvText: string): ParsedCSVResult => {
@@ -46,7 +46,7 @@ export const parseCSV = (csvText: string): ParsedCSVResult => {
     lines.push(currentLine);
   }
 
-  console.log('Total number of lines (including header):', lines.length);
+  console.log('Total lines found:', lines.length);
   
   if (lines.length === 0) {
     console.error('No valid lines found in CSV');
@@ -57,14 +57,8 @@ export const parseCSV = (csvText: string): ParsedCSVResult => {
   const headers = parseCSVLine(lines[0]);
   console.log('\nHeader Analysis:');
   console.log('Number of columns:', headers.length);
+  console.log('Headers:', headers.join(', '));
   
-  const requiredColumns = ['Handle', 'Title', 'Variant Price'];
-  const missingColumns = requiredColumns.filter(col => !headers.includes(col));
-  if (missingColumns.length > 0) {
-    console.error('Missing required columns:', missingColumns);
-    return { headers: [], rows: [] };
-  }
-
   // Parse data rows
   const rows: string[][] = [];
   console.log('\n=== Processing Data Rows ===');
@@ -76,8 +70,21 @@ export const parseCSV = (csvText: string): ParsedCSVResult => {
       if (row.length !== headers.length) {
         console.error(`Row ${i + 1} has incorrect number of fields:`, {
           expected: headers.length,
-          got: row.length,
-          firstFewFields: row.slice(0, 3)
+          got: row.length
+        });
+        continue;
+      }
+
+      // Validate required fields
+      const hasHandle = !!row[headers.indexOf('Handle')]?.trim();
+      const hasTitle = !!row[headers.indexOf('Title')]?.trim();
+      const hasPrice = !!row[headers.indexOf('Variant Price')]?.trim();
+
+      if (!hasHandle || !hasTitle || !hasPrice) {
+        console.warn(`Row ${i + 1} missing required fields:`, {
+          hasHandle,
+          hasTitle,
+          hasPrice
         });
         continue;
       }
@@ -90,7 +97,6 @@ export const parseCSV = (csvText: string): ParsedCSVResult => {
 
   console.log('\n=== Parsing Complete ===');
   console.log('Successfully parsed rows:', rows.length);
-  console.log('First row preview:', rows[0]?.slice(0, 3));
 
   return { headers, rows };
 };
@@ -106,11 +112,14 @@ export const mapRowsToProducts = (headers: string[], rows: string[][]): Record<s
       product[header] = row[columnIndex] || '';
     });
 
-    console.log(`Mapped product ${index + 1}:`, {
-      Handle: product.Handle,
-      Title: product.Title,
-      'Variant Price': product['Variant Price']
-    });
+    // Log only if the product has all required fields
+    if (product.Handle && product.Title && product['Variant Price']) {
+      console.log(`Mapped product ${index + 1}:`, {
+        Handle: product.Handle,
+        Title: product.Title,
+        'Variant Price': product['Variant Price']
+      });
+    }
 
     return product;
   });
