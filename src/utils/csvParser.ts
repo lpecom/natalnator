@@ -11,13 +11,38 @@ export interface ShopifyProduct {
   Vendor?: string;
   Type?: string;
   Published?: string;
+  "Variant SKU"?: string;
+  "Product Category"?: string;
+  "Variant Inventory Policy"?: string;
+  "Variant Fulfillment Service"?: string;
+  "Variant Requires Shipping"?: string;
+  "Variant Taxable"?: string;
+  "Variant Barcode"?: string;
+  "Gift Card"?: string;
+  "SEO Title"?: string;
+  "SEO Description"?: string;
+  "Google Shopping / Google Product Category"?: string;
+  "Google Shopping / Gender"?: string;
+  "Google Shopping / Age Group"?: string;
+  "Google Shopping / MPN"?: string;
+  "Google Shopping / Condition"?: string;
+  "Google Shopping / Custom Product"?: string;
+  "Google Shopping / Custom Label 0"?: string;
+  "Google Shopping / Custom Label 1"?: string;
+  "Google Shopping / Custom Label 2"?: string;
+  "Google Shopping / Custom Label 3"?: string;
+  "Google Shopping / Custom Label 4"?: string;
+  "Variant Grams"?: string;
+  "Variant Weight Unit"?: string;
+  "Variant Tax Code"?: string;
+  "Cost per item"?: string;
 }
 
 export const parseCSV = (csvText: string): { headers: string[], rows: string[][] } => {
   console.log('\nStarting CSV parsing with improved validation');
   
-  // Split into lines and clean up
-  const lines = csvText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  // Split into lines, preserving newlines within quotes
+  const lines = splitCSVLines(csvText);
   console.log('Number of lines found:', lines.length);
   
   if (lines.length === 0) {
@@ -28,6 +53,7 @@ export const parseCSV = (csvText: string): { headers: string[], rows: string[][]
   // Parse headers (first line)
   const headers = parseCSVLine(lines[0]);
   console.log('Headers found:', headers);
+  console.log('Number of headers:', headers.length);
 
   // Validate required columns
   const requiredColumns = ['Handle', 'Title'];
@@ -60,7 +86,9 @@ export const parseCSV = (csvText: string): { headers: string[], rows: string[][]
       }
 
       rows.push(row);
-      console.log(`Row ${i} parsed successfully`);
+      if (i === 1 || i % 100 === 0) {
+        console.log(`Parsed row ${i} successfully`);
+      }
     } catch (error) {
       console.error(`Error parsing row ${i + 1}:`, error);
     }
@@ -69,27 +97,68 @@ export const parseCSV = (csvText: string): { headers: string[], rows: string[][]
   return { headers, rows };
 };
 
+const splitCSVLines = (text: string): string[] => {
+  const lines: string[] = [];
+  let currentLine = '';
+  let insideQuotes = false;
+  
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+    
+    if (char === '"') {
+      if (nextChar === '"') {
+        // Handle escaped quotes
+        currentLine += char;
+        i++; // Skip next quote
+      } else {
+        // Toggle quote state
+        insideQuotes = !insideQuotes;
+        currentLine += char;
+      }
+    } else if (char === '\n' && !insideQuotes) {
+      // End of line outside quotes
+      lines.push(currentLine);
+      currentLine = '';
+    } else if (char === '\r' && nextChar === '\n' && !insideQuotes) {
+      // Handle Windows-style line endings
+      lines.push(currentLine);
+      currentLine = '';
+      i++; // Skip \n
+    } else {
+      currentLine += char;
+    }
+  }
+  
+  // Add the last line if it exists
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+  
+  return lines;
+}
+
 const parseCSVLine = (line: string): string[] => {
   const result: string[] = [];
   let field = '';
-  let inQuotes = false;
+  let insideQuotes = false;
   
   for (let i = 0; i < line.length; i++) {
     const char = line[i];
     const nextChar = line[i + 1];
     
     if (char === '"') {
-      if (inQuotes && nextChar === '"') {
+      if (insideQuotes && nextChar === '"') {
         // Handle escaped quotes
         field += '"';
         i++; // Skip next quote
       } else {
         // Toggle quote state
-        inQuotes = !inQuotes;
+        insideQuotes = !insideQuotes;
       }
-    } else if (char === ',' && !inQuotes) {
+    } else if (char === ',' && !insideQuotes) {
       // End of field
-      result.push(field);
+      result.push(field.trim());
       field = '';
     } else {
       field += char;
@@ -97,7 +166,7 @@ const parseCSVLine = (line: string): string[] => {
   }
   
   // Add the last field
-  result.push(field);
+  result.push(field.trim());
   
   // Clean up fields
   return result.map(f => {
@@ -131,43 +200,31 @@ export const mapRowsToProducts = (headers: string[], rows: string[][]): ShopifyP
 
   rows.forEach((row, rowIndex) => {
     try {
-      const handle = row[columnIndexes.get('Handle')!];
-      const title = row[columnIndexes.get('Title')!];
+      const product: ShopifyProduct = {} as ShopifyProduct;
+      
+      // Map each header to its corresponding value
+      headers.forEach((header, index) => {
+        if (row[index]) {
+          (product as any)[header] = row[index];
+        }
+      });
 
       // Validate required fields
-      if (!handle || !title) {
+      if (!product.Handle || !product.Title) {
         console.error(`Row ${rowIndex + 1}: Missing required fields:`, {
-          handle: !!handle,
-          title: !!title
+          handle: !!product.Handle,
+          title: !!product.Title
         });
         return;
       }
 
-      // Create product object with required fields
-      const product: ShopifyProduct = {
-        Handle: handle,
-        Title: title
-      };
-
-      // Add optional fields if they exist
-      const optionalFields = [
-        'Body (HTML)', 'Variant Price', 'Variant Compare At Price',
-        'Image Src', 'Image Alt Text', 'Status', 'Tags', 'Vendor',
-        'Type', 'Published'
-      ];
-
-      optionalFields.forEach(field => {
-        const index = columnIndexes.get(field);
-        if (index !== undefined && row[index]) {
-          product[field as keyof ShopifyProduct] = row[index];
-        }
-      });
-
       products.push(product);
-      console.log(`Successfully mapped product ${rowIndex + 1}:`, {
-        handle,
-        title
-      });
+      if (rowIndex === 0 || rowIndex % 100 === 0) {
+        console.log(`Successfully mapped product ${rowIndex + 1}:`, {
+          handle: product.Handle,
+          title: product.Title
+        });
+      }
     } catch (error) {
       console.error(`Error mapping row ${rowIndex + 1}:`, error);
     }
