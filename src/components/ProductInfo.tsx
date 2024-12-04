@@ -33,34 +33,36 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
       }
 
       const { data } = await query.single();
+      console.log("Fetched product data:", data);
       return data;
     },
     enabled: !!(landingPageId || productId),
   });
 
   // Group variants by option name (Option1, Option2, Option3)
-  const variantOptions = React.useMemo(() => {
+  const variantGroups = React.useMemo(() => {
     if (!product?.product_variants) return {};
     
-    const options: Record<string, string[]> = {};
-    product.product_variants.forEach(variant => {
-      if (variant.name.startsWith('Option')) {
-        if (!options[variant.name]) {
-          options[variant.name] = [];
-        }
-        if (!options[variant.name].includes(variant.value)) {
-          options[variant.name].push(variant.value);
-        }
+    const groups: Record<string, string[]> = {};
+    
+    product.product_variants.forEach((variant: any) => {
+      if (!groups[variant.name]) {
+        groups[variant.name] = [];
+      }
+      if (!groups[variant.name].includes(variant.value)) {
+        groups[variant.name].push(variant.value);
       }
     });
-    return options;
+    
+    console.log("Variant groups:", groups);
+    return groups;
   }, [product?.product_variants]);
 
-  // Find the matching variant based on all selected options
+  // Find the matching variant based on selected options
   const selectedVariant = React.useMemo(() => {
     if (!product?.product_variants) return null;
     
-    return product.product_variants.find(variant => {
+    return product.product_variants.find((variant: any) => {
       return Object.entries(selectedOptions).every(([optionName, optionValue]) => {
         return variant.name === optionName && variant.value === optionValue;
       });
@@ -68,7 +70,7 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
   }, [product?.product_variants, selectedOptions]);
 
   const handleBuy = () => {
-    const requiredOptions = Object.keys(variantOptions);
+    const requiredOptions = Object.keys(variantGroups);
     const missingOptions = requiredOptions.filter(option => !selectedOptions[option]);
     
     if (missingOptions.length > 0) {
@@ -119,7 +121,7 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
       </div>
 
       <div className="space-y-3">
-        {Object.entries(variantOptions).map(([optionName, values]) => (
+        {Object.entries(variantGroups).map(([optionName, values]) => (
           <VariantSelector
             key={optionName}
             optionName={optionName}
