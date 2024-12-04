@@ -40,9 +40,13 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
   const colorVariants = product?.product_variants?.filter(v => v.name === "Cor") || [];
   const heightVariants = product?.product_variants?.filter(v => v.name === "Altura") || [];
 
-  // Find the matching variant combination for checkout
+  // Find the matching variant combination
   const selectedVariant = product?.product_variants?.find(
-    v => v.value === selectedColor || v.value === selectedHeight
+    v => {
+      if (v.name === "Cor" && v.value === selectedColor) return true;
+      if (v.name === "Altura" && v.value === selectedHeight) return true;
+      return false;
+    }
   );
 
   const handleBuy = () => {
@@ -54,7 +58,7 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
     if (selectedVariant?.checkout_url) {
       window.location.href = selectedVariant.checkout_url;
     } else {
-      toast.success("Produto adicionado ao carrinho!");
+      toast.error("Link de checkout não encontrado para esta variante");
     }
   };
 
@@ -62,7 +66,9 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
     return <div className="text-center p-4">Loading product information...</div>;
   }
 
-  const price = product.price;
+  const price = selectedVariant?.price_adjustment 
+    ? product.price + selectedVariant.price_adjustment 
+    : product.price;
   const originalPrice = product.original_price || price * 1.5;
   const pixDiscount = 0.05; // 5% discount
   const pixPrice = price * (1 - pixDiscount);
