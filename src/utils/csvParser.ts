@@ -58,6 +58,7 @@ export interface ShopifyProduct {
 
 export const parseCSV = (text: string): { headers: string[], rows: string[][] } => {
   console.log('\nStarting CSV parsing');
+  console.log('Raw CSV content:', text.substring(0, 500)); // Log first 500 chars
   
   // Split by newlines and filter empty lines
   const lines = text.split(/\r?\n/).filter(line => line.trim());
@@ -110,6 +111,8 @@ export const parseCSV = (text: string): { headers: string[], rows: string[][] } 
       rows.push(values);
     } else {
       console.warn(`Row ${i} has incorrect number of fields. Expected ${headers.length}, got ${values.length}`);
+      console.log('Row content:', line);
+      console.log('Parsed values:', values);
     }
   }
   
@@ -120,6 +123,7 @@ export const parseCSV = (text: string): { headers: string[], rows: string[][] } 
 
 export const mapRowsToProducts = (headers: string[], rows: string[][]): ShopifyProduct[] => {
   console.log('\nMapping rows to products');
+  console.log('Headers to map:', headers);
   
   const products: ShopifyProduct[] = [];
   const headerIndexMap = new Map<string, number>();
@@ -143,7 +147,7 @@ export const mapRowsToProducts = (headers: string[], rows: string[][]): ShopifyP
         break;
       }
       
-      product[field as keyof ShopifyProduct] = value;
+      (product as any)[field] = value;
     }
     
     if (hasRequiredFields) {
@@ -155,5 +159,6 @@ export const mapRowsToProducts = (headers: string[], rows: string[][]): ShopifyP
     }
   });
   
+  console.log('Total products mapped:', products.length);
   return products;
 };

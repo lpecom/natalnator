@@ -27,8 +27,9 @@ const ImportProducts = () => {
       console.log('File size:', file.size, 'bytes');
       
       const text = await file.text();
+      console.log('CSV Content:', text.substring(0, 500)); // Log first 500 chars
+      
       const { headers, rows } = parseCSV(text);
-      console.log('CSV Content:', text.substring(0, 500)); // Log first 500 chars of CSV
       console.log('Parsed Headers:', headers);
       console.log('First Row:', rows[0]);
       
@@ -44,8 +45,10 @@ const ImportProducts = () => {
         const success = await importProduct(product);
         if (success) {
           successCount++;
+          console.log(`Successfully imported product ${successCount}:`, product.Title);
         } else {
           errorCount++;
+          console.error(`Failed to import product:`, product.Title);
         }
         
         console.log('\nImport progress:', {

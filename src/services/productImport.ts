@@ -3,6 +3,7 @@ import type { ShopifyProduct } from "../utils/csvParser";
 
 export const importProduct = async (product: ShopifyProduct) => {
   console.log('\nImporting product:', product.Title);
+  console.log('Product data:', JSON.stringify(product, null, 2));
   
   try {
     if (!product.Handle || !product.Title) {
@@ -31,11 +32,13 @@ export const importProduct = async (product: ShopifyProduct) => {
       throw landingPageError;
     }
 
+    console.log('Landing page created:', landingPage);
+
     // Parse tags into array
     const tags = product.Tags ? product.Tags.split(',').map(tag => tag.trim()) : null;
 
     // Create product with all Shopify fields
-    const { error: productError } = await supabase
+    const { data: productData, error: productError } = await supabase
       .from("landing_page_products")
       .insert({
         landing_page_id: landingPage.id,
@@ -84,16 +87,20 @@ export const importProduct = async (product: ShopifyProduct) => {
         price_spain: product["Price / Spain"] ? parseFloat(product["Price / Spain"]) : null,
         compare_price_spain: product["Compare At Price / Spain"] ? parseFloat(product["Compare At Price / Spain"]) : null,
         external_metadata: { shopify_handle: product.Handle }
-      });
+      })
+      .select()
+      .single();
 
     if (productError) {
       console.error('Product creation error:', productError);
       throw productError;
     }
 
+    console.log('Product created:', productData);
+
     // Add product variants if they exist
     if (product["Option1 Name"] && product["Option1 Value"]) {
-      const { error: variantError } = await supabase
+      const { data: variantData, error: variantError } = await supabase
         .from("product_variants")
         .insert({
           product_id: landingPage.id,
@@ -102,17 +109,21 @@ export const importProduct = async (product: ShopifyProduct) => {
           inventory_tracker: product["Variant Inventory Tracker"],
           grams: product["Variant Grams"] ? parseInt(product["Variant Grams"]) : null,
           image_url: product["Variant Image"]
-        });
+        })
+        .select()
+        .single();
 
       if (variantError) {
         console.error('Variant creation error:', variantError);
         throw variantError;
       }
+
+      console.log('Variant created:', variantData);
     }
 
     // Add product image if available
     if (product["Image Src"]) {
-      const { error: imageError } = await supabase
+      const { data: imageData, error: imageError } = await supabase
         .from("product_images")
         .insert({
           product_id: landingPage.id,
@@ -120,12 +131,16 @@ export const importProduct = async (product: ShopifyProduct) => {
           alt_text: product["Image Alt Text"] || product.Title,
           is_primary: true,
           display_order: product["Image Position"] ? parseInt(product["Image Position"]) : 0
-        });
+        })
+        .select()
+        .single();
 
       if (imageError) {
         console.error('Image creation error:', imageError);
         throw imageError;
       }
+
+      console.log('Image created:', imageData);
     }
 
     console.log('Product imported successfully:', product.Title);
