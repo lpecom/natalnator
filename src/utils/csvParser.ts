@@ -58,7 +58,6 @@ export interface ShopifyProduct {
 
 export const parseCSV = (text: string): { headers: string[], rows: string[][] } => {
   console.log('\nStarting CSV parsing');
-  console.log('Raw CSV content:', text.substring(0, 500)); // Log first 500 chars
   
   // Split by newlines and filter empty lines
   const lines = text.split(/\r?\n/).filter(line => line.trim());
@@ -70,7 +69,7 @@ export const parseCSV = (text: string): { headers: string[], rows: string[][] } 
   }
   
   // Parse headers - first line
-  const headers = lines[0].split(',').map(header => header.trim().replace(/^"|"$/g, ''));
+  const headers = parseCSVLine(lines[0]);
   console.log('Headers found:', headers);
   
   // Parse rows
@@ -78,47 +77,60 @@ export const parseCSV = (text: string): { headers: string[], rows: string[][] } 
   
   // Start from line 1 (skip headers)
   for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    const values: string[] = [];
-    let currentValue = '';
-    let insideQuotes = false;
+    const parsedLine = parseCSVLine(lines[i]);
     
-    for (let j = 0; j < line.length; j++) {
-      const char = line[j];
-      
-      if (char === '"') {
-        if (insideQuotes && line[j + 1] === '"') {
-          // Handle escaped quotes
-          currentValue += '"';
-          j++; // Skip next quote
-        } else {
-          // Toggle quote state
-          insideQuotes = !insideQuotes;
-        }
-      } else if (char === ',' && !insideQuotes) {
-        // End of field
-        values.push(currentValue.trim());
-        currentValue = '';
-      } else {
-        currentValue += char;
-      }
-    }
-    
-    // Add the last field
-    values.push(currentValue.trim());
-    
-    if (values.length === headers.length) {
-      rows.push(values);
+    if (parsedLine.length === headers.length) {
+      rows.push(parsedLine);
     } else {
-      console.warn(`Row ${i} has incorrect number of fields. Expected ${headers.length}, got ${values.length}`);
-      console.log('Row content:', line);
-      console.log('Parsed values:', values);
+      console.warn(`Row ${i + 1} has incorrect number of fields. Expected ${headers.length}, got ${parsedLine.length}`);
+      console.log('Row content:', lines[i]);
+      console.log('Parsed values:', parsedLine);
     }
   }
   
   console.log('\nParsing complete');
   console.log('Total rows parsed:', rows.length);
   return { headers, rows };
+};
+
+const parseCSVLine = (line: string): string[] => {
+  const values: string[] = [];
+  let currentValue = '';
+  let insideQuotes = false;
+  let i = 0;
+
+  while (i < line.length) {
+    const char = line[i];
+
+    if (char === '"') {
+      if (insideQuotes && line[i + 1] === '"') {
+        // Handle escaped quotes ("") inside quoted fields
+        currentValue += '"';
+        i += 2; // Skip both quotes
+        continue;
+      }
+      insideQuotes = !insideQuotes;
+      i++;
+      continue;
+    }
+
+    if (char === ',' && !insideQuotes) {
+      // End of field
+      values.push(currentValue.trim());
+      currentValue = '';
+      i++;
+      continue;
+    }
+
+    currentValue += char;
+    i++;
+  }
+
+  // Add the last field
+  values.push(currentValue.trim());
+  
+  // Clean up any remaining quotes at the start/end of fields
+  return values.map(value => value.replace(/^"|"$/g, ''));
 };
 
 export const mapRowsToProducts = (headers: string[], rows: string[][]): ShopifyProduct[] => {
@@ -139,7 +151,7 @@ export const mapRowsToProducts = (headers: string[], rows: string[][]): ShopifyP
     let hasRequiredFields = true;
     
     for (const [field, index] of headerIndexMap) {
-      const value = row[index]?.replace(/^"|"$/g, '').trim() || '';
+      const value = row[index] || '';
       
       if ((field === 'Handle' || field === 'Title') && !value) {
         console.warn(`Row ${rowIndex + 1}: Missing required field "${field}"`);
