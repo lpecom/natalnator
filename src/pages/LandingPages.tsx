@@ -67,9 +67,7 @@ const LandingPages = () => {
               <div>
                 <div className="flex items-center gap-3">
                   <h2 className="text-lg font-semibold">{page.title}</h2>
-                  <Badge
-                    variant={page.status === "published" ? "success" : "secondary"}
-                  >
+                  <Badge variant={page.status === "published" ? "default" : "secondary"}>
                     {page.status}
                   </Badge>
                   {page.is_homepage && (
