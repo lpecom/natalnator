@@ -21,8 +21,9 @@ const VariantOption = ({
   if (!variants.length) return null;
 
   // Format the title to be more user-friendly
-  const formattedTitle = title === 'Option1' ? 'Cor' : 
-                        title === 'Option2' ? 'Altura' : 
+  const formattedTitle = title === 'Option1' ? 'Color' : 
+                        title === 'Option2' ? 'Size' : 
+                        title === 'Option3' ? 'Style' : 
                         title;
 
   return (
@@ -50,11 +51,6 @@ const VariantOption = ({
               {variant.stock !== null && (
                 <span className="text-xs text-gray-400 block mt-1">
                   Stock: {variant.stock}
-                </span>
-              )}
-              {variant.description && (
-                <span className="text-xs text-gray-400 block mt-1">
-                  {variant.description}
                 </span>
               )}
             </ToggleGroupItem>

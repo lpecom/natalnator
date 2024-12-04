@@ -21,9 +21,10 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
             className="w-full mt-1 border rounded-md p-2"
             required
           >
-            <option value="Option1">Cor</option>
-            <option value="Option2">Altura</option>
-            <option value="Option3">Option 3</option>
+            <option value="">Select Option Type</option>
+            <option value="Option1">Color</option>
+            <option value="Option2">Size</option>
+            <option value="Option3">Style</option>
           </select>
         </div>
         <div>
@@ -32,7 +33,7 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
             id="value"
             name="value"
             type="text"
-            placeholder="Option value"
+            placeholder="e.g. Red, Large, etc."
             className="mt-1"
             required
           />
@@ -75,16 +76,6 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
             placeholder="https://..."
             className="mt-1"
             required
-          />
-        </div>
-        <div className="md:col-span-3">
-          <Label htmlFor="description">Description</Label>
-          <Input
-            id="description"
-            name="description"
-            type="text"
-            placeholder="Additional details about this variant..."
-            className="mt-1"
           />
         </div>
       </div>
