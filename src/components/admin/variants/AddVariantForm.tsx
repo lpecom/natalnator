@@ -12,20 +12,17 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
   return (
     <form onSubmit={onSubmit} className="space-y-4 border-t pt-6">
       <h3 className="font-medium">Add New Variant</h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-5 gap-4 items-end">
         <div>
-          <Label htmlFor="name">Option Type</Label>
-          <select
+          <Label htmlFor="name">Option</Label>
+          <Input
             id="name"
             name="name"
-            className="w-full mt-1 border rounded-md p-2"
+            type="text"
+            placeholder="e.g. Color, Size"
+            className="mt-1"
             required
-          >
-            <option value="">Select Option Type</option>
-            <option value="Option1">Color</option>
-            <option value="Option2">Size</option>
-            <option value="Option3">Style</option>
-          </select>
+          />
         </div>
         <div>
           <Label htmlFor="value">Value</Label>
@@ -33,13 +30,27 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
             id="value"
             name="value"
             type="text"
-            placeholder="e.g. Red, Large, etc."
+            placeholder="e.g. Red, Large"
             className="mt-1"
             required
           />
         </div>
         <div>
-          <Label htmlFor="price_adjustment">Price Adjustment</Label>
+          <Label htmlFor="original_price">Compared Price</Label>
+          <div className="relative mt-1">
+            <span className="absolute left-3 top-2.5 text-gray-500">R$</span>
+            <Input
+              id="original_price"
+              name="original_price"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              className="pl-8"
+            />
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="price_adjustment">Price</Label>
           <div className="relative mt-1">
             <span className="absolute left-3 top-2.5 text-gray-500">R$</span>
             <Input
@@ -52,22 +63,8 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
               required
             />
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Amount to add/subtract from base price
-          </p>
         </div>
         <div>
-          <Label htmlFor="stock">Stock</Label>
-          <Input
-            id="stock"
-            name="stock"
-            type="number"
-            placeholder="0"
-            className="mt-1"
-            required
-          />
-        </div>
-        <div className="md:col-span-2">
           <Label htmlFor="checkout_url">Checkout URL</Label>
           <Input
             id="checkout_url"
@@ -81,7 +78,7 @@ const AddVariantForm = ({ onSubmit }: AddVariantFormProps) => {
       </div>
       <Button type="submit" className="w-full">
         <Plus className="w-4 h-4 mr-2" />
-        Add Variant
+        Add More...
       </Button>
     </form>
   );

@@ -14,20 +14,17 @@ interface ProductVariantsProps {
 const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
   const [selectedOptions, setSelectedOptions] = React.useState<Record<string, string>>({});
 
-  // Group variants by their option name (Option1, Option2, Option3)
+  // Group variants by their option name
   const variantGroups = React.useMemo(() => {
     if (!product?.product_variants) return {};
     
-    const groups: Record<string, any[]> = {
-      'Option1': [],
-      'Option2': [],
-      'Option3': []
-    };
+    const groups: Record<string, any[]> = {};
     
     product.product_variants.forEach((variant: any) => {
-      if (variant.name in groups) {
-        groups[variant.name].push(variant);
+      if (!groups[variant.name]) {
+        groups[variant.name] = [];
       }
+      groups[variant.name].push(variant);
     });
     
     return groups;
@@ -60,9 +57,7 @@ const ProductVariants = ({ product, onUpdate }: ProductVariantsProps) => {
           name: formData.get("name")?.toString() || "",
           value: formData.get("value")?.toString() || "",
           price_adjustment: Number(formData.get("price_adjustment")) || 0,
-          stock: Number(formData.get("stock")) || 0,
           checkout_url: formData.get("checkout_url")?.toString() || "",
-          description: formData.get("description")?.toString() || "",
         });
 
       if (error) throw error;
