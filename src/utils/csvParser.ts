@@ -1,4 +1,4 @@
-import { ParsedCSVResult } from "../types/shopify";
+import { ParsedCSVResult, ShopifyProduct } from "../types/shopify";
 import { parseCSVLine } from "./csvLineParser";
 
 export const parseCSV = (csvText: string): ParsedCSVResult => {
@@ -93,4 +93,25 @@ export const parseCSV = (csvText: string): ParsedCSVResult => {
   console.log('First row preview:', rows[0]?.slice(0, 3));
 
   return { headers, rows };
+};
+
+export const mapRowsToProducts = (headers: string[], rows: string[][]): Record<string, string>[] => {
+  console.log('\n=== Mapping Rows to Products ===');
+  console.log('Number of rows to map:', rows.length);
+
+  return rows.map((row, index) => {
+    const product: Record<string, string> = {};
+    
+    headers.forEach((header, columnIndex) => {
+      product[header] = row[columnIndex] || '';
+    });
+
+    console.log(`Mapped product ${index + 1}:`, {
+      Handle: product.Handle,
+      Title: product.Title,
+      'Variant Price': product['Variant Price']
+    });
+
+    return product;
+  });
 };
