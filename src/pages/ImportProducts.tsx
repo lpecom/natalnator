@@ -34,22 +34,29 @@ const ImportProducts = () => {
   };
 
   const parseCSV = (text: string): { headers: string[], rows: string[][] } => {
-    // Split by newlines but filter out empty lines
-    const lines = text.split('\n').filter(line => line.trim());
+    // Split by newlines but filter out empty lines and carriage returns
+    const lines = text.split(/\r?\n/).filter(line => line.trim());
     
     // Parse headers
-    const headers = lines[0].split(',').map(header => header.trim());
+    const headers = lines[0].split(',').map(header => header.trim().replace(/^"/, '').replace(/"$/, ''));
     console.log('Headers found:', headers);
 
     // Parse rows, handling quoted values correctly
     const rows = lines.slice(1).map(line => {
-      let row = [];
+      const row = [];
       let inQuotes = false;
       let currentValue = '';
       
-      for (let char of line) {
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
         if (char === '"') {
-          inQuotes = !inQuotes;
+          if (line[i + 1] === '"') {
+            // Handle escaped quotes
+            currentValue += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
         } else if (char === ',' && !inQuotes) {
           row.push(currentValue.trim());
           currentValue = '';
@@ -81,12 +88,15 @@ const ImportProducts = () => {
       console.log(`Total rows found: ${rows.length}`);
 
       // Map rows to products
-      const products: ShopifyProduct[] = rows.map(values => {
-        const product = headers.reduce((obj: any, header, index) => {
-          obj[header] = values[index] || '';
+      const products: ShopifyProduct[] = rows.map((values, index) => {
+        const product = headers.reduce((obj: any, header, i) => {
+          obj[header] = values[i] || '';
           return obj;
         }, {});
-        console.log('Mapped product:', product);
+        
+        if (index === 0) {
+          console.log('First product sample:', product);
+        }
         return product;
       });
 
@@ -94,21 +104,28 @@ const ImportProducts = () => {
       let errorCount = 0;
 
       for (const product of products) {
-        if (!product.Title || !product["Variant Price"]) {
-          console.log('Skipping product due to missing required fields:', product);
-          errorCount++;
-          continue;
-        }
-
         try {
-          console.log('Attempting to create landing page for:', product.Title);
+          if (!product.Title || !product["Variant Price"]) {
+            console.log('Skipping product due to missing required fields:', product);
+            errorCount++;
+            continue;
+          }
+
+          // Use Handle as slug if available, otherwise generate from Title
+          const slug = product.Handle || generateSlug(product.Title);
           
+          console.log('Creating landing page for:', {
+            title: product.Title,
+            slug: slug,
+            price: product["Variant Price"]
+          });
+
           // Create landing page
           const { data: landingPage, error: landingPageError } = await supabase
             .from("landing_pages")
             .insert({
               title: product.Title,
-              slug: generateSlug(product.Title),
+              slug: slug,
               status: product.Status?.toLowerCase() === 'active' ? 'published' : 'draft',
               template_name: 'default',
               route_type: 'product'
@@ -120,8 +137,6 @@ const ImportProducts = () => {
             console.error('Landing page creation error:', landingPageError);
             throw landingPageError;
           }
-
-          console.log('Landing page created:', landingPage);
 
           // Create product
           const { error: productError } = await supabase
@@ -159,40 +174,9 @@ const ImportProducts = () => {
             }
           }
 
-          // Add variants if available
-          if (product["Option1 Name"] && product["Option1 Value"]) {
-            const { error: variantError } = await supabase
-              .from("product_variants")
-              .insert({
-                product_id: landingPage.id,
-                name: product["Option1 Name"],
-                value: product["Option1 Value"]
-              });
-
-            if (variantError) {
-              console.error('Variant 1 creation error:', variantError);
-              throw variantError;
-            }
-          }
-
-          if (product["Option2 Name"] && product["Option2 Value"]) {
-            const { error: variantError } = await supabase
-              .from("product_variants")
-              .insert({
-                product_id: landingPage.id,
-                name: product["Option2 Name"],
-                value: product["Option2 Value"]
-              });
-
-            if (variantError) {
-              console.error('Variant 2 creation error:', variantError);
-              throw variantError;
-            }
-          }
-
           successCount++;
         } catch (error) {
-          console.error("Error importing product:", product.Title, error);
+          console.error("Error importing product:", error);
           errorCount++;
         }
       }
