@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, Settings, FileText, Image } from "lucide-react";
+import { LayoutDashboard, Package, Settings, FileText, Image, Layers } from "lucide-react";
 
 export const adminNavigation = [
   {
@@ -10,6 +10,11 @@ export const adminNavigation = [
     name: "Products",
     href: "/admin/products",
     icon: Package,
+  },
+  {
+    name: "Landing Pages",
+    href: "/admin/landing-pages",
+    icon: Layers,
   },
   {
     name: "Common Pages",

@@ -67,8 +67,30 @@ export const AdminRoutes = [
     }
   />,
   <Route
+    key="admin-products"
+    path="/admin/products"
+    element={
+      <ProtectedRoute>
+        <AdminLayout>
+          <AdminProduct />
+        </AdminLayout>
+      </ProtectedRoute>
+    }
+  />,
+  <Route
+    key="admin-product-edit"
+    path="/admin/products/:id"
+    element={
+      <ProtectedRoute>
+        <AdminLayout>
+          <AdminProduct />
+        </AdminLayout>
+      </ProtectedRoute>
+    }
+  />,
+  <Route
     key="admin-landing-pages"
-    path="/landing-pages"
+    path="/admin/landing-pages"
     element={
       <ProtectedRoute>
         <AdminLayout>
@@ -79,7 +101,7 @@ export const AdminRoutes = [
   />,
   <Route
     key="admin-landing-pages-create"
-    path="/landing-pages/create"
+    path="/admin/landing-pages/create"
     element={
       <ProtectedRoute>
         <AdminLayout>
@@ -90,22 +112,11 @@ export const AdminRoutes = [
   />,
   <Route
     key="admin-landing-pages-edit"
-    path="/landing-pages/:id/edit"
+    path="/admin/landing-pages/:id/edit"
     element={
       <ProtectedRoute>
         <AdminLayout>
           <EditLandingPage />
-        </AdminLayout>
-      </ProtectedRoute>
-    }
-  />,
-  <Route
-    key="admin-product-edit"
-    path="/admin/product/:id"
-    element={
-      <ProtectedRoute>
-        <AdminLayout>
-          <AdminProduct />
         </AdminLayout>
       </ProtectedRoute>
     }
