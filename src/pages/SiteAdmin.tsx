@@ -1,14 +1,13 @@
 import React from "react";
 import { Settings } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LogoManager } from "@/components/admin/LogoManager";
 import { ColorThemeManager } from "@/components/admin/ColorThemeManager";
-import { ThemeSettings } from "@/types/theme";
+import { ThemeSettings, ThemeSettingsJson } from "@/types/theme";
 import { Tables } from "@/integrations/supabase/types";
-import { toast } from "sonner";
 
-const defaultThemeSettings: ThemeSettings = {
+const defaultThemeSettings: ThemeSettingsJson = {
   colors: {
     primary: "#000000",
     success: "#16a34a",
@@ -38,13 +37,13 @@ const SiteAdmin = () => {
           .from('site_settings')
           .insert({
             key: 'theme',
-            value: defaultThemeSettings
+            value: defaultThemeSettings as unknown as Json
           })
           .select()
           .single();
 
         if (createError) throw createError;
-        return newData as Tables<'site_settings'> & { value: ThemeSettings };
+        return { ...newData, value: defaultThemeSettings } as Tables<'site_settings'> & { value: ThemeSettings };
       }
 
       if (error) throw error;
@@ -52,10 +51,10 @@ const SiteAdmin = () => {
       // Ensure all required color properties exist
       const themeValue = {
         ...defaultThemeSettings,
-        ...data.value,
+        ...(data.value as ThemeSettingsJson),
         colors: {
           ...defaultThemeSettings.colors,
-          ...(data.value?.colors || {})
+          ...((data.value as ThemeSettingsJson)?.colors || {})
         }
       };
 
