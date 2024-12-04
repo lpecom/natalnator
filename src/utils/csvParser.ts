@@ -1,11 +1,9 @@
 export interface ShopifyProduct {
   Handle: string;
   Title: string;
-  "Body (HTML)": string;
-  "Variant Price": string;
-  "Variant Compare At Price": string;
-  "Image Src": string;
-  "Image Alt Text": string;
+  "Body (HTML)"?: string;
+  "Variant Price"?: string;
+  "Image Src"?: string;
 }
 
 export const parseCSV = (text: string): { headers: string[], rows: string[][] } => {
@@ -21,10 +19,7 @@ export const parseCSV = (text: string): { headers: string[], rows: string[][] } 
   }
   
   // Parse headers - first line
-  const headers = lines[0].split(',').map(header => {
-    return header.trim().replace(/^"/, '').replace(/"$/, '');
-  });
-  
+  const headers = lines[0].split(',').map(header => header.trim().replace(/^"|"$/g, ''));
   console.log('Headers found:', headers);
   
   // Parse rows
@@ -36,8 +31,6 @@ export const parseCSV = (text: string): { headers: string[], rows: string[][] } 
     const values: string[] = [];
     let currentValue = '';
     let insideQuotes = false;
-    
-    console.log(`Processing line ${i}:`, line);
     
     for (let j = 0; j < line.length; j++) {
       const char = line[j];
@@ -65,59 +58,60 @@ export const parseCSV = (text: string): { headers: string[], rows: string[][] } 
     
     if (values.length === headers.length) {
       rows.push(values);
-      console.log('Row processed successfully:', {
-        handle: values[headers.indexOf('Handle')],
-        title: values[headers.indexOf('Title')],
-        price: values[headers.indexOf('Variant Price')]
-      });
     } else {
       console.warn(`Row ${i} has incorrect number of fields. Expected ${headers.length}, got ${values.length}`);
     }
   }
   
   console.log('\nParsing complete');
-  console.log('Total valid rows:', rows.length);
+  console.log('Total rows parsed:', rows.length);
   return { headers, rows };
 };
 
 export const mapRowsToProducts = (headers: string[], rows: string[][]): ShopifyProduct[] => {
   console.log('\nMapping rows to products');
-  console.log('Headers:', headers);
   
   const products: ShopifyProduct[] = [];
-  const requiredFields = ['Handle', 'Title', 'Variant Price'];
+  const headerIndexMap = new Map<string, number>();
   
-  rows.forEach((row, index) => {
-    const product: any = {};
-    let hasAllRequiredFields = true;
+  // Create a map of required field names to their column indices
+  headers.forEach((header, index) => {
+    headerIndexMap.set(header.replace(/^"|"$/g, ''), index);
+  });
+  
+  console.log('Header mapping:', Object.fromEntries(headerIndexMap));
+  
+  rows.forEach((row, rowIndex) => {
+    const product: Partial<ShopifyProduct> = {};
+    let hasRequiredFields = true;
     
-    headers.forEach((header, colIndex) => {
-      // Only map fields we care about
-      if (['Handle', 'Title', 'Body (HTML)', 'Variant Price', 'Variant Compare At Price', 'Image Src', 'Image Alt Text'].includes(header)) {
-        const value = row[colIndex] || '';
-        product[header] = value;
+    // Map only the fields we need
+    for (const [field, index] of headerIndexMap) {
+      if (field === 'Handle' || field === 'Title' || field === 'Body (HTML)' || 
+          field === 'Variant Price' || field === 'Image Src') {
+        const value = row[index]?.replace(/^"|"$/g, '').trim() || '';
         
-        if (requiredFields.includes(header) && !value) {
-          hasAllRequiredFields = false;
-          console.warn(`Row ${index + 1}: Missing required field "${header}"`);
+        if ((field === 'Handle' || field === 'Title') && !value) {
+          console.warn(`Row ${rowIndex + 1}: Missing required field "${field}"`);
+          hasRequiredFields = false;
+          break;
         }
+        
+        product[field as keyof ShopifyProduct] = value;
       }
-    });
+    }
     
-    if (hasAllRequiredFields) {
+    if (hasRequiredFields) {
       products.push(product as ShopifyProduct);
-      console.log(`Product ${index + 1} mapped successfully:`, {
+      console.log(`Row ${rowIndex + 1} mapped successfully:`, {
         handle: product.Handle,
-        title: product.Title,
-        hasDescription: !!product['Body (HTML)']
+        title: product.Title
       });
-    } else {
-      console.warn(`Row ${index + 1}: Skipped due to missing required fields`);
     }
   });
   
   console.log('\nProduct mapping complete');
-  console.log('Total products mapped:', products.length);
+  console.log('Total valid products:', products.length);
   
   return products;
 };

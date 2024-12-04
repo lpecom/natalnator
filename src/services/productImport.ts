@@ -5,20 +5,13 @@ export const importProduct = async (product: ShopifyProduct) => {
   console.log('\nImporting product:', product.Title);
   
   try {
-    if (!product.Title || !product.Handle || !product["Variant Price"]) {
+    if (!product.Title || !product.Handle) {
       console.error('Missing required fields:', {
         hasTitle: !!product.Title,
-        hasHandle: !!product.Handle,
-        hasPrice: !!product["Variant Price"]
+        hasHandle: !!product.Handle
       });
       throw new Error('Missing required fields');
     }
-
-    console.log('Creating landing page with:', {
-      title: product.Title,
-      slug: product.Handle,
-      price: parseFloat(product["Variant Price"])
-    });
 
     // Create landing page
     const { data: landingPage, error: landingPageError } = await supabase
@@ -45,8 +38,7 @@ export const importProduct = async (product: ShopifyProduct) => {
         landing_page_id: landingPage.id,
         name: product.Title,
         description_html: product["Body (HTML)"] || '',
-        price: parseFloat(product["Variant Price"]) || 0,
-        original_price: parseFloat(product["Variant Compare At Price"]) || null,
+        price: product["Variant Price"] ? parseFloat(product["Variant Price"]) : 0,
         source: 'shopify',
         external_metadata: { shopify_handle: product.Handle }
       });
@@ -63,7 +55,7 @@ export const importProduct = async (product: ShopifyProduct) => {
         .insert({
           product_id: landingPage.id,
           url: product["Image Src"],
-          alt_text: product["Image Alt Text"] || product.Title,
+          alt_text: product.Title,
           is_primary: true,
           display_order: 0
         });
