@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, Image, Settings, FileText, LogOut } from "lucide-react";
@@ -30,6 +30,31 @@ interface ThemeSettings {
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/admin/login");
+        return;
+      }
+
+      // Check if user is admin
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!profile?.is_admin) {
+        toast.error("Unauthorized access");
+        navigate("/admin/login");
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const { data: settings } = useQuery({
     queryKey: ['site-settings'],
