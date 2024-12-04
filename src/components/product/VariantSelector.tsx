@@ -24,10 +24,10 @@ const VariantSelector = ({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-xl font-medium mb-2">
-        {formattedTitle}: {selectedValue}
+      <h3 className="text-lg font-medium">
+        {formattedTitle}
       </h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {values.map((value) => (
           <button
             key={value}

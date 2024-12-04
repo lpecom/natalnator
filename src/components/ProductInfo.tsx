@@ -39,7 +39,7 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
     enabled: !!(landingPageId || productId),
   });
 
-  // Group variants by option name (Option1, Option2, Option3)
+  // Group variants by option name and set default selections
   const variantGroups = React.useMemo(() => {
     if (!product?.product_variants) return {};
     
@@ -53,6 +53,15 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
         groups[variant.name].push(variant.value);
       }
     });
+
+    // Set default selections if not already set
+    if (Object.keys(selectedOptions).length === 0) {
+      const defaultSelections: Record<string, string> = {};
+      Object.entries(groups).forEach(([name, values]) => {
+        defaultSelections[name] = values[0];
+      });
+      setSelectedOptions(defaultSelections);
+    }
     
     console.log("Variant groups:", groups);
     return groups;
@@ -60,14 +69,22 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
 
   // Find the matching variant based on selected options
   const selectedVariant = React.useMemo(() => {
-    if (!product?.product_variants) return null;
+    if (!product?.product_variants || Object.keys(selectedOptions).length === 0) return null;
+
+    // Only return a variant if all required options are selected
+    const requiredOptions = Object.keys(variantGroups);
+    const hasAllOptions = requiredOptions.every(option => selectedOptions[option]);
     
+    if (!hasAllOptions) return null;
+
+    // Find the variant that matches all selected options
     return product.product_variants.find((variant: any) => {
-      return Object.entries(selectedOptions).every(([optionName, optionValue]) => {
-        return variant.name === optionName && variant.value === optionValue;
-      });
+      const matchingOption = Object.entries(selectedOptions).find(([name, value]) => 
+        variant.name === name && variant.value === value
+      );
+      return !!matchingOption;
     });
-  }, [product?.product_variants, selectedOptions]);
+  }, [product?.product_variants, selectedOptions, variantGroups]);
 
   const handleBuy = () => {
     const requiredOptions = Object.keys(variantGroups);
