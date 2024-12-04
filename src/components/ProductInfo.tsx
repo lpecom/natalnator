@@ -77,12 +77,11 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
     
     if (!hasAllOptions) return null;
 
-    // Find the variant that matches all selected options
+    // Find the variant that matches the current combination
     return product.product_variants.find((variant: any) => {
-      const matchingOption = Object.entries(selectedOptions).find(([name, value]) => 
+      return Object.entries(selectedOptions).some(([name, value]) => 
         variant.name === name && variant.value === value
       );
-      return !!matchingOption;
     });
   }, [product?.product_variants, selectedOptions, variantGroups]);
 
@@ -106,6 +105,7 @@ const ProductInfo = ({ landingPageId, productId }: ProductInfoProps) => {
     return <div className="text-center p-4">Loading product information...</div>;
   }
 
+  // Calculate final price based on base price and variant adjustment
   const price = selectedVariant?.price_adjustment 
     ? product.price + selectedVariant.price_adjustment 
     : product.price;
