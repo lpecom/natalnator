@@ -36,8 +36,8 @@ export const ColorThemeManager = ({ settings }: ColorThemeManagerProps) => {
       toast.success("Theme updated successfully");
       queryClient.invalidateQueries({ queryKey: ['site-settings'] });
     } catch (error) {
-      toast.error("Failed to update theme");
       console.error('Error updating theme:', error);
+      toast.error("Failed to update theme");
     }
   };
 
@@ -49,7 +49,7 @@ export const ColorThemeManager = ({ settings }: ColorThemeManagerProps) => {
       </div>
 
       <div className="grid gap-6">
-        {Object.entries(settings.colors).map(([key, value]) => (
+        {Object.entries(settings.colors || {}).map(([key, value]) => (
           <div key={key} className="flex flex-col gap-2">
             <label className="text-sm font-medium capitalize">
               {key.replace(/([A-Z])/g, ' $1').trim()}

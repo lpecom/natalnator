@@ -1,11 +1,26 @@
 import React from "react";
 import { Settings } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LogoManager } from "@/components/admin/LogoManager";
 import { ColorThemeManager } from "@/components/admin/ColorThemeManager";
 import { ThemeSettings } from "@/types/theme";
 import { Tables } from "@/integrations/supabase/types";
+import { toast } from "sonner";
+
+const defaultThemeSettings: ThemeSettings = {
+  colors: {
+    primary: "#000000",
+    success: "#16a34a",
+    background: "#ffffff",
+    foreground: "#000000",
+    muted: "#6b7280",
+    border: "#e5e7eb"
+  },
+  fonts: {
+    primary: "Inter"
+  }
+};
 
 const SiteAdmin = () => {
   const { data: settings, isLoading } = useQuery({
@@ -17,17 +32,53 @@ const SiteAdmin = () => {
         .eq('key', 'theme')
         .single();
 
+      if (error && error.code === 'PGRST116') {
+        // If no settings exist, create default settings
+        const { data: newData, error: createError } = await supabase
+          .from('site_settings')
+          .insert({
+            key: 'theme',
+            value: defaultThemeSettings
+          })
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        return newData as Tables<'site_settings'> & { value: ThemeSettings };
+      }
+
       if (error) throw error;
-      return data as Tables<'site_settings'> & { value: ThemeSettings };
+      
+      // Ensure all required color properties exist
+      const themeValue = {
+        ...defaultThemeSettings,
+        ...data.value,
+        colors: {
+          ...defaultThemeSettings.colors,
+          ...(data.value?.colors || {})
+        }
+      };
+
+      return {
+        ...data,
+        value: themeValue
+      } as Tables<'site_settings'> & { value: ThemeSettings };
     }
   });
 
   if (isLoading) {
-    return <div className="p-8">Loading...</div>;
+    return (
+      <div className="p-8">
+        <div className="flex items-center gap-2">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+          <span>Loading settings...</span>
+        </div>
+      </div>
+    );
   }
 
   if (!settings) {
-    return <div className="p-8">No settings found</div>;
+    return <div className="p-8">Error loading settings</div>;
   }
 
   return (
