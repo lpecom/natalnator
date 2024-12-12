@@ -1,25 +1,24 @@
 import React from "react";
-import { Settings } from "lucide-react";
+import { Settings, Palette } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { LogoManager } from "@/components/admin/LogoManager";
-import { ColorThemeManager } from "@/components/admin/ColorThemeManager";
-import { ThemeSettings, ThemeSettingsJson } from "@/types/theme";
+import { Input } from "@/components/ui/input";
 import { Tables, Json } from "@/integrations/supabase/types";
 
-const defaultThemeSettings: ThemeSettingsJson = {
+interface ThemeSettings {
   colors: {
-    primary: "#000000",
-    success: "#16a34a",
-    background: "#ffffff",
-    foreground: "#000000",
-    muted: "#6b7280",
-    border: "#e5e7eb"
-  },
+    primary: string;
+    success: string;
+    background: string;
+    foreground: string;
+    muted: string;
+    border: string;
+  };
   fonts: {
-    primary: "Inter"
-  }
-};
+    primary: string;
+  };
+}
 
 const SiteAdmin = () => {
   const { data: settings, isLoading } = useQuery({
@@ -31,53 +30,45 @@ const SiteAdmin = () => {
         .eq('key', 'theme')
         .single();
 
-      if (error && error.code === 'PGRST116') {
-        // If no settings exist, create default settings
-        const { data: newData, error: createError } = await supabase
-          .from('site_settings')
-          .insert({
-            key: 'theme',
-            value: defaultThemeSettings as unknown as Json
-          })
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        return { ...newData, value: defaultThemeSettings } as Tables<'site_settings'> & { value: ThemeSettings };
-      }
-
       if (error) throw error;
-      
-      // Ensure all required color properties exist
-      const themeValue = {
-        ...defaultThemeSettings,
-        ...(data.value as ThemeSettingsJson),
-        colors: {
-          ...defaultThemeSettings.colors,
-          ...((data.value as ThemeSettingsJson)?.colors || {})
-        }
-      };
-
-      return {
-        ...data,
-        value: themeValue
-      } as Tables<'site_settings'> & { value: ThemeSettings };
+      return data as Tables<'site_settings'> & { value: ThemeSettings };
     }
   });
 
+  const handleColorChange = async (colorKey: string, value: string) => {
+    if (!settings) return;
+
+    try {
+      const newSettings = {
+        ...settings.value as ThemeSettings,
+        colors: {
+          ...(settings.value as ThemeSettings).colors,
+          [colorKey]: value
+        }
+      };
+
+      const { error } = await supabase
+        .from('site_settings')
+        .update({ 
+          value: newSettings as unknown as Json,
+          updated_at: new Date().toISOString()
+        })
+        .eq('key', 'theme');
+
+      if (error) throw error;
+      
+      toast.success("Theme updated successfully");
+    } catch (error) {
+      toast.error("Failed to update theme");
+    }
+  };
+
   if (isLoading) {
-    return (
-      <div className="p-8">
-        <div className="flex items-center gap-2">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
-          <span>Loading settings...</span>
-        </div>
-      </div>
-    );
+    return <div className="p-8">Loading...</div>;
   }
 
   if (!settings) {
-    return <div className="p-8">Error loading settings</div>;
+    return <div className="p-8">No settings found</div>;
   }
 
   return (
@@ -88,8 +79,36 @@ const SiteAdmin = () => {
       </div>
 
       <div className="grid gap-8">
-        <LogoManager settings={settings.value} />
-        <ColorThemeManager settings={settings.value} />
+        <div className="p-6 border rounded-lg">
+          <div className="flex items-center gap-2 mb-6">
+            <Palette className="w-5 h-5" />
+            <h2 className="text-xl font-semibold">Theme Colors</h2>
+          </div>
+
+          <div className="grid gap-6">
+            {Object.entries((settings.value as ThemeSettings).colors).map(([key, value]) => (
+              <div key={key} className="flex flex-col gap-2">
+                <label className="text-sm font-medium capitalize">
+                  {key.replace(/([A-Z])/g, ' $1').trim()}
+                </label>
+                <div className="flex gap-4">
+                  <Input
+                    type="color"
+                    value={value}
+                    onChange={(e) => handleColorChange(key, e.target.value)}
+                    className="w-20 h-10 p-1"
+                  />
+                  <Input
+                    type="text"
+                    value={value}
+                    onChange={(e) => handleColorChange(key, e.target.value)}
+                    className="font-mono"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

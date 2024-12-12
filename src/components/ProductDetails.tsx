@@ -15,7 +15,7 @@ const ProductDetails = ({ landingPageId, productId }: ProductDetailsProps) => {
 
       let query = supabase
         .from("landing_page_products")
-        .select("description_html, benefits_html");
+        .select("description_html");
 
       if (productId) {
         query = query.eq("id", productId);
@@ -45,32 +45,15 @@ const ProductDetails = ({ landingPageId, productId }: ProductDetailsProps) => {
   }
 
   return (
-    <div className="py-8 border-t border-b space-y-8">
-      {product?.description_html && (
-        <div>
-          <h2 className="text-2xl font-semibold mb-6">Detalhes do Produto</h2>
-          <div className="bg-white rounded-lg">
-            <RichTextEditor
-              content={product.description_html}
-              editable={false}
-              showSource={false}
-            />
-          </div>
-        </div>
-      )}
-      
-      {product?.benefits_html && (
-        <div>
-          <h2 className="text-2xl font-semibold mb-6">Benefícios</h2>
-          <div className="bg-white rounded-lg">
-            <RichTextEditor
-              content={product.benefits_html}
-              editable={false}
-              showSource={false}
-            />
-          </div>
-        </div>
-      )}
+    <div className="py-8 border-t border-b">
+      <h2 className="text-2xl font-semibold mb-6">Detalhes do Produto</h2>
+      <div className="bg-white rounded-lg">
+        <RichTextEditor
+          content={product?.description_html || "<p>Carregando detalhes do produto...</p>"}
+          editable={false}
+          showSource={false}
+        />
+      </div>
     </div>
   );
 };
