@@ -112,7 +112,6 @@ const BasicProductInfo = ({ product, onUpdate }: BasicProductInfoProps) => {
             content={product.description_html || ""}
             onChange={handleDescriptionChange}
             showSource={true}
-            debounceMs={1000}
           />
         </div>
         <button
