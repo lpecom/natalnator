@@ -34,6 +34,18 @@ const defaultTheme: ThemeSettings = {
   }
 };
 
+const isThemeSettings = (value: unknown): value is ThemeSettings => {
+  const theme = value as ThemeSettings;
+  return (
+    theme !== null &&
+    typeof theme === 'object' &&
+    'colors' in theme &&
+    'fonts' in theme &&
+    typeof theme.colors === 'object' &&
+    typeof theme.fonts === 'object'
+  );
+};
+
 const SiteAdmin = () => {
   const { data: settings, isLoading } = useQuery({
     queryKey: ['site-settings'],
@@ -72,11 +84,15 @@ const SiteAdmin = () => {
     if (!settings) return;
 
     try {
-      const currentTheme = settings.value as ThemeSettings;
+      const currentValue = settings.value;
+      if (!isThemeSettings(currentValue)) {
+        throw new Error('Invalid theme settings format');
+      }
+
       const newTheme: ThemeSettings = {
-        ...currentTheme,
+        ...currentValue,
         colors: {
-          ...currentTheme.colors,
+          ...currentValue.colors,
           [colorKey]: value
         }
       };
@@ -113,7 +129,14 @@ const SiteAdmin = () => {
     );
   }
 
-  const themeSettings = settings?.value as ThemeSettings;
+  const themeValue = settings?.value;
+  if (!isThemeSettings(themeValue)) {
+    return (
+      <div className="container mx-auto p-8">
+        <div className="text-red-500">Invalid theme settings</div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-8">
@@ -130,7 +153,7 @@ const SiteAdmin = () => {
           </div>
 
           <div className="grid gap-6">
-            {themeSettings && Object.entries(themeSettings.colors).map(([key, value]) => (
+            {Object.entries(themeValue.colors).map(([key, value]) => (
               <div key={key} className="flex flex-col gap-2">
                 <label className="text-sm font-medium capitalize">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
