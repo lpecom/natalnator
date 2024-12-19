@@ -37,7 +37,7 @@ const SiteAdmin = () => {
       
       // If no theme settings exist, create default ones
       if (!data) {
-        const defaultTheme: ThemeSettings = {
+        const defaultTheme = {
           colors: {
             primary: "#0066FF",
             success: "#10B981",
@@ -55,16 +55,16 @@ const SiteAdmin = () => {
           .from('site_settings')
           .insert({
             key: 'theme',
-            value: defaultTheme
+            value: defaultTheme as Tables<'site_settings'>['value']
           })
           .select()
           .single();
 
         if (insertError) throw insertError;
-        return newSettings as Tables<'site_settings'> & { value: ThemeSettings };
+        return newSettings as Tables<'site_settings'>;
       }
 
-      return data as Tables<'site_settings'> & { value: ThemeSettings };
+      return data as Tables<'site_settings'>;
     }
   });
 
@@ -72,10 +72,11 @@ const SiteAdmin = () => {
     if (!settings) return;
 
     try {
+      const currentSettings = settings.value as ThemeSettings;
       const newSettings = {
-        ...settings.value as ThemeSettings,
+        ...currentSettings,
         colors: {
-          ...(settings.value as ThemeSettings).colors,
+          ...currentSettings.colors,
           [colorKey]: value
         }
       };
@@ -83,7 +84,7 @@ const SiteAdmin = () => {
       const { error } = await supabase
         .from('site_settings')
         .update({ 
-          value: newSettings,
+          value: newSettings as Tables<'site_settings'>['value'],
           updated_at: new Date().toISOString()
         })
         .eq('key', 'theme');
