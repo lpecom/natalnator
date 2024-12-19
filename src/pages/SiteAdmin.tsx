@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
-import { Tables, Json } from "@/integrations/supabase/types";
+import { Tables } from "@/integrations/supabase/types";
 
 interface ThemeSettings {
   colors: {
@@ -30,7 +30,40 @@ const SiteAdmin = () => {
         .eq('key', 'theme')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching theme settings:', error);
+        throw error;
+      }
+      
+      // If no theme settings exist, create default ones
+      if (!data) {
+        const defaultTheme: ThemeSettings = {
+          colors: {
+            primary: "#0066FF",
+            success: "#10B981",
+            background: "#FFFFFF",
+            foreground: "#000000",
+            muted: "#6B7280",
+            border: "#E5E7EB"
+          },
+          fonts: {
+            primary: "Inter"
+          }
+        };
+
+        const { data: newSettings, error: insertError } = await supabase
+          .from('site_settings')
+          .insert({
+            key: 'theme',
+            value: defaultTheme
+          })
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        return newSettings as Tables<'site_settings'> & { value: ThemeSettings };
+      }
+
       return data as Tables<'site_settings'> & { value: ThemeSettings };
     }
   });
@@ -50,7 +83,7 @@ const SiteAdmin = () => {
       const { error } = await supabase
         .from('site_settings')
         .update({ 
-          value: newSettings as unknown as Json,
+          value: newSettings,
           updated_at: new Date().toISOString()
         })
         .eq('key', 'theme');
@@ -59,16 +92,24 @@ const SiteAdmin = () => {
       
       toast.success("Theme updated successfully");
     } catch (error) {
+      console.error('Error updating theme:', error);
       toast.error("Failed to update theme");
     }
   };
 
   if (isLoading) {
-    return <div className="p-8">Loading...</div>;
-  }
-
-  if (!settings) {
-    return <div className="p-8">No settings found</div>;
+    return (
+      <div className="container mx-auto p-8">
+        <div className="animate-pulse">
+          <div className="h-8 w-48 bg-gray-200 rounded mb-8"></div>
+          <div className="space-y-4">
+            <div className="h-12 bg-gray-200 rounded"></div>
+            <div className="h-12 bg-gray-200 rounded"></div>
+            <div className="h-12 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -79,14 +120,14 @@ const SiteAdmin = () => {
       </div>
 
       <div className="grid gap-8">
-        <div className="p-6 border rounded-lg">
+        <div className="p-6 bg-white border rounded-lg shadow-sm">
           <div className="flex items-center gap-2 mb-6">
             <Palette className="w-5 h-5" />
             <h2 className="text-xl font-semibold">Theme Colors</h2>
           </div>
 
           <div className="grid gap-6">
-            {Object.entries((settings.value as ThemeSettings).colors).map(([key, value]) => (
+            {settings && Object.entries((settings.value as ThemeSettings).colors).map(([key, value]) => (
               <div key={key} className="flex flex-col gap-2">
                 <label className="text-sm font-medium capitalize">
                   {key.replace(/([A-Z])/g, ' $1').trim()}

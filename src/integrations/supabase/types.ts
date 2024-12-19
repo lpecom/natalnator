@@ -9,6 +9,45 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      banners: {
+        Row: {
+          banner_type: string
+          created_at: string
+          desktop_image_url: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          link_url: string | null
+          mobile_image_url: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          banner_type?: string
+          created_at?: string
+          desktop_image_url: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          mobile_image_url: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          banner_type?: string
+          created_at?: string
+          desktop_image_url?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          mobile_image_url?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       campaign_metrics: {
         Row: {
           campaign_id: string | null
@@ -213,57 +252,204 @@ export type Database = {
           },
         ]
       }
+      drivers: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          phone_number: string
+          region: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone_number: string
+          region?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone_number?: string
+          region?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       landing_page_products: {
         Row: {
+          barcode: string | null
           benefits_html: string | null
+          compare_price_brasil: number | null
+          compare_price_espanha: number | null
+          compare_price_spain: number | null
+          cost_per_item: number | null
           created_at: string | null
           description: string | null
           description_html: string | null
           external_metadata: Json | null
+          gift_card: boolean | null
+          google_shopping_age_group: string | null
+          google_shopping_category: string | null
+          google_shopping_condition: string | null
+          google_shopping_custom_label_0: string | null
+          google_shopping_custom_label_1: string | null
+          google_shopping_custom_label_2: string | null
+          google_shopping_custom_label_3: string | null
+          google_shopping_custom_label_4: string | null
+          google_shopping_custom_product: boolean | null
+          google_shopping_gender: string | null
+          google_shopping_mpn: string | null
           id: string
+          included_brasil: boolean | null
+          included_espanha: boolean | null
+          included_spain: boolean | null
+          is_taxable: boolean | null
           landing_page_id: string | null
           name: string
           original_price: number | null
           price: number
+          price_brasil: number | null
+          price_espanha: number | null
+          price_spain: number | null
+          product_category: string | null
+          product_type: string | null
+          published: boolean | null
+          requires_shipping: boolean | null
+          seo_description: string | null
+          seo_title: string | null
           settings: Json | null
           sku: string | null
           source: string
+          status: string | null
           stock: number | null
+          tags: string[] | null
+          tax_code: string | null
           updated_at: string | null
+          variant_fulfillment_service: string | null
+          variant_inventory_policy: string | null
+          vendor: string | null
+          weight: number | null
+          weight_unit: string | null
         }
         Insert: {
+          barcode?: string | null
           benefits_html?: string | null
+          compare_price_brasil?: number | null
+          compare_price_espanha?: number | null
+          compare_price_spain?: number | null
+          cost_per_item?: number | null
           created_at?: string | null
           description?: string | null
           description_html?: string | null
           external_metadata?: Json | null
+          gift_card?: boolean | null
+          google_shopping_age_group?: string | null
+          google_shopping_category?: string | null
+          google_shopping_condition?: string | null
+          google_shopping_custom_label_0?: string | null
+          google_shopping_custom_label_1?: string | null
+          google_shopping_custom_label_2?: string | null
+          google_shopping_custom_label_3?: string | null
+          google_shopping_custom_label_4?: string | null
+          google_shopping_custom_product?: boolean | null
+          google_shopping_gender?: string | null
+          google_shopping_mpn?: string | null
           id?: string
+          included_brasil?: boolean | null
+          included_espanha?: boolean | null
+          included_spain?: boolean | null
+          is_taxable?: boolean | null
           landing_page_id?: string | null
           name: string
           original_price?: number | null
           price: number
+          price_brasil?: number | null
+          price_espanha?: number | null
+          price_spain?: number | null
+          product_category?: string | null
+          product_type?: string | null
+          published?: boolean | null
+          requires_shipping?: boolean | null
+          seo_description?: string | null
+          seo_title?: string | null
           settings?: Json | null
           sku?: string | null
           source?: string
+          status?: string | null
           stock?: number | null
+          tags?: string[] | null
+          tax_code?: string | null
           updated_at?: string | null
+          variant_fulfillment_service?: string | null
+          variant_inventory_policy?: string | null
+          vendor?: string | null
+          weight?: number | null
+          weight_unit?: string | null
         }
         Update: {
+          barcode?: string | null
           benefits_html?: string | null
+          compare_price_brasil?: number | null
+          compare_price_espanha?: number | null
+          compare_price_spain?: number | null
+          cost_per_item?: number | null
           created_at?: string | null
           description?: string | null
           description_html?: string | null
           external_metadata?: Json | null
+          gift_card?: boolean | null
+          google_shopping_age_group?: string | null
+          google_shopping_category?: string | null
+          google_shopping_condition?: string | null
+          google_shopping_custom_label_0?: string | null
+          google_shopping_custom_label_1?: string | null
+          google_shopping_custom_label_2?: string | null
+          google_shopping_custom_label_3?: string | null
+          google_shopping_custom_label_4?: string | null
+          google_shopping_custom_product?: boolean | null
+          google_shopping_gender?: string | null
+          google_shopping_mpn?: string | null
           id?: string
+          included_brasil?: boolean | null
+          included_espanha?: boolean | null
+          included_spain?: boolean | null
+          is_taxable?: boolean | null
           landing_page_id?: string | null
           name?: string
           original_price?: number | null
           price?: number
+          price_brasil?: number | null
+          price_espanha?: number | null
+          price_spain?: number | null
+          product_category?: string | null
+          product_type?: string | null
+          published?: boolean | null
+          requires_shipping?: boolean | null
+          seo_description?: string | null
+          seo_title?: string | null
           settings?: Json | null
           sku?: string | null
           source?: string
+          status?: string | null
           stock?: number | null
+          tags?: string[] | null
+          tax_code?: string | null
           updated_at?: string | null
+          variant_fulfillment_service?: string | null
+          variant_inventory_policy?: string | null
+          vendor?: string | null
+          weight?: number | null
+          weight_unit?: string | null
         }
         Relationships: [
           {
@@ -373,6 +559,137 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          order_id: string | null
+          price: number
+          product_id: string | null
+          quantity: number
+          updated_at: string | null
+          variant_selections: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          price: number
+          product_id?: string | null
+          quantity?: number
+          updated_at?: string | null
+          variant_selections?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          price?: number
+          product_id?: string | null
+          quantity?: number
+          updated_at?: string | null
+          variant_selections?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "landing_page_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          address: string
+          call_center_confirmed: boolean | null
+          call_center_confirmed_at: string | null
+          call_center_notes: string | null
+          city: string
+          confirmation_date: string | null
+          created_at: string
+          customer_name: string
+          delivery_date: string | null
+          driver_id: string | null
+          driver_notes: string | null
+          email: string | null
+          id: string
+          order_status: string
+          phone_number: string
+          pickup_date: string | null
+          postal_code: string
+          product_id: string | null
+          state: string
+          status_history: Json | null
+          updated_at: string
+          variant_selections: Json | null
+        }
+        Insert: {
+          address: string
+          call_center_confirmed?: boolean | null
+          call_center_confirmed_at?: string | null
+          call_center_notes?: string | null
+          city: string
+          confirmation_date?: string | null
+          created_at?: string
+          customer_name: string
+          delivery_date?: string | null
+          driver_id?: string | null
+          driver_notes?: string | null
+          email?: string | null
+          id?: string
+          order_status?: string
+          phone_number: string
+          pickup_date?: string | null
+          postal_code: string
+          product_id?: string | null
+          state: string
+          status_history?: Json | null
+          updated_at?: string
+          variant_selections?: Json | null
+        }
+        Update: {
+          address?: string
+          call_center_confirmed?: boolean | null
+          call_center_confirmed_at?: string | null
+          call_center_notes?: string | null
+          city?: string
+          confirmation_date?: string | null
+          created_at?: string
+          customer_name?: string
+          delivery_date?: string | null
+          driver_id?: string | null
+          driver_notes?: string | null
+          email?: string | null
+          id?: string
+          order_status?: string
+          phone_number?: string
+          pickup_date?: string | null
+          postal_code?: string
+          product_id?: string | null
+          state?: string
+          status_history?: Json | null
+          updated_at?: string
+          variant_selections?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "landing_page_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_methods: {
         Row: {
           created_at: string | null
@@ -456,7 +773,11 @@ export type Database = {
         Row: {
           checkout_url: string | null
           created_at: string | null
+          description: string | null
+          grams: number | null
           id: string
+          image_url: string | null
+          inventory_tracker: string | null
           name: string
           price_adjustment: number | null
           product_id: string | null
@@ -467,7 +788,11 @@ export type Database = {
         Insert: {
           checkout_url?: string | null
           created_at?: string | null
+          description?: string | null
+          grams?: number | null
           id?: string
+          image_url?: string | null
+          inventory_tracker?: string | null
           name: string
           price_adjustment?: number | null
           product_id?: string | null
@@ -478,7 +803,11 @@ export type Database = {
         Update: {
           checkout_url?: string | null
           created_at?: string | null
+          description?: string | null
+          grams?: number | null
           id?: string
+          image_url?: string | null
+          inventory_tracker?: string | null
           name?: string
           price_adjustment?: number | null
           product_id?: string | null
@@ -539,6 +868,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          is_admin: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          is_admin?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       publisher_metrics: {
         Row: {
