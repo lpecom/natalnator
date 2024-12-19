@@ -32,20 +32,43 @@ const CreateLandingPage = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const { error } = await supabase.from("landing_pages").insert([
-      {
-        title: values.title,
-        slug: values.slug,
-      },
-    ]);
+    try {
+      // First create the landing page
+      const { data: landingPage, error: landingPageError } = await supabase
+        .from("landing_pages")
+        .insert([
+          {
+            title: values.title,
+            slug: values.slug,
+          },
+        ])
+        .select()
+        .single();
 
-    if (error) {
+      if (landingPageError) throw landingPageError;
+
+      // Then create a default product for this landing page
+      const { error: productError } = await supabase
+        .from("landing_page_products")
+        .insert([
+          {
+            landing_page_id: landingPage.id,
+            name: values.title,
+            price: 99.90,
+            original_price: 187.00,
+            stock: 10,
+            source: "manual",
+          },
+        ]);
+
+      if (productError) throw productError;
+
+      toast.success("Landing page created successfully");
+      navigate(`/landing-pages/${landingPage.id}/edit`);
+    } catch (error) {
+      console.error("Error creating landing page:", error);
       toast.error("Error creating landing page");
-      return;
     }
-
-    toast.success("Landing page created successfully");
-    navigate("/landing-pages");
   };
 
   return (
