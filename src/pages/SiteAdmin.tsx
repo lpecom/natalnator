@@ -20,6 +20,20 @@ interface ThemeSettings {
   };
 }
 
+const defaultTheme: ThemeSettings = {
+  colors: {
+    primary: "#0066FF",
+    success: "#10B981",
+    background: "#FFFFFF",
+    foreground: "#000000",
+    muted: "#6B7280",
+    border: "#E5E7EB"
+  },
+  fonts: {
+    primary: "Inter"
+  }
+};
+
 const SiteAdmin = () => {
   const { data: settings, isLoading } = useQuery({
     queryKey: ['site-settings'],
@@ -37,20 +51,6 @@ const SiteAdmin = () => {
       
       // If no theme settings exist, create default ones
       if (!data) {
-        const defaultTheme = {
-          colors: {
-            primary: "#0066FF",
-            success: "#10B981",
-            background: "#FFFFFF",
-            foreground: "#000000",
-            muted: "#6B7280",
-            border: "#E5E7EB"
-          },
-          fonts: {
-            primary: "Inter"
-          }
-        };
-
         const { data: newSettings, error: insertError } = await supabase
           .from('site_settings')
           .insert({
@@ -61,10 +61,10 @@ const SiteAdmin = () => {
           .single();
 
         if (insertError) throw insertError;
-        return newSettings as Tables<'site_settings'>;
+        return newSettings;
       }
 
-      return data as Tables<'site_settings'>;
+      return data;
     }
   });
 
@@ -72,11 +72,11 @@ const SiteAdmin = () => {
     if (!settings) return;
 
     try {
-      const currentSettings = settings.value as ThemeSettings;
-      const newSettings = {
-        ...currentSettings,
+      const currentTheme = settings.value as unknown as ThemeSettings;
+      const newTheme: ThemeSettings = {
+        ...currentTheme,
         colors: {
-          ...currentSettings.colors,
+          ...currentTheme.colors,
           [colorKey]: value
         }
       };
@@ -84,7 +84,7 @@ const SiteAdmin = () => {
       const { error } = await supabase
         .from('site_settings')
         .update({ 
-          value: newSettings as Tables<'site_settings'>['value'],
+          value: newTheme as Tables<'site_settings'>['value'],
           updated_at: new Date().toISOString()
         })
         .eq('key', 'theme');
@@ -113,6 +113,8 @@ const SiteAdmin = () => {
     );
   }
 
+  const themeSettings = settings?.value as unknown as ThemeSettings;
+
   return (
     <div className="container mx-auto p-8">
       <div className="flex items-center gap-2 mb-8">
@@ -128,7 +130,7 @@ const SiteAdmin = () => {
           </div>
 
           <div className="grid gap-6">
-            {settings && Object.entries((settings.value as ThemeSettings).colors).map(([key, value]) => (
+            {themeSettings && Object.entries(themeSettings.colors).map(([key, value]) => (
               <div key={key} className="flex flex-col gap-2">
                 <label className="text-sm font-medium capitalize">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
