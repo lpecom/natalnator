@@ -89,13 +89,14 @@ const SiteAdmin = () => {
         throw new Error('Invalid theme settings format');
       }
 
-      const newTheme: ThemeSettings = {
-        ...currentValue,
+      // Create a new theme object with the updated color
+      const newTheme = {
         colors: {
           ...currentValue.colors,
           [colorKey]: value
-        }
-      };
+        },
+        fonts: { ...currentValue.fonts }
+      } satisfies ThemeSettings;
 
       const { error } = await supabase
         .from('site_settings')
