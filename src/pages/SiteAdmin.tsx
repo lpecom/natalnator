@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
-import { Tables } from "@/integrations/supabase/types";
+import { Json } from "@/integrations/supabase/types";
 
 interface ThemeSettings {
   colors: {
@@ -55,7 +55,7 @@ const SiteAdmin = () => {
           .from('site_settings')
           .insert({
             key: 'theme',
-            value: defaultTheme as Tables<'site_settings'>['value']
+            value: defaultTheme as unknown as Json
           })
           .select()
           .single();
@@ -72,7 +72,7 @@ const SiteAdmin = () => {
     if (!settings) return;
 
     try {
-      const currentTheme = settings.value as unknown as ThemeSettings;
+      const currentTheme = settings.value as ThemeSettings;
       const newTheme: ThemeSettings = {
         ...currentTheme,
         colors: {
@@ -84,7 +84,7 @@ const SiteAdmin = () => {
       const { error } = await supabase
         .from('site_settings')
         .update({ 
-          value: newTheme as Tables<'site_settings'>['value'],
+          value: newTheme as unknown as Json,
           updated_at: new Date().toISOString()
         })
         .eq('key', 'theme');
@@ -113,7 +113,7 @@ const SiteAdmin = () => {
     );
   }
 
-  const themeSettings = settings?.value as unknown as ThemeSettings;
+  const themeSettings = settings?.value as ThemeSettings;
 
   return (
     <div className="container mx-auto p-8">
