@@ -21,6 +21,7 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
   const queryClient = useQueryClient();
   const [content, setContent] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product-benefits", landingPageId, productId],
@@ -52,6 +53,7 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
 
   const handleBenefitsChange = (html: string) => {
     setContent(html);
+    setHasChanges(true);
   };
 
   const handleSave = async () => {
@@ -67,6 +69,7 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
       if (error) throw error;
       
       await queryClient.invalidateQueries({ queryKey: ["product-benefits"] });
+      setHasChanges(false);
       toast.success("Benefits saved successfully");
     } catch (error) {
       toast.error("Failed to save benefits");
@@ -96,7 +99,7 @@ const Benefits = ({ landingPageId, productId, editable = false }: BenefitsProps)
     <div className="py-8 border-t border-b">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Benefícios do Produto</h2>
-        {editable && (
+        {editable && hasChanges && (
           <Button 
             onClick={handleSave} 
             disabled={isSaving}

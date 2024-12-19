@@ -10,8 +10,7 @@ import Blockquote from '@tiptap/extension-blockquote';
 import ListItem from '@tiptap/extension-list-item';
 import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
-import { useCallback, useEffect, useRef } from 'react';
-import debounce from 'lodash/debounce';
+import { useEffect, useRef } from 'react';
 import EditorToolbar from './editor/EditorToolbar';
 
 interface RichTextEditorProps {
@@ -19,7 +18,6 @@ interface RichTextEditorProps {
   onChange?: (content: string) => void;
   editable?: boolean;
   showSource?: boolean;
-  debounceMs?: number;
 }
 
 const RichTextEditor = ({ 
@@ -27,18 +25,8 @@ const RichTextEditor = ({
   onChange, 
   editable = true,
   showSource = false,
-  debounceMs = 500,
 }: RichTextEditorProps) => {
   const initialContent = useRef(content);
-
-  const debouncedOnChange = useCallback(
-    debounce((html: string) => {
-      if (onChange) {
-        onChange(html);
-      }
-    }, debounceMs),
-    [onChange, debounceMs]
-  );
 
   const editor = useEditor({
     extensions: [
@@ -69,8 +57,10 @@ const RichTextEditor = ({
     content: initialContent.current,
     editable,
     onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      debouncedOnChange(html);
+      if (onChange) {
+        const html = editor.getHTML();
+        onChange(html);
+      }
     },
   });
 
